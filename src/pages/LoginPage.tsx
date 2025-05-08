@@ -13,8 +13,9 @@ import {
 } from "@/components/ui/card";
 import { Eye, EyeOff } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
-import { AuthService } from '@/services/AuthService';
+// AuthService will be used by SocialLoginButtons, not directly here for social login
 import { useAuth } from '@/contexts/AuthContext';
+import SocialLoginButtons from '@/components/common/SocialLoginButtons'; // Import the new component
 
 const LoginPage: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -31,23 +32,7 @@ const LoginPage: React.FC = () => {
     }
   }, [currentUser, authLoading, navigate]);
 
-  const handleSocialLogin = async (loginProvider: () => Promise<any>) => {
-    setError(null);
-    setLoading(true);
-    try {
-      const result = await loginProvider();
-      if (result.success && result.idToken) {
-        console.log('Login successful, navigating...');
-        navigate('/'); 
-      } else if (result.error) {
-        setError(result.error.message || 'Login failed. Please try again.');
-      }
-    } catch (err: any) {
-      setError(err.message || 'An unexpected error occurred.');
-    } finally {
-      setLoading(false);
-    }
-  };
+  // handleSocialLogin is now part of SocialLoginButtons component
 
   if (authLoading || loading) {
     return <div className="flex justify-center items-center min-h-screen">Loading...</div>;
@@ -76,26 +61,13 @@ const LoginPage: React.FC = () => {
         </CardHeader>
         <CardContent>
           {error && <p className="text-red-500 text-sm text-center mb-4">{error}</p>}
-          <div className="space-y-2 mb-6">
-            <Button 
-              variant="outline" 
-              className="w-full flex items-center justify-center text-primary-foreground"
-              onClick={() => handleSocialLogin(AuthService.loginWithGoogle)}
-              disabled={loading}
-            >
-              <img src="https://img.icons8.com/color/16/000000/google-logo.png" alt="Google" className="mr-2 h-4 w-4" />
-              Continue with Google
-            </Button>
-            <Button 
-              variant="outline" 
-              className="w-full flex items-center justify-center text-primary-foreground"
-              onClick={() => handleSocialLogin(AuthService.loginWithFacebook)}
-              disabled={loading}
-            >
-              <img src="https://img.icons8.com/color/16/000000/facebook-new.png" alt="Facebook" className="mr-2 h-4 w-4" />
-              Continue with Facebook
-            </Button>
-          </div>
+          
+          <SocialLoginButtons 
+            loading={loading} 
+            setLoading={setLoading} 
+            setError={setError} 
+            pageType="login" 
+          />
 
           <div className="relative mb-6">
             <div className="absolute inset-0 flex items-center">

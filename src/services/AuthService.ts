@@ -47,7 +47,7 @@ const logout = async (): Promise<{ success: boolean; error?: AuthError }> => {
   }
 };
 
-
+/*
 const verifyTokenWithBackend = async (idToken: string): Promise<any> => {
   try {
     // Replace with your actual backend endpoint
@@ -67,10 +67,11 @@ const verifyTokenWithBackend = async (idToken: string): Promise<any> => {
     throw error; // Re-throw to be caught by the caller
   }
 };
+*/
 
 export const AuthService = {
   loginWithGoogle,
   loginWithFacebook,
   logout,
-  verifyTokenWithBackend, 
+  //verifyTokenWithBackend, 
 };
