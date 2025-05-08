@@ -12,14 +12,14 @@ const Header: React.FC = () => {
         <nav className="flex items-center space-x-4">
           <Button
             variant="default" 
-            className="bg-gradient-to-r from-blue-400 to-blue-600 hover:from-blue-500 hover:to-blue-700 shadow-xs" 
+            className="bg-blue-500 hover:bg-blue-600 shadow-xs" 
             asChild
           >
             <Link to="/login" className="!text-white">Sign In</Link>
           </Button>
           <Button
             variant="default" 
-            className="bg-gradient-to-r from-green-400 to-green-600 hover:from-green-500 hover:to-green-700 shadow-xs" 
+            className="bg-green-500 hover:bg-green-600 shadow-xs" 
             asChild
           >
             <Link to="/register/student" className="!text-white">Sign Up</Link>
