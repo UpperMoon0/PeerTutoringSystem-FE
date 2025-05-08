@@ -11,7 +11,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Eye, EyeOff } from 'lucide-react'; // Assuming lucide-react is installed for icons
+import { Eye, EyeOff } from 'lucide-react'; 
 
 const LoginPage: React.FC = () => {
   const [showPassword, setShowPassword] = React.useState(false);
