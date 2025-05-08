@@ -10,15 +10,15 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default:
-          "text-[var(--btn-primary-text-color)] bg-gradient-to-r from-[var(--btn-primary-gradient-color-from)] to-[var(--btn-primary-gradient-color-to)] hover:from-[var(--btn-primary-gradient-hover-color-from)] hover:to-[var(--btn-primary-gradient-hover-color-to)] shadow-xs",
+          "text-[var(--interactive-primary-text-color)] bg-gradient-to-r from-[var(--interactive-primary-gradient-from)] to-[var(--interactive-primary-gradient-to)] hover:from-[var(--interactive-primary-gradient-hover-from)] hover:to-[var(--interactive-primary-gradient-hover-to)] shadow-xs",
         destructive:
           "bg-destructive text-destructive-foreground shadow-xs hover:bg-destructive/90 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40 dark:bg-destructive/60", // Assuming destructive-foreground for text, or define --destructive-foreground
         outline:
-          "text-[var(--btn-primary-text-color)] bg-gradient-to-r from-[var(--btn-primary-gradient-color-from)] to-[var(--btn-primary-gradient-color-to)] hover:from-[var(--btn-primary-gradient-hover-color-from)] hover:to-[var(--btn-primary-gradient-hover-color-to)] shadow-xs border-transparent",
+          "text-[var(--interactive-primary-text-color)] bg-gradient-to-r from-[var(--interactive-primary-gradient-from)] to-[var(--interactive-primary-gradient-to)] hover:from-[var(--interactive-primary-gradient-hover-from)] hover:to-[var(--interactive-primary-gradient-hover-to)] shadow-xs border-transparent",
         secondary:
           "bg-secondary text-secondary-foreground shadow-xs hover:bg-secondary/80",
         ghost:
-          "hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50",
+          "bg-transparent hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50",
         link: "text-primary underline-offset-4 hover:underline",
       },
       size: {
@@ -35,25 +35,22 @@ const buttonVariants = cva(
   }
 )
 
-function Button({
-  className,
-  variant,
-  size,
-  asChild = false,
-  ...props
-}: React.ButtonHTMLAttributes<HTMLButtonElement> &
-  VariantProps<typeof buttonVariants> & {
-    asChild?: boolean
-  }) {
+const Button = React.forwardRef<
+  HTMLButtonElement,
+  React.ButtonHTMLAttributes<HTMLButtonElement> &
+    VariantProps<typeof buttonVariants> & {
+      asChild?: boolean
+    }
+>(({ className, variant, size, asChild = false, ...props }, ref) => {
   const Comp = asChild ? Slot : "button"
-
   return (
     <Comp
-      data-slot="button"
       className={cn(buttonVariants({ variant, size, className }))}
+      ref={ref}
       {...props}
     />
   )
-}
+})
+Button.displayName = "Button"
 
 export { Button, buttonVariants }

@@ -44,11 +44,11 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
-  --btn-primary-text-color: #FFFFFF;
-  --btn-primary-gradient-color-from: #6366F1; /* indigo-500 */
-  --btn-primary-gradient-color-to: #4338CA;   /* indigo-700 */
-  --btn-primary-gradient-hover-color-from: #4F46E5; /* indigo-600 */
-  --btn-primary-gradient-hover-color-to: #3730A3;   /* indigo-800 */
+  --interactive-primary-text-color: #FFFFFF;
+  --interactive-primary-gradient-from: #6366F1; /* indigo-500 */
+  --interactive-primary-gradient-to: #4338CA;   /* indigo-700 */
+  --interactive-primary-gradient-hover-from: #4F46E5; /* indigo-600 */
+  --interactive-primary-gradient-hover-to: #3730A3;   /* indigo-800 */
 }
 
 .dark {

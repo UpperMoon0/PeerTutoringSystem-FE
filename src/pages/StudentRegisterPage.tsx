@@ -92,7 +92,7 @@ const StudentRegisterPage: React.FC = () => {
               </div>
 
               <div className="grid gap-2">
-                <Label htmlFor="dob">DD/MM/YYYY</Label>
+                <Label htmlFor="dob">Birthdate</Label>
                 <Popover>
                   <PopoverTrigger asChild>
                     <Button
