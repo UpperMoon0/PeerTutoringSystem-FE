@@ -21,9 +21,8 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-// AuthService will be used by SocialLoginButtons, not directly here for social login
 import { useAuth } from '@/contexts/AuthContext';
-import SocialLoginButtons from '@/components/common/SocialLoginButtons'; // Import the new component
+import SocialLoginButtons from '@/components/common/SocialLoginButtons'; 
 
 const StudentRegisterPage: React.FC = () => {
   const [date, setDate] = useState<Date>();
