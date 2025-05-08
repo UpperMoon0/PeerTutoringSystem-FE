@@ -34,11 +34,11 @@ const LoginPage: React.FC = () => {
         </CardHeader>
         <CardContent>
           <div className="space-y-2 mb-6">
-            <Button variant="outline" className="w-full flex items-center justify-center">
+            <Button variant="outline" className="w-full flex items-center justify-center text-primary-foreground">
               <img src="https://img.icons8.com/color/16/000000/google-logo.png" alt="Google" className="mr-2 h-4 w-4" />
               Continue with Google
             </Button>
-            <Button variant="outline" className="w-full flex items-center justify-center">
+            <Button variant="outline" className="w-full flex items-center justify-center text-primary-foreground">
               <img src="https://img.icons8.com/color/16/000000/facebook-new.png" alt="Facebook" className="mr-2 h-4 w-4" />
               Continue with Facebook
             </Button>
@@ -105,7 +105,7 @@ const LoginPage: React.FC = () => {
                 Log in
               </Button>
               <p className="mt-6 text-center text-xs text-muted-foreground">
-                By clicking Log in or Continue with, you agree to Preply
+                By clicking Log in or Continue with, you agree to TheTutorGroup
                 <a href="#" className="font-medium text-indigo-600 hover:text-indigo-500">
                   {' '}
                   Term of use
