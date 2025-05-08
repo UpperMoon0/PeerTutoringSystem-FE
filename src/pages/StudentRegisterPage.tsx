@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import Checkbox from '@/components/ui/checkbox';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
   Card,
   CardContent,
@@ -42,8 +42,6 @@ const StudentRegisterPage: React.FC = () => {
       navigate('/'); 
     }
   }, [currentUser, authLoading, navigate]);
-
-  // handleSocialLogin is now part of SocialLoginButtons component
   
   if (authLoading || loading) {
     return <div className="flex justify-center items-center min-h-screen">Loading...</div>;
@@ -167,13 +165,6 @@ const StudentRegisterPage: React.FC = () => {
                     {showConfirmPassword ? <EyeOff className="h-5 w-5 text-gray-400" /> : <Eye className="h-5 w-5 text-gray-400" />}
                   </Button>
                 </div>
-              </div>
-
-              <div className="flex items-center space-x-2">
-                <Checkbox id="remember-me" name="remember-me" />
-                <Label htmlFor="remember-me" className="text-sm font-normal">
-                  Remember me
-                </Label>
               </div>
             </div>
             <CardFooter className="flex flex-col pt-6 px-0">

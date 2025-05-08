@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import Checkbox from '@/components/ui/checkbox';
+import { Checkbox } from '@/components/ui/checkbox'; 
 import {
   Card,
   CardContent,
@@ -13,9 +13,8 @@ import {
 } from "@/components/ui/card";
 import { Eye, EyeOff } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
-// AuthService will be used by SocialLoginButtons, not directly here for social login
 import { useAuth } from '@/contexts/AuthContext';
-import SocialLoginButtons from '@/components/common/SocialLoginButtons'; // Import the new component
+import SocialLoginButtons from '@/components/common/SocialLoginButtons'; 
 
 const LoginPage: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -31,8 +30,6 @@ const LoginPage: React.FC = () => {
       navigate('/'); // Redirect to home if user is already logged in
     }
   }, [currentUser, authLoading, navigate]);
-
-  // handleSocialLogin is now part of SocialLoginButtons component
 
   if (authLoading || loading) {
     return <div className="flex justify-center items-center min-h-screen">Loading...</div>;
