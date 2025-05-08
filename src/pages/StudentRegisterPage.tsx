@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -11,24 +11,62 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Eye, EyeOff, Calendar as CalendarIcon } from 'lucide-react'; 
-import { Link } from 'react-router-dom';
-import { format } from "date-fns"; 
-import { cn } from "@/lib/utils"; 
-import { Calendar } from "@/components/ui/calendar"; 
+import { Eye, EyeOff, Calendar as CalendarIcon } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { format } from "date-fns";
+import { cn } from "@/lib/utils";
+import { Calendar } from "@/components/ui/calendar";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/components/ui/popover"; 
+} from "@/components/ui/popover";
+import { AuthService } from '@/services/AuthService';
+import { useAuth } from '@/contexts/AuthContext';
 
 const StudentRegisterPage: React.FC = () => {
-  const [date, setDate] = React.useState<Date>(); 
-  const [showPassword, setShowPassword] = React.useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = React.useState(false);
+  const [date, setDate] = useState<Date>();
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState<boolean>(false);
+  const navigate = useNavigate();
+  const { currentUser, loading: authLoading } = useAuth();
 
   const togglePasswordVisibility = () => setShowPassword(!showPassword);
   const toggleConfirmPasswordVisibility = () => setShowConfirmPassword(!showConfirmPassword);
+
+  useEffect(() => {
+    if (!authLoading && currentUser) {
+      navigate('/'); 
+    }
+  }, [currentUser, authLoading, navigate]);
+
+  const handleSocialLogin = async (loginProvider: () => Promise<any>) => {
+    setError(null);
+    setLoading(true);
+    try {
+      const result = await loginProvider();
+      if (result.success && result.idToken) {
+        console.log('Social login/registration successful, navigating...');
+        navigate('/'); 
+      } else if (result.error) {
+        setError(result.error.message || 'Social login/registration failed. Please try again.');
+      }
+    } catch (err: any) {
+      setError(err.message || 'An unexpected error occurred.');
+    } finally {
+      setLoading(false);
+    }
+  };
+  
+  if (authLoading || loading) {
+    return <div className="flex justify-center items-center min-h-screen">Loading...</div>;
+  }
+
+  if (currentUser) {
+    return null; 
+  }
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 py-12">
@@ -36,19 +74,30 @@ const StudentRegisterPage: React.FC = () => {
         <CardHeader className="text-center">
           <CardTitle className="text-3xl font-bold">Sign up as a student</CardTitle>
           <CardDescription>
-            Already have an account yet?{' '}
+            Already have an account?{' '} {}
             <Link to="/login" className="font-medium text-indigo-600 hover:text-indigo-500">
               Log in
             </Link>
           </CardDescription>
         </CardHeader>
         <CardContent>
+          {error && <p className="text-red-500 text-sm text-center mb-4">{error}</p>}
           <div className="space-y-2 mb-6">
-            <Button variant="outline" className="w-full flex items-center justify-center">
+            <Button 
+              variant="outline" 
+              className="w-full flex items-center justify-center"
+              onClick={() => handleSocialLogin(AuthService.loginWithGoogle)}
+              disabled={loading}
+            >
               <img src="https://img.icons8.com/color/16/000000/google-logo.png" alt="Google" className="mr-2 h-4 w-4" />
               Continue with Google
             </Button>
-            <Button variant="outline" className="w-full flex items-center justify-center">
+            <Button 
+              variant="outline" 
+              className="w-full flex items-center justify-center"
+              onClick={() => handleSocialLogin(AuthService.loginWithFacebook)}
+              disabled={loading}
+            >
               <img src="https://img.icons8.com/color/16/000000/facebook-new.png" alt="Facebook" className="mr-2 h-4 w-4" />
               Continue with Facebook
             </Button>
@@ -78,8 +127,7 @@ const StudentRegisterPage: React.FC = () => {
                       variant={"outline"}
                       className={cn(
                         "w-full justify-start text-left font-normal",
-                        // Ensure button styles are applied, text is white
-                        "text-white" // Explicitly set text to white, this will apply to icon and placeholder too
+                        "text-white" 
                       )}
                     >
                       <CalendarIcon className="mr-2 h-4 w-4" />
