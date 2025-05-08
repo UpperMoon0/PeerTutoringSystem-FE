@@ -1,17 +1,17 @@
 /** @type {import('tailwindcss').Config} */
 export default {
-  darkMode: ["class"], // Standard for shadcn/ui
+  darkMode: ["class"], 
   content: [
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
-    './pages/**/*.{ts,tsx}', // Common paths for pages
-    './components/**/*.{ts,tsx}', // Common paths for components
-    './app/**/*.{ts,tsx}', // Next.js app router
-    './src/**/*.{ts,tsx}', // General src
+    './pages/**/*.{ts,tsx}', 
+    './components/**/*.{ts,tsx}', 
+    './app/**/*.{ts,tsx}',
+    './src/**/*.{ts,tsx}',
   ],
-  prefix: "", // Standard for shadcn/ui
+  prefix: "", 
   theme: {
-    container: { // Standard for shadcn/ui
+    container: { 
       center: true,
       padding: "2rem",
       screens: {
@@ -52,15 +52,9 @@ export default {
         card: {
           DEFAULT: "var(--card)",
           foreground: "var(--card-foreground)",
-        },
-        // Custom button theme colors
-        'button-theme': {
-          'text': 'var(--btn-primary-text-color)',
-          'gradient-from': 'var(--btn-primary-gradient-color-from)',
-          'gradient-to': 'var(--btn-primary-gradient-color-to)',
-          'gradient-hover-from': 'var(--btn-primary-gradient-hover-color-from)',
-          'gradient-hover-to': 'var(--btn-primary-gradient-hover-color-to)',
         }
+        // The 'button-theme' block was removed as it's no longer used by the button component,
+        // which now directly references CSS variables using Tailwind's arbitrary value syntax.
       },
       borderRadius: { // Standard for shadcn/ui
         lg: "var(--radius)",
