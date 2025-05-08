@@ -11,7 +11,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Eye, EyeOff } from 'lucide-react'; 
+import { Eye, EyeOff } from 'lucide-react';
+import { Link } from 'react-router-dom'; // Added import
 
 const LoginPage: React.FC = () => {
   const [showPassword, setShowPassword] = React.useState(false);
@@ -23,9 +24,9 @@ const LoginPage: React.FC = () => {
         <CardHeader className="text-center">
           <CardTitle className="text-3xl font-bold">Log in</CardTitle>
           <CardDescription>
-            <a href="#" className="font-medium text-indigo-600 hover:text-indigo-500">
+            <Link to="/register/student" className="font-medium text-indigo-600 hover:text-indigo-500">
               Sign up as student
-            </a>
+            </Link>
             <span className="mx-1">Or</span>
             <a href="#" className="font-medium text-indigo-600 hover:text-indigo-500">
               Sign up as a tutor

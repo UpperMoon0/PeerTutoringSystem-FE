@@ -10,11 +10,11 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default:
-          "text-white bg-gradient-to-r from-indigo-500 to-indigo-700 hover:from-indigo-600 hover:to-indigo-800 shadow-xs",
+          "text-[var(--btn-primary-text-color)] bg-gradient-to-r from-[var(--btn-primary-gradient-color-from)] to-[var(--btn-primary-gradient-color-to)] hover:from-[var(--btn-primary-gradient-hover-color-from)] hover:to-[var(--btn-primary-gradient-hover-color-to)] shadow-xs",
         destructive:
-          "bg-destructive text-white shadow-xs hover:bg-destructive/90 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40 dark:bg-destructive/60",
+          "bg-destructive text-destructive-foreground shadow-xs hover:bg-destructive/90 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40 dark:bg-destructive/60", // Assuming destructive-foreground for text, or define --destructive-foreground
         outline:
-          "text-white bg-gradient-to-r from-indigo-500 to-indigo-700 hover:from-indigo-600 hover:to-indigo-800 shadow-xs border-transparent",
+          "text-[var(--btn-primary-text-color)] bg-gradient-to-r from-[var(--btn-primary-gradient-color-from)] to-[var(--btn-primary-gradient-color-to)] hover:from-[var(--btn-primary-gradient-hover-color-from)] hover:to-[var(--btn-primary-gradient-hover-color-to)] shadow-xs border-transparent",
         secondary:
           "bg-secondary text-secondary-foreground shadow-xs hover:bg-secondary/80",
         ghost:
