@@ -44,8 +44,6 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
-
-  /* Custom button theme variables */
   --btn-primary-text-color: #FFFFFF;
   --btn-primary-gradient-color-from: #6366F1; /* indigo-500 */
   --btn-primary-gradient-color-to: #4338CA;   /* indigo-700 */
