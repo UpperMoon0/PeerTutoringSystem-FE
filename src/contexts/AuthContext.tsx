@@ -34,7 +34,7 @@ interface AuthProviderProps {
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [currentUser, setCurrentUser] = useState<AppUser | null>(null);
   const [accessToken, setAccessToken] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(true); // Keep loading state for initial check and during login
 
   const processLoginData = (backendResponse: AuthResponse) => {
     const appUser: AppUser = {
@@ -50,21 +50,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     localStorage.setItem('user', JSON.stringify(appUser));
   };
 
-  const initializeAuthAndProcessRedirect = useCallback(async () => {
+  // Simplified initialization: just check for existing stored session
+  const initializeAuth = useCallback(async () => {
     setLoading(true);
-    try {
-      const redirectResult = await AuthService.processGoogleLoginRedirect();
-      if (redirectResult.success && redirectResult.data) {
-        processLoginData(redirectResult.data);
-        setLoading(false);
-        return;
-      } else if (redirectResult.error && redirectResult.error !== 'No Google ID Token found after redirect.') {
-        console.error("Error processing Google login redirect:", redirectResult.error);
-      }
-    } catch (error) {
-      console.error("Exception processing Google login redirect:", error);
-    }
-
     const storedToken = localStorage.getItem('accessToken');
     const storedUser = localStorage.getItem('user');
 
@@ -85,22 +73,25 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   }, []);
 
   useEffect(() => {
-    initializeAuthAndProcessRedirect();
-  }, [initializeAuthAndProcessRedirect]);
+    initializeAuth(); // Use the simplified initializer
+  }, [initializeAuth]);
 
   const handleGoogleLogin = async (userDetails: Omit<GoogleLoginPayload, 'idToken'>): Promise<boolean> => {
     setLoading(true);
     try {
-      const result = await AuthService.initiateGoogleLoginRedirect(userDetails);
-      if (result.success) {
+      // Use the new popup login service method
+      const result = await AuthService.loginWithGooglePopup(userDetails);
+      if (result.success && result.data) {
+        processLoginData(result.data);
+        setLoading(false);
         return true;
       } else {
-        console.error("Failed to initiate Google Login:", result.error);
+        console.error("Failed to login with Google Popup:", result.error);
         setLoading(false);
         return false;
       }
     } catch (error) {
-      console.error("Exception during Google Login initiation:", error);
+      console.error("Exception during Google Popup Login:", error);
       setLoading(false);
       return false;
     }

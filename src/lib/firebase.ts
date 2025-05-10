@@ -1,5 +1,5 @@
 import { initializeApp } from "firebase/app";
-import { getAuth, GoogleAuthProvider, FacebookAuthProvider, signInWithRedirect, getRedirectResult } from "firebase/auth";
+import { getAuth, GoogleAuthProvider, FacebookAuthProvider, signInWithRedirect, getRedirectResult, signInWithPopup } from "firebase/auth";
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -36,4 +36,18 @@ const handleGoogleRedirectResult = async (): Promise<string | null> => {
   }
 };
 
-export { auth, googleProvider, facebookProvider, signInWithGoogleRedirect, handleGoogleRedirectResult };
+const signInWithGooglePopup = async (): Promise<string | null> => {
+  try {
+    const result = await signInWithPopup(auth, googleProvider);
+    if (result) {
+      const idToken = await result.user.getIdToken();
+      return idToken;
+    }
+    return null;
+  } catch (error: any) {
+    console.error("Google Sign-In Popup Error:", error);
+    throw error; // Rethrow to be caught by the caller in AuthService
+  }
+};
+
+export { auth, googleProvider, facebookProvider, signInWithGoogleRedirect, handleGoogleRedirectResult, signInWithGooglePopup };

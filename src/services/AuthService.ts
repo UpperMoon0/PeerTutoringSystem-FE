@@ -1,9 +1,9 @@
 import { signOut } from 'firebase/auth';
 import type { AuthError } from 'firebase/auth';
-import { auth, signInWithGoogleRedirect, handleGoogleRedirectResult } from '../lib/firebase';
+import { auth, signInWithGooglePopup } from '../lib/firebase'; // Removed handleGoogleRedirectResult, signInWithGoogleRedirect
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
-const TEMP_USER_DETAILS_KEY = 'tempGoogleUserDetails';
+// const TEMP_USER_DETAILS_KEY = 'tempGoogleUserDetails'; // No longer needed for popup flow
 
 interface AuthResponse {
   userID: string;
@@ -29,34 +29,15 @@ interface ServiceResult<T> {
   error?: string | Error; // Can be a string for simple messages or an Error object
 }
 
-const initiateGoogleLoginRedirect = async (userDetails: Omit<GoogleLoginPayload, 'idToken'>): Promise<{ success: boolean; error?: string | Error }> => {
+// Renamed and refactored for popup flow
+const loginWithGooglePopup = async (userDetails: Omit<GoogleLoginPayload, 'idToken'>): Promise<ServiceResult<AuthResponse>> => {
   try {
-    sessionStorage.setItem(TEMP_USER_DETAILS_KEY, JSON.stringify(userDetails));
-    await signInWithGoogleRedirect();
-    return { success: true };
-  } catch (error) {
-    console.error('Error initiating Google login redirect:', error);
-    sessionStorage.removeItem(TEMP_USER_DETAILS_KEY);
-    return { success: false, error: error instanceof Error ? error : new Error(String(error)) };
-  }
-};
-
-const processGoogleLoginRedirect = async (): Promise<ServiceResult<AuthResponse>> => {
-  try {
-    const idToken = await handleGoogleRedirectResult();
+    const idToken = await signInWithGooglePopup();
     if (!idToken) {
-      return { success: false, error: 'No Google ID Token found after redirect.' };
+      return { success: false, error: 'No Google ID Token found after popup.' };
     }
 
-    const storedUserDetails = sessionStorage.getItem(TEMP_USER_DETAILS_KEY);
-    if (!storedUserDetails) {
-      console.error('Temporary user details not found after redirect.');
-      return { success: false, error: 'User details not found after redirect. Please try logging in again.' };
-    }
-    sessionStorage.removeItem(TEMP_USER_DETAILS_KEY);
-
-    const userDetails: Omit<GoogleLoginPayload, 'idToken'> = JSON.parse(storedUserDetails);
-
+    // User details are passed directly, no need for sessionStorage
     const payload: GoogleLoginPayload = {
       idToken,
       ...userDetails,
@@ -74,15 +55,14 @@ const processGoogleLoginRedirect = async (): Promise<ServiceResult<AuthResponse>
 
     if (!response.ok) {
       const errorMessage = responseData.error || `Backend request failed: ${response.statusText}`;
-      console.error('Error during backend Google login after redirect:', errorMessage);
+      console.error('Error during backend Google login after popup:', errorMessage);
       return { success: false, error: errorMessage };
     }
     
-    console.log('Backend Google login successful after redirect:', responseData);
+    console.log('Backend Google login successful after popup:', responseData);
     return { success: true, data: responseData as AuthResponse };
   } catch (error) {
-    console.error('Error processing Google login redirect:', error);
-    sessionStorage.removeItem(TEMP_USER_DETAILS_KEY);
+    console.error('Error processing Google login popup:', error);
     return { success: false, error: error instanceof Error ? error : new Error(String(error)) };
   }
 };
@@ -102,8 +82,7 @@ const logout = async (): Promise<{ success: boolean; error?: AuthError | Error }
 };
 
 export const AuthService = {
-  initiateGoogleLoginRedirect,
-  processGoogleLoginRedirect,
+  loginWithGooglePopup, // Updated function name
   logout,
 };
 
