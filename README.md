@@ -44,7 +44,7 @@ The application requires certain environment variables to be set up for Firebase
     VITE_FIREBASE_API_KEY="YOUR_API_KEY"
     VITE_FIREBASE_AUTH_DOMAIN="YOUR_AUTH_DOMAIN"
     VITE_FIREBASE_PROJECT_ID="YOUR_PROJECT_ID"
-    VITE_API_BASE_URL="YOUR_BACKEND_BASE_URL (e.g. http://localhost:7258/api)"
+    VITE_API_BASE_URL="YOUR_BACKEND_BASE_URL (e.g. https://localhost:7258/api)"
     ```
 
     * `VITE_FIREBASE_API_KEY`: Your Firebase project's API Key.
