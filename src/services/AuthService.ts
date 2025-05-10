@@ -1,11 +1,12 @@
 import { signOut } from 'firebase/auth';
 import type { AuthError } from 'firebase/auth';
-import { auth, signInWithGooglePopup } from '../lib/firebase';
+import { auth, signInWithGoogleRedirect, handleGoogleRedirectResult } from '../lib/firebase'; // Updated imports
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+const TEMP_USER_DETAILS_KEY = 'tempGoogleUserDetails';
 
 // Matches the backend's AuthResponseDto
-export interface AuthResponse {
+interface AuthResponse {
   userID: string;
   anonymousName: string;
   accessToken: string;
@@ -15,7 +16,7 @@ export interface AuthResponse {
 }
 
 // Matches the backend's GoogleLoginDto
-export interface GoogleLoginPayload {
+interface GoogleLoginPayload {
   idToken: string;
   anonymousName: string;
   dateOfBirth: string; // Assuming YYYY-MM-DD string format
@@ -30,13 +31,37 @@ interface ServiceResult<T> {
   error?: string | Error; // Can be a string for simple messages or an Error object
 }
 
-
-const loginWithGoogle = async (userDetails: Omit<GoogleLoginPayload, 'idToken'>): Promise<ServiceResult<AuthResponse>> => {
+const initiateGoogleLoginRedirect = async (userDetails: Omit<GoogleLoginPayload, 'idToken'>): Promise<{ success: boolean; error?: string | Error }> => {
   try {
-    const idToken = await signInWithGooglePopup();
+    // Store userDetails in sessionStorage to retrieve after redirect
+    sessionStorage.setItem(TEMP_USER_DETAILS_KEY, JSON.stringify(userDetails));
+    await signInWithGoogleRedirect();
+    return { success: true };
+  } catch (error) {
+    console.error('Error initiating Google login redirect:', error);
+    sessionStorage.removeItem(TEMP_USER_DETAILS_KEY); // Clean up if redirect fails to initiate
+    return { success: false, error: error instanceof Error ? error : new Error(String(error)) };
+  }
+};
+
+const processGoogleLoginRedirect = async (): Promise<ServiceResult<AuthResponse>> => {
+  try {
+    const idToken = await handleGoogleRedirectResult();
     if (!idToken) {
-      return { success: false, error: 'Failed to get Google ID Token.' };
+      // This can happen if the page is loaded without a preceding redirect (e.g., direct navigation)
+      // or if getRedirectResult itself had an issue (which it logs).
+      // We might not want to treat this as an error to be shown to the user unless it's unexpected.
+      return { success: false, error: 'No Google ID Token found after redirect.' };
     }
+
+    const storedUserDetails = sessionStorage.getItem(TEMP_USER_DETAILS_KEY);
+    if (!storedUserDetails) {
+      console.error('Temporary user details not found after redirect.');
+      return { success: false, error: 'User details not found after redirect. Please try logging in again.' };
+    }
+    sessionStorage.removeItem(TEMP_USER_DETAILS_KEY); // Clean up
+
+    const userDetails: Omit<GoogleLoginPayload, 'idToken'> = JSON.parse(storedUserDetails);
 
     const payload: GoogleLoginPayload = {
       idToken,
@@ -54,20 +79,19 @@ const loginWithGoogle = async (userDetails: Omit<GoogleLoginPayload, 'idToken'>)
     const responseData = await response.json();
 
     if (!response.ok) {
-      // Assuming the backend returns an error object like { error: "message" }
       const errorMessage = responseData.error || `Backend request failed: ${response.statusText}`;
-      console.error('Error during backend Google login:', errorMessage);
+      console.error('Error during backend Google login after redirect:', errorMessage);
       return { success: false, error: errorMessage };
     }
     
-    console.log('Backend Google login successful:', responseData);
+    console.log('Backend Google login successful after redirect:', responseData);
     return { success: true, data: responseData as AuthResponse };
   } catch (error) {
-    console.error('Error during Google login process:', error);
+    console.error('Error processing Google login redirect:', error);
+    sessionStorage.removeItem(TEMP_USER_DETAILS_KEY); // Ensure cleanup on error
     return { success: false, error: error instanceof Error ? error : new Error(String(error)) };
   }
 };
-
 
 const logout = async (): Promise<{ success: boolean; error?: AuthError | Error }> => {
   try {
@@ -85,6 +109,9 @@ const logout = async (): Promise<{ success: boolean; error?: AuthError | Error }
 };
 
 export const AuthService = {
-  loginWithGoogle,
+  initiateGoogleLoginRedirect,
+  processGoogleLoginRedirect,
   logout,
 };
+
+export type { AuthResponse, GoogleLoginPayload };

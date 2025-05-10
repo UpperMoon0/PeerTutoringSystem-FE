@@ -1,5 +1,5 @@
 import { initializeApp } from "firebase/app";
-import { getAuth, GoogleAuthProvider, FacebookAuthProvider, signInWithPopup, type UserCredential } from "firebase/auth";
+import { getAuth, GoogleAuthProvider, FacebookAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult, type UserCredential } from "firebase/auth";
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -33,4 +33,33 @@ const signInWithGooglePopup = async (): Promise<string | null> => {
   }
 };
 
-export { auth, googleProvider, facebookProvider, signInWithGooglePopup };
+const signInWithGoogleRedirect = async (): Promise<void> => {
+  try {
+    await signInWithRedirect(auth, googleProvider);
+  } catch (error: any) {
+    console.error("Google Sign-In Redirect Error:", error);
+    // Potentially throw the error or handle it as needed by the UI
+    throw error;
+  }
+};
+
+const handleGoogleRedirectResult = async (): Promise<string | null> => {
+  try {
+    const result = await getRedirectResult(auth);
+    if (result) {
+      // This gives you a Google ID Token.
+      const idToken = await result.user.getIdToken();
+      return idToken;
+    }
+    return null; // No redirect result found
+  } catch (error: any) {
+    console.error("Google Redirect Result Error:", error);
+    // const errorCode = error.code;
+    // const errorMessage = error.message;
+    // const email = error.customData?.email;
+    // const credential = GoogleAuthProvider.credentialFromError(error);
+    return null;
+  }
+};
+
+export { auth, googleProvider, facebookProvider, signInWithGooglePopup, signInWithGoogleRedirect, handleGoogleRedirectResult };

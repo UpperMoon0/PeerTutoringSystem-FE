@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import type { ReactNode } from 'react';
-import { AuthService, AuthResponse, GoogleLoginPayload } from '../services/AuthService';
+import { AuthService, type AuthResponse, type GoogleLoginPayload } from '../services/AuthService';
 
 // Simplified user object based on backend response
 export interface AppUser {
@@ -37,8 +37,41 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [accessToken, setAccessToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const initializeAuth = useCallback(async () => {
+  const processLoginData = (backendResponse: AuthResponse) => {
+    const appUser: AppUser = {
+      userId: backendResponse.userID,
+      anonymousName: backendResponse.anonymousName,
+      avatarUrl: backendResponse.avatarUrl,
+      role: backendResponse.role,
+    };
+    setCurrentUser(appUser);
+    setAccessToken(backendResponse.accessToken);
+    localStorage.setItem('accessToken', backendResponse.accessToken);
+    localStorage.setItem('refreshToken', backendResponse.refreshToken);
+    localStorage.setItem('user', JSON.stringify(appUser));
+  };
+
+  const initializeAuthAndProcessRedirect = useCallback(async () => {
     setLoading(true);
+    // Attempt to process redirect first
+    try {
+      const redirectResult = await AuthService.processGoogleLoginRedirect();
+      if (redirectResult.success && redirectResult.data) {
+        processLoginData(redirectResult.data);
+        setLoading(false);
+        // Potentially navigate away from any login/redirect specific page here
+        // For example, if on a '/login-callback' route, redirect to '/'
+        // This depends on your routing setup.
+        return; // Login successful via redirect
+      } else if (redirectResult.error && redirectResult.error !== 'No Google ID Token found after redirect.') {
+        // Log significant errors from processGoogleLoginRedirect, but not the "no token" case which is expected on normal loads
+        console.error("Error processing Google login redirect:", redirectResult.error);
+      }
+    } catch (error) {
+      console.error("Exception processing Google login redirect:", error);
+    }
+
+    // If no redirect, or redirect processing failed non-critically, try to load from storage
     const storedToken = localStorage.getItem('accessToken');
     const storedUser = localStorage.getItem('user');
 
@@ -57,34 +90,30 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       }
     }
     setLoading(false);
-  }, []);
+  }, []); // Removed processLoginData from dependencies as it's stable
 
   useEffect(() => {
-    initializeAuth();
-  }, [initializeAuth]);
+    initializeAuthAndProcessRedirect();
+  }, [initializeAuthAndProcessRedirect]);
 
   const handleGoogleLogin = async (userDetails: Omit<GoogleLoginPayload, 'idToken'>): Promise<boolean> => {
     setLoading(true);
-    const result = await AuthService.loginWithGoogle(userDetails);
-    if (result.success && result.data) {
-      const backendResponse = result.data;
-      const appUser: AppUser = {
-        userId: backendResponse.userID,
-        anonymousName: backendResponse.anonymousName,
-        avatarUrl: backendResponse.avatarUrl,
-        role: backendResponse.role,
-      };
-      setCurrentUser(appUser);
-      setAccessToken(backendResponse.accessToken);
-      localStorage.setItem('accessToken', backendResponse.accessToken);
-      localStorage.setItem('refreshToken', backendResponse.refreshToken);
-      localStorage.setItem('user', JSON.stringify(appUser));
+    try {
+      const result = await AuthService.initiateGoogleLoginRedirect(userDetails);
+      if (result.success) {
+        // Redirect initiated. setLoading(false) might not be hit if redirect is immediate.
+        // The loading state will be handled by initializeAuthAndProcessRedirect on page load after redirect.
+        return true; 
+      } else {
+        console.error("Failed to initiate Google Login:", result.error);
+        setLoading(false);
+        return false;
+      }
+    } catch (error) {
+      console.error("Exception during Google Login initiation:", error);
       setLoading(false);
-      return true;
+      return false;
     }
-    setLoading(false);
-    console.error("Google Login Failed:", result.error);
-    return false;
   };
 
   const logout = async () => {
