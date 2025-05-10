@@ -1,9 +1,8 @@
 import { signOut } from 'firebase/auth';
 import type { AuthError } from 'firebase/auth';
-import { auth, signInWithGooglePopup } from '../lib/firebase'; // Removed handleGoogleRedirectResult, signInWithGoogleRedirect
+import { auth, signInWithGooglePopup } from '../lib/firebase';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
-// const TEMP_USER_DETAILS_KEY = 'tempGoogleUserDetails'; // No longer needed for popup flow
 
 interface AuthResponse {
   userID: string;
@@ -17,16 +16,16 @@ interface AuthResponse {
 interface GoogleLoginPayload {
   idToken: string;
   anonymousName: string;
-  dateOfBirth: string; // Assuming YYYY-MM-DD string format
+  dateOfBirth: string; 
   phoneNumber: string;
-  gender: string; // "Male", "Female", "Other"
+  gender: string; 
   hometown: string;
 }
 
 interface ServiceResult<T> {
   success: boolean;
   data?: T;
-  error?: string | Error; // Can be a string for simple messages or an Error object
+  error?: string | Error; 
 }
 
 // Renamed and refactored for popup flow
@@ -69,7 +68,6 @@ const loginWithGooglePopup = async (userDetails: Omit<GoogleLoginPayload, 'idTok
 
 const logout = async (): Promise<{ success: boolean; error?: AuthError | Error }> => {
   try {
-    // TODO: Implement backend logout if necessary by calling the /api/auth/logout endpoint
     await signOut(auth);
     localStorage.removeItem('accessToken');
     localStorage.removeItem('refreshToken');
@@ -82,7 +80,7 @@ const logout = async (): Promise<{ success: boolean; error?: AuthError | Error }
 };
 
 export const AuthService = {
-  loginWithGooglePopup, // Updated function name
+  loginWithGooglePopup, 
   logout,
 };
 
