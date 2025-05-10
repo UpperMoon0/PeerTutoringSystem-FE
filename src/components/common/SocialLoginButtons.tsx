@@ -21,6 +21,7 @@ const SocialLoginButtons: React.FC<SocialLoginButtonsProps> = ({
 
   const handleGoogleAuthClick = async () => {
     setError(null);
+    setParentLoading(true);
 
     const placeholderUserDetails = {
       anonymousName: "GoogleUser" + Date.now().toString().slice(-5),
@@ -41,6 +42,7 @@ const SocialLoginButtons: React.FC<SocialLoginButtonsProps> = ({
     } catch (err: any) {
       setError(err.message || 'An unexpected error occurred during Google login.');
     } finally {
+      setParentLoading(false);
     }
   };
 
