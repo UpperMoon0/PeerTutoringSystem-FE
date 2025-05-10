@@ -1,11 +1,10 @@
 import { signOut } from 'firebase/auth';
 import type { AuthError } from 'firebase/auth';
-import { auth, signInWithGoogleRedirect, handleGoogleRedirectResult } from '../lib/firebase'; // Updated imports
+import { auth, signInWithGoogleRedirect, handleGoogleRedirectResult } from '../lib/firebase';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 const TEMP_USER_DETAILS_KEY = 'tempGoogleUserDetails';
 
-// Matches the backend's AuthResponseDto
 interface AuthResponse {
   userID: string;
   anonymousName: string;
@@ -15,7 +14,6 @@ interface AuthResponse {
   role: string;
 }
 
-// Matches the backend's GoogleLoginDto
 interface GoogleLoginPayload {
   idToken: string;
   anonymousName: string;
@@ -33,13 +31,12 @@ interface ServiceResult<T> {
 
 const initiateGoogleLoginRedirect = async (userDetails: Omit<GoogleLoginPayload, 'idToken'>): Promise<{ success: boolean; error?: string | Error }> => {
   try {
-    // Store userDetails in sessionStorage to retrieve after redirect
     sessionStorage.setItem(TEMP_USER_DETAILS_KEY, JSON.stringify(userDetails));
     await signInWithGoogleRedirect();
     return { success: true };
   } catch (error) {
     console.error('Error initiating Google login redirect:', error);
-    sessionStorage.removeItem(TEMP_USER_DETAILS_KEY); // Clean up if redirect fails to initiate
+    sessionStorage.removeItem(TEMP_USER_DETAILS_KEY);
     return { success: false, error: error instanceof Error ? error : new Error(String(error)) };
   }
 };
@@ -48,9 +45,6 @@ const processGoogleLoginRedirect = async (): Promise<ServiceResult<AuthResponse>
   try {
     const idToken = await handleGoogleRedirectResult();
     if (!idToken) {
-      // This can happen if the page is loaded without a preceding redirect (e.g., direct navigation)
-      // or if getRedirectResult itself had an issue (which it logs).
-      // We might not want to treat this as an error to be shown to the user unless it's unexpected.
       return { success: false, error: 'No Google ID Token found after redirect.' };
     }
 
@@ -59,7 +53,7 @@ const processGoogleLoginRedirect = async (): Promise<ServiceResult<AuthResponse>
       console.error('Temporary user details not found after redirect.');
       return { success: false, error: 'User details not found after redirect. Please try logging in again.' };
     }
-    sessionStorage.removeItem(TEMP_USER_DETAILS_KEY); // Clean up
+    sessionStorage.removeItem(TEMP_USER_DETAILS_KEY);
 
     const userDetails: Omit<GoogleLoginPayload, 'idToken'> = JSON.parse(storedUserDetails);
 
@@ -88,7 +82,7 @@ const processGoogleLoginRedirect = async (): Promise<ServiceResult<AuthResponse>
     return { success: true, data: responseData as AuthResponse };
   } catch (error) {
     console.error('Error processing Google login redirect:', error);
-    sessionStorage.removeItem(TEMP_USER_DETAILS_KEY); // Ensure cleanup on error
+    sessionStorage.removeItem(TEMP_USER_DETAILS_KEY);
     return { success: false, error: error instanceof Error ? error : new Error(String(error)) };
   }
 };
@@ -96,11 +90,10 @@ const processGoogleLoginRedirect = async (): Promise<ServiceResult<AuthResponse>
 const logout = async (): Promise<{ success: boolean; error?: AuthError | Error }> => {
   try {
     // TODO: Implement backend logout if necessary by calling the /api/auth/logout endpoint
-    // For now, just signing out from Firebase locally
-    await signOut(auth); 
+    await signOut(auth);
     localStorage.removeItem('accessToken');
     localStorage.removeItem('refreshToken');
-    localStorage.removeItem('user'); // Or whatever key you use for user info
+    localStorage.removeItem('user');
     return { success: true };
   } catch (error) {
     console.error('Error during logout:', error);

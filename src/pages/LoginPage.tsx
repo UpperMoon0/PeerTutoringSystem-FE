@@ -27,7 +27,7 @@ const LoginPage: React.FC = () => {
 
   useEffect(() => {
     if (!authLoading && currentUser) {
-      navigate('/'); // Redirect to home if user is already logged in
+      navigate('/');
     }
   }, [currentUser, authLoading, navigate]);
 
@@ -35,10 +35,8 @@ const LoginPage: React.FC = () => {
     return <div className="flex justify-center items-center min-h-screen">Loading...</div>;
   }
   
-  // If user is already logged in (checked by useEffect), this part might not be reached often,
-  // but it's a safeguard.
   if (currentUser) {
-    return null; // Or a redirect component
+    return null;
   }
 
   return (
