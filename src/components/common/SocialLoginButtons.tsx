@@ -24,7 +24,7 @@ const SocialLoginButtons: React.FC<SocialLoginButtonsProps> = ({
     setParentLoading(true);
 
     const placeholderUserDetails = {
-      anonymousName: "GoogleUser" + Date.now().toString().slice(-5),
+      fullName: "GoogleUser" + Date.now().toString().slice(-5),
       dateOfBirth: "2000-01-01",
       phoneNumber: "0000000000",
       gender: "Other",

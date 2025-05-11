@@ -6,7 +6,7 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 interface AuthResponse {
   userID: string;
-  anonymousName: string;
+  fullName: string;
   accessToken: string;
   refreshToken: string;
   avatarUrl?: string;
@@ -15,7 +15,7 @@ interface AuthResponse {
 
 interface GoogleLoginPayload {
   idToken: string;
-  anonymousName: string;
+  fullName: string;
   dateOfBirth: string; 
   phoneNumber: string;
   gender: string; 

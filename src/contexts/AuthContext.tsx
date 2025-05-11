@@ -4,7 +4,7 @@ import { AuthService, type AuthResponse, type GoogleLoginPayload } from '../serv
 
 export interface AppUser {
   userId: string;
-  anonymousName: string;
+  fullName: string;
   avatarUrl?: string;
   role: string;
 }
@@ -39,7 +39,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const processLoginData = (backendResponse: AuthResponse) => {
     const appUser: AppUser = {
       userId: backendResponse.userID,
-      anonymousName: backendResponse.anonymousName,
+      fullName: backendResponse.fullName,
       avatarUrl: backendResponse.avatarUrl,
       role: backendResponse.role,
     };
