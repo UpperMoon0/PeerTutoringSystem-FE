@@ -145,7 +145,7 @@ const StudentRegisterPage: React.FC = () => {
                     <Button
                       variant={"outline"}
                       className={cn(
-                        "w-full justify-start text-left font-normal text-white" // Removed conditional muted-foreground
+                        "w-full justify-start text-left font-normal text-white" 
                       )}
                     >
                       <CalendarIcon className="mr-2 h-4 w-4 text-white" /> 
