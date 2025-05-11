@@ -28,7 +28,6 @@ interface ServiceResult<T> {
   error?: string | Error; 
 }
 
-// Renamed and refactored for popup flow
 const loginWithGooglePopup = async (userDetails: Omit<GoogleLoginPayload, 'idToken'>): Promise<ServiceResult<AuthResponse>> => {
   try {
     const idToken = await signInWithGooglePopup();
@@ -36,7 +35,6 @@ const loginWithGooglePopup = async (userDetails: Omit<GoogleLoginPayload, 'idTok
       return { success: false, error: 'No Google ID Token found after popup.' };
     }
 
-    // User details are passed directly, no need for sessionStorage
     const payload: GoogleLoginPayload = {
       idToken,
       ...userDetails,
@@ -66,8 +64,29 @@ const loginWithGooglePopup = async (userDetails: Omit<GoogleLoginPayload, 'idTok
   }
 };
 
-const logout = async (): Promise<{ success: boolean; error?: AuthError | Error }> => {
+const logout = async (): Promise<{ success: boolean; error?: AuthError | Error | string }> => {
   try {
+    // Call the backend logout API
+    const accessToken = localStorage.getItem('accessToken');
+    if (accessToken) {
+      const response = await fetch(`${API_BASE_URL}/auth/logout`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${accessToken}`,
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        const errorMessage = errorData.error || `Backend logout failed: ${response.statusText}`;
+        console.error('Error during backend logout:', errorMessage);
+        return { success: false, error: errorMessage };
+      }
+      console.log('Backend logout successful');
+    }
+
+    // Proceed with Firebase sign out and clearing local storage
     await signOut(auth);
     localStorage.removeItem('accessToken');
     localStorage.removeItem('refreshToken');
@@ -75,7 +94,7 @@ const logout = async (): Promise<{ success: boolean; error?: AuthError | Error }
     return { success: true };
   } catch (error) {
     console.error('Error during logout:', error);
-    return { success: false, error: error as AuthError };
+    return { success: false, error: error instanceof Error ? error : new Error(String(error)) };
   }
 };
 

@@ -34,7 +34,7 @@ interface AuthProviderProps {
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [currentUser, setCurrentUser] = useState<AppUser | null>(null);
   const [accessToken, setAccessToken] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true); // Keep loading state for initial check and during login
+  const [loading, setLoading] = useState(true); 
 
   const processLoginData = (backendResponse: AuthResponse) => {
     const appUser: AppUser = {
@@ -50,7 +50,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     localStorage.setItem('user', JSON.stringify(appUser));
   };
 
-  // Simplified initialization: just check for existing stored session
   const initializeAuth = useCallback(async () => {
     setLoading(true);
     const storedToken = localStorage.getItem('accessToken');
@@ -59,7 +58,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     if (storedToken && storedUser) {
       try {
         const user: AppUser = JSON.parse(storedUser);
-        // TODO: Add token validation/refresh logic here if needed
         setAccessToken(storedToken);
         setCurrentUser(user);
       } catch (error) {
@@ -73,13 +71,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   }, []);
 
   useEffect(() => {
-    initializeAuth(); // Use the simplified initializer
+    initializeAuth(); 
   }, [initializeAuth]);
 
   const handleGoogleLogin = async (userDetails: Omit<GoogleLoginPayload, 'idToken'>): Promise<boolean> => {
     setLoading(true);
     try {
-      // Use the new popup login service method
       const result = await AuthService.loginWithGooglePopup(userDetails);
       if (result.success && result.data) {
         processLoginData(result.data);
