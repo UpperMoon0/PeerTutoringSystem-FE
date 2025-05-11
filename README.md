@@ -45,12 +45,14 @@ The application requires certain environment variables to be set up for Firebase
     VITE_FIREBASE_AUTH_DOMAIN="YOUR_AUTH_DOMAIN"
     VITE_FIREBASE_PROJECT_ID="YOUR_PROJECT_ID"
     VITE_API_BASE_URL="YOUR_BACKEND_BASE_URL (e.g. https://localhost:7258/api)"
+    VITE_ENABLE_MOCK_API="true" 
     ```
 
     * `VITE_FIREBASE_API_KEY`: Your Firebase project's API Key.
     * `VITE_FIREBASE_AUTH_DOMAIN`: Your Firebase project's Auth Domain.
     * `VITE_FIREBASE_PROJECT_ID`: Your Firebase project's Project ID.
     * `VITE_API_BASE_URL`: The base URL for your backend API.
+    * `VITE_ENABLE_MOCK_API`: Set to `"true"` to use mock data for services (useful for frontend development without a running backend). Set to `"false"` to connect to the live backend API.
 
 ## Running the Development Server
 
