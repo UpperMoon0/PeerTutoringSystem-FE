@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import type { ReactNode } from 'react';
-import { AuthService, type AuthResponse, type GoogleLoginPayload } from '../services/AuthService';
+import { AuthService, type AuthResponse, type GoogleLoginPayload, type RegisterPayload, type LoginPayload } from '../services/AuthService';
 
 export interface AppUser {
   userId: string;
@@ -14,6 +14,8 @@ interface AuthContextType {
   accessToken: string | null;
   loading: boolean;
   handleGoogleLogin: (userDetails: Omit<GoogleLoginPayload, 'idToken'>) => Promise<boolean>;
+  handleEmailRegister: (payload: RegisterPayload) => Promise<boolean>;
+  handleEmailLogin: (payload: LoginPayload) => Promise<boolean>;
   logout: () => Promise<void>;
 }
 
@@ -94,9 +96,55 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
+  const handleEmailRegister = async (payload: RegisterPayload): Promise<boolean> => {
+    setLoading(true);
+    try {
+      const result = await AuthService.registerWithEmail(payload);
+      if (result.success && result.data) {
+        processLoginData(result.data);
+        setLoading(false);
+        return true;
+      } else {
+        console.error("Failed to register with email:", result.error);
+        setLoading(false);
+        return false;
+      }
+    } catch (error) {
+      console.error("Exception during email registration:", error);
+      setLoading(false);
+      return false;
+    }
+  };
+
+  const handleEmailLogin = async (payload: LoginPayload): Promise<boolean> => {
+    setLoading(true);
+    try {
+      const result = await AuthService.loginWithEmail(payload);
+      if (result.success && result.data) {
+        processLoginData(result.data);
+        setLoading(false);
+        return true;
+      } else {
+        console.error("Failed to login with email:", result.error);
+        setLoading(false);
+        // Consider setting an error message in context to display in the form
+        return false;
+      }
+    } catch (error) {
+      console.error("Exception during email login:", error);
+      setLoading(false);
+      return false;
+    }
+  };
+
   const logout = async () => {
     setLoading(true);
-    await AuthService.logout();
+    const result = await AuthService.logout();
+    if (!result.success) {
+      // Handle backend logout failure if necessary, e.g., show a message
+      console.error("Backend logout failed:", result.error);
+    }
+    // Always clear client-side session
     setCurrentUser(null);
     setAccessToken(null);
     setLoading(false);
@@ -107,6 +155,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     accessToken,
     loading,
     handleGoogleLogin,
+    handleEmailRegister,
+    handleEmailLogin,
     logout,
   };
 

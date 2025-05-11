@@ -16,10 +16,25 @@ interface AuthResponse {
 interface GoogleLoginPayload {
   idToken: string;
   fullName: string;
+  dateOfBirth: string;
+  phoneNumber: string;
+  gender: string;
+  hometown: string;
+}
+
+export interface RegisterPayload {
+  email: string;
+  password: string;
+  fullName: string;
   dateOfBirth: string; 
   phoneNumber: string;
-  gender: string; 
+  gender: string;
   hometown: string;
+}
+
+export interface LoginPayload {
+  email: string;
+  password: string;
 }
 
 interface ServiceResult<T> {
@@ -98,8 +113,56 @@ const logout = async (): Promise<{ success: boolean; error?: AuthError | Error |
   }
 };
 
+const registerWithEmail = async (payload: RegisterPayload): Promise<ServiceResult<AuthResponse>> => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/auth/register`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload),
+    });
+    const responseData = await response.json();
+    if (!response.ok) {
+      const errorMessage = responseData.error || `Backend registration failed: ${response.statusText}`;
+      console.error('Error during backend email registration:', errorMessage);
+      return { success: false, error: errorMessage };
+    }
+    console.log('Backend email registration successful:', responseData);
+    return { success: true, data: responseData as AuthResponse };
+  } catch (error) {
+    console.error('Error processing email registration:', error);
+    return { success: false, error: error instanceof Error ? error : new Error(String(error)) };
+  }
+};
+
+const loginWithEmail = async (payload: LoginPayload): Promise<ServiceResult<AuthResponse>> => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/auth/login`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload),
+    });
+    const responseData = await response.json();
+    if (!response.ok) {
+      const errorMessage = responseData.error || `Backend login failed: ${response.statusText}`;
+      console.error('Error during backend email login:', errorMessage);
+      return { success: false, error: errorMessage };
+    }
+    console.log('Backend email login successful:', responseData);
+    return { success: true, data: responseData as AuthResponse };
+  } catch (error) {
+    console.error('Error processing email login:', error);
+    return { success: false, error: error instanceof Error ? error : new Error(String(error)) };
+  }
+};
+
 export const AuthService = {
-  loginWithGooglePopup, 
+  loginWithGooglePopup,
+  registerWithEmail,
+  loginWithEmail,
   logout,
 };
 

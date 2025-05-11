@@ -19,9 +19,9 @@ import SocialLoginButtons from '@/components/common/SocialLoginButtons';
 const LoginPage: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState<boolean>(false);
   const navigate = useNavigate();
-  const { currentUser, loading: authLoading } = useAuth();
+  const { currentUser, loading: authLoading, handleEmailLogin } = useAuth(); 
+  const [formLoading, setFormLoading] = useState<boolean>(false);
 
   const togglePasswordVisibility = () => setShowPassword(!showPassword);
 
@@ -31,7 +31,7 @@ const LoginPage: React.FC = () => {
     }
   }, [currentUser, authLoading, navigate]);
 
-  if (authLoading || loading) {
+  if (authLoading || formLoading) { 
     return <div className="flex justify-center items-center min-h-screen">Loading...</div>;
   }
   
@@ -57,11 +57,11 @@ const LoginPage: React.FC = () => {
         <CardContent>
           {error && <p className="text-red-500 text-sm text-center mb-4">{error}</p>}
           
-          <SocialLoginButtons 
-            loading={loading} 
-            setLoading={setLoading} 
-            setError={setError} 
-            pageType="login" 
+          <SocialLoginButtons
+            loading={formLoading} 
+            setLoading={setFormLoading} 
+            setError={setError}
+            pageType="login"
           />
 
           <div className="relative mb-6">
@@ -73,7 +73,28 @@ const LoginPage: React.FC = () => {
             </div>
           </div>
 
-          <form>
+          <form onSubmit={async (e) => {
+            e.preventDefault();
+            setError(null);
+            setFormLoading(true);
+            const formData = new FormData(e.currentTarget);
+            const email = formData.get('email') as string;
+            const password = formData.get('password') as string;
+
+            if (!email || !password) {
+              setError("Email and password are required.");
+              setFormLoading(false);
+              return;
+            }
+
+            const success = await handleEmailLogin({ email, password });
+            setFormLoading(false);
+            if (success) {
+              navigate('/');
+            } else {
+              setError("Login failed. Please check your credentials or try again later.");
+            }
+          }}>
             <div className="grid gap-4">
               <div className="grid gap-2">
                 <Label htmlFor="email">Email</Label>
@@ -82,6 +103,7 @@ const LoginPage: React.FC = () => {
                   name="email"
                   id="email"
                   placeholder="Your email"
+                  required
                 />
               </div>
 
@@ -93,6 +115,7 @@ const LoginPage: React.FC = () => {
                     name="password"
                     id="password"
                     placeholder="Your password"
+                    required
                   />
                   <Button
                     type="button"
@@ -121,8 +144,8 @@ const LoginPage: React.FC = () => {
               </div>
             </div>
             <CardFooter className="flex flex-col pt-6 px-0">
-              <Button type="submit" className="w-full">
-                Log in
+              <Button type="submit" className="w-full" disabled={formLoading}>
+                {formLoading ? 'Logging in...' : 'Log in'}
               </Button>
               <p className="mt-6 text-center text-xs text-muted-foreground">
                 By clicking Log in or Continue with, you agree to TheTutorGroup

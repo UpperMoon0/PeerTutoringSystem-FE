@@ -9,7 +9,7 @@ const Header: React.FC = () => {
 
   const handleLogout = async () => {
     await logout();
-    navigate('/'); // Redirect to homepage after logout
+    navigate('/'); 
   };
 
   return (
