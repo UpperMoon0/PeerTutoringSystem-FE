@@ -9,7 +9,6 @@ import { TutorService } from '../services/TutorService';
 import type { RequestTutorPayload } from '../types/RequestTutorPayload';
 import type { DocumentUploadDto } from '../types/DocumentUploadDto';
 
-
 const TutorRegisterPage: React.FC = () => {
   const navigate = useNavigate();
   const { currentUser, loading: authLoading } = useAuth(); 
