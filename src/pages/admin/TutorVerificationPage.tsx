@@ -1,19 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
-
-interface TutorVerification {
-  verificationId: string;
-  userId: string;
-  fullName: string; 
-  citizenId: string;
-  studentId: string;
-  university: string;
-  major: string;
-  verificationStatus: 'Pending' | 'Approved' | 'Rejected';
-  verificationDate?: string;
-  adminNotes?: string;
-  documents: Array<{ documentId: string; documentType: string; documentPath: string }>;
-}
+import type { TutorVerification } from '@/types/TutorVerification';
 
 const TutorVerificationPage: React.FC = () => {
   const [verifications, setVerifications] = useState<TutorVerification[]>([]);
