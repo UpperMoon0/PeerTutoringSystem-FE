@@ -1,29 +1,10 @@
+import type { ApiResult } from '../types/ApiResult';
+import type { DocumentUploadDto } from '../types/DocumentUploadDto';
+import type { FileUploadResponse } from '../types/FileUploadResponse';
+import type { RequestTutorPayload } from '../types/RequestTutorPayload';
+import type { RequestTutorResponse } from '../types/RequestTutorResponse';
+
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://localhost:7038/api';
-
-interface DocumentUploadDto {
-  documentType: string;
-  documentPath: string;
-  fileSize: number;
-}
-
-export interface RequestTutorPayload {
-  citizenId: string;
-  studentId: string;
-  university: string;
-  major: string;
-  documents: DocumentUploadDto[];
-}
-
-export interface RequestTutorResponse {
-  verificationID: string;
-  message: string;
-}
-
-interface ApiResult<T> {
-  success: boolean;
-  data?: T;
-  error?: string;
-}
 
 const requestTutor = async (userId: string, payload: RequestTutorPayload): Promise<ApiResult<RequestTutorResponse>> => {
   const token = localStorage.getItem('accessToken'); 
@@ -54,13 +35,6 @@ const requestTutor = async (userId: string, payload: RequestTutorPayload): Promi
     return { success: false, error: error.message || 'An unexpected network error occurred.' };
   }
 };
-
-interface FileUploadResponse {
-  documentPath: string;
-  documentType: string; 
-  fileSize: number;    
-  userID: string;    
-}
 
 const uploadDocument = async (file: File, userId: string): Promise<ApiResult<DocumentUploadDto>> => {
   const token = localStorage.getItem('accessToken');

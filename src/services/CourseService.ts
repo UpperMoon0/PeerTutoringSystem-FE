@@ -1,18 +1,8 @@
 import { mockCourses } from '@/mocks/courses';
+import type { Course } from '../types/Course';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 const ENABLE_MOCK_API = import.meta.env.VITE_ENABLE_MOCK_API === 'true';
-
-export interface Course {
-  id: string;
-  title: string;
-  description: string;
-  imageUrl: string;
-  tutor: string;
-  price: string;
-  duration: string;
-  lecturers: number;
-}
 
 export const getFeaturedCourses = async (searchTerm?: string): Promise<Course[]> => {
   if (ENABLE_MOCK_API) {

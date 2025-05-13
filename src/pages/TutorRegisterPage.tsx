@@ -5,14 +5,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { TutorService, type RequestTutorPayload } from '../services/TutorService'; 
+import { TutorService } from '../services/TutorService'; 
+import type { RequestTutorPayload } from '../types/RequestTutorPayload';
+import type { DocumentUploadDto } from '../types/DocumentUploadDto';
 
-
-interface DocumentUploadDto {
-  documentType: string;
-  documentPath: string;
-  fileSize: number;
-}
 
 const TutorRegisterPage: React.FC = () => {
   const navigate = useNavigate();

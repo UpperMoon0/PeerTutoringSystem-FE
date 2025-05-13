@@ -1,47 +1,13 @@
 import { signOut } from 'firebase/auth';
 import type { AuthError } from 'firebase/auth';
 import { auth, signInWithGooglePopup } from '../lib/firebase';
+import type { AuthResponse } from '../types/AuthResponse';
+import type { GoogleLoginPayload } from '../types/GoogleLoginPayload';
+import type { RegisterPayload } from '../types/RegisterPayload';
+import type { LoginPayload } from '../types/LoginPayload';
+import type { ServiceResult } from '../types/ServiceResult';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
-
-interface AuthResponse {
-  userID: string;
-  fullName: string;
-  accessToken: string;
-  refreshToken: string;
-  avatarUrl?: string;
-  role: string;
-}
-
-interface GoogleLoginPayload {
-  idToken: string;
-  fullName: string;
-  dateOfBirth: string;
-  phoneNumber: string;
-  gender: string;
-  hometown: string;
-}
-
-export interface RegisterPayload {
-  email: string;
-  password: string;
-  fullName: string;
-  dateOfBirth: string; 
-  phoneNumber: string;
-  gender: string;
-  hometown: string;
-}
-
-export interface LoginPayload {
-  email: string;
-  password: string;
-}
-
-interface ServiceResult<T> {
-  success: boolean;
-  data?: T;
-  error?: string | Error; 
-}
 
 const loginWithGooglePopup = async (userDetails: Omit<GoogleLoginPayload, 'idToken'>): Promise<ServiceResult<AuthResponse>> => {
   try {
@@ -166,4 +132,4 @@ export const AuthService = {
   logout,
 };
 
-export type { AuthResponse, GoogleLoginPayload };
+export type { AuthResponse, GoogleLoginPayload, RegisterPayload, LoginPayload, ServiceResult };
