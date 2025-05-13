@@ -18,12 +18,9 @@ const FeaturedTutorsSection: React.FC = () => {
       setIsLoading(true);
       setError(null);
       try {
-        const result = await TutorService.getFeaturedTutors();
-        if (result.success && result.data) {
-          setTutors(result.data as Tutor[]);
-        } else {
-          setError(result.error || 'Failed to fetch tutors.');
-        }
+        // Pass the searchTerm to the service
+        const tutorsData = await TutorService.getFeaturedTutors(searchTerm); 
+        setTutors(tutorsData);
       } catch (err) {
         setError('Failed to fetch tutors. Please try again later.');
         console.error(err);

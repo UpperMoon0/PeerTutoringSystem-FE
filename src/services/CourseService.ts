@@ -32,7 +32,7 @@ export const getFeaturedCourses = async (searchTerm?: string): Promise<Course[]>
       return data;
     } catch (error) {
       console.error("Error fetching courses from real API:", error);
-      throw error;
+      return []; // Return an empty list on error
     }
   }
 };

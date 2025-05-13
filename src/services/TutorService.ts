@@ -3,8 +3,11 @@ import type { DocumentUploadDto } from '../types/DocumentUploadDto';
 import type { FileUploadResponse } from '../types/FileUploadResponse';
 import type { RequestTutorPayload } from '../types/RequestTutorPayload';
 import type { RequestTutorResponse } from '../types/RequestTutorResponse';
+import type { Tutor } from '../types/Tutor';
+import { mockTutors } from '@/mocks/tutors';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://localhost:7038/api';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+const ENABLE_MOCK_API = import.meta.env.VITE_ENABLE_MOCK_API === 'true';
 
 const requestTutor = async (userId: string, payload: RequestTutorPayload): Promise<ApiResult<RequestTutorResponse>> => {
   const token = localStorage.getItem('accessToken');
@@ -76,20 +79,38 @@ const uploadDocument = async (file: File, userId: string): Promise<ApiResult<Doc
   }
 };
 
-// Placeholder for getFeaturedTutors
-// TODO: Implement actual logic to fetch featured tutors from the backend
-const getFeaturedTutors = async (): Promise<ApiResult<any[]>> => { 
-  console.warn('getFeaturedTutors is a placeholder and needs to be implemented.');
-  // Simulate API call
-  await new Promise(resolve => setTimeout(resolve, 500));
-  // Return mock data or an empty array. Replace with actual data fetching.
-  // For now, I use the mock tutors if available, otherwise an empty array.
-  try {
-    const { mockTutors } = await import('../mocks/tutors');
-    return { success: true, data: mockTutors.slice(0, 4) }; 
-  } catch (e) {
-    console.error("Could not load mock tutors for placeholder function", e);
-    return { success: true, data: [] }; 
+const getFeaturedTutors = async (searchTerm?: string): Promise<Tutor[]> => {
+  if (ENABLE_MOCK_API) {
+    console.log(`[Mock API] Fetching featured tutors. Search term: ${searchTerm}`);
+    await new Promise(resolve => setTimeout(resolve, 300));
+    if (searchTerm) {
+      const lowerSearchTerm = searchTerm.toLowerCase();
+      return mockTutors.filter(tutor =>
+        tutor.name.toLowerCase().includes(lowerSearchTerm) ||
+        tutor.courses.toLowerCase().includes(lowerSearchTerm) ||
+        tutor.tutoringInfo.some(info => info.toLowerCase().includes(lowerSearchTerm))
+      );
+    }
+    return mockTutors.slice(0, 4); // Return a slice of mock tutors or all if less than 4
+  } else {
+    console.log(`[Real API] Fetching featured tutors. Search term: ${searchTerm}`);
+    try {
+      // TODO: Update the endpoint when available
+      const query = searchTerm ? `?search=${encodeURIComponent(searchTerm)}` : '';
+      const response = await fetch(`${API_BASE_URL}/tutors/featured${query}`);
+
+      if (!response.ok) {
+        const errorBody = await response.text();
+        console.error(`API Error ${response.status}: ${response.statusText}`, errorBody);
+        return []; // Return empty list on error
+      }
+
+      const data: Tutor[] = await response.json();
+      return data;
+    } catch (error) {
+      console.error("Error fetching tutors from real API:", error);
+      return []; // Return an empty list on error
+    }
   }
 };
 
