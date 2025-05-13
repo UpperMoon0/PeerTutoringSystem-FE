@@ -11,6 +11,8 @@ import {
 } from "@/components/ui/select";
 import { Label } from '@/components/ui/label';
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
 export type VerificationStatus = 'Pending' | 'Approved' | 'Rejected';
 
 const TutorVerificationPage: React.FC = () => {
@@ -22,6 +24,41 @@ const TutorVerificationPage: React.FC = () => {
   useEffect(() => {
     fetchVerifications();
   }, []);
+
+  const handleOpenDocument = async (documentId: string) => {
+    const token = localStorage.getItem('accessToken');
+    if (!token) {
+      alert('Authentication token not found. Please log in again.');
+      return;
+    }
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/documents/${documentId}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          alert('Unauthorized. Please log in again.');
+        } else if (response.status === 403) {
+          alert('Forbidden. You do not have permission to view this document.');
+        } else {
+          const errorData = await response.json().catch(() => ({ error: 'Failed to fetch document.' }));
+          alert(`Error fetching document: ${errorData.error || response.statusText}`);
+        }
+        return;
+      }
+
+      const blob = await response.blob();
+      const fileURL = URL.createObjectURL(blob);
+      window.open(fileURL, '_blank');
+    } catch (err) {
+      console.error('Failed to open document:', err);
+      alert('An unexpected error occurred while trying to open the document.');
+    }
+  };
 
   const fetchVerifications = async () => {
     try {
@@ -114,9 +151,12 @@ const TutorVerificationPage: React.FC = () => {
                   <ul>
                     {verification.documents.map(doc => (
                       <li key={doc.documentID}>
-                        <a href={doc.documentPath} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">
+                        <button 
+                          onClick={() => handleOpenDocument(doc.documentID)}
+                          className="text-blue-500 hover:underline cursor-pointer"
+                        >
                           {doc.documentType}
-                        </a>
+                        </button>
                       </li>
                     ))}
                   </ul>
