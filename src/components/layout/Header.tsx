@@ -1,11 +1,12 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 
 const Header: React.FC = () => {
   const { currentUser, logout, loading } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const handleLogout = async () => {
     await logout();
@@ -15,33 +16,38 @@ const Header: React.FC = () => {
   return (
     <header className="p-4 bg-gradient-to-r from-[var(--interactive-primary-gradient-from)] to-[var(--interactive-primary-gradient-to)] text-white">
       <div className="container mx-auto flex items-center justify-between">
-        <Link to="/" className="text-xl font-bold !text-white hover:text-gray-200 transition-colors">
-          TheTutorGroup
-        </Link>
-        <nav className="flex items-center space-x-4">
+        <div className="flex items-center space-x-4"> {}
+          <Link to="/" className="text-xl font-bold !text-white hover:text-gray-200 transition-colors mr-12">
+            TheTutorGroup
+          </Link>
+          {currentUser && currentUser.role === 'Admin' && (
+            <Link
+              to="/admin"
+              className={`text-white hover:text-gray-200 transition-colors ${
+                location.pathname === '/admin' ? 'bg-white/20 px-3 py-1 rounded-md' : ''
+              }`}
+            >
+              Admin Dashboard
+            </Link>
+          )}
+          {currentUser && currentUser.role === 'Student' && (
+            <Link
+              to="/register-tutor"
+              className={`text-white hover:text-gray-200 transition-colors ${
+                location.pathname === '/register-tutor' ? 'bg-white/20 px-3 py-1 rounded-md' : ''
+              }`}
+            >
+              Become a Tutor
+            </Link>
+          )}
+        </div>
+        <nav className="flex items-center space-x-4"> {}
           {loading ? (
-            <p>Loading...</p> 
+            <p>Loading...</p>
           ) : currentUser ? (
             <>
               <span className="text-white">Welcome, {currentUser.fullName} ({currentUser.role})</span>
-              {currentUser.role === 'Admin' && (
-                <Button
-                  variant="default"
-                  className="bg-indigo-500 hover:bg-indigo-600 shadow-xs !text-white"
-                  asChild
-                >
-                  <Link to="/admin">Admin Dashboard</Link>
-                </Button>
-              )}
-              {currentUser.role === 'Student' && (
-                <Button
-                  variant="default"
-                  className="bg-purple-500 hover:bg-purple-600 shadow-xs !text-white"
-                  asChild
-                >
-                  <Link to="/register-tutor">Become a Tutor</Link>
-                </Button>
-              )}
+              {}
               <Button
                 variant="default"
                 className="bg-red-500 hover:bg-red-600 shadow-xs !text-white"

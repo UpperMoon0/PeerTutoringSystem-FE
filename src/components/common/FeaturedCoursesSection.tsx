@@ -2,8 +2,9 @@ import React, { useState, useEffect } from 'react';
 import SectionHeader from './SectionHeader';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Users } from 'lucide-react'; // Icon for lecturers/students
-import { type Course, getFeaturedCourses } from '@/services/CourseService'; // Import service and type
+import { Users } from 'lucide-react';
+import { getFeaturedCourses } from '@/services/CourseService'; 
+import type { Course } from '@/types/Course';
 
 const FeaturedCoursesSection: React.FC = () => {
   const [courses, setCourses] = useState<Course[]>([]);

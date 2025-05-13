@@ -3,8 +3,8 @@ import SectionHeader from './SectionHeader';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Heart, Star } from 'lucide-react';
-import { TutorService } from '@/services/TutorService'; // Import service
-import type { Tutor } from '@/types/Tutor'; // Import type
+import { TutorService } from '@/services/TutorService'; 
+import type { Tutor } from '@/types/Tutor'; 
 
 const FeaturedTutorsSection: React.FC = () => {
   const [tutors, setTutors] = useState<Tutor[]>([]);

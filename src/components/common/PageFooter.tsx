@@ -1,5 +1,5 @@
 import React from 'react';
-import { Facebook, Twitter, Instagram, Linkedin } from 'lucide-react'; // Social media icons
+import { Facebook, Twitter, Instagram, Linkedin } from 'lucide-react'; 
 
 const PageFooter: React.FC = () => {
   const currentYear = new Date().getFullYear();
