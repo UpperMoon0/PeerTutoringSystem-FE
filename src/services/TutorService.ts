@@ -55,25 +55,54 @@ const requestTutor = async (userId: string, payload: RequestTutorPayload): Promi
   }
 };
 
+interface FileUploadResponse {
+  documentPath: string;
+  documentType: string; 
+  fileSize: number;    
+  userID: string;    
+}
+
 const uploadDocument = async (file: File, userId: string): Promise<ApiResult<DocumentUploadDto>> => {
-  // This is a MOCK implementation.
-  console.log(`Simulating upload for ${file.name} for user ${userId}...`);
-  await new Promise(resolve => setTimeout(resolve, 1000)); 
+  const token = localStorage.getItem('accessToken');
+  if (!token) {
+    return { success: false, error: 'No access token found. Please log in.' };
+  }
 
-  const mockDocumentPath = `https://mockstorage.com/uploads/${userId}/${Date.now()}_${file.name}`;
-  
-  return {
-    success: true,
-    data: {
-      documentType: file.type || 'application/octet-stream',
-      documentPath: mockDocumentPath,
-      fileSize: file.size,
-    },
-  };
+  const formData = new FormData();
+  formData.append('file', file);
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/documents/upload?userId=${userId}`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+      body: formData,
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({ error: 'Failed to upload document. Invalid response from server.' }));
+      console.error('Document upload error:', errorData);
+      return { success: false, error: errorData.error || `Upload failed with status ${response.status}` };
+    }
+
+    const result: FileUploadResponse = await response.json();
+    
+    return {
+      success: true,
+      data: {
+        documentType: file.type || 'application/octet-stream',
+        documentPath: result.documentPath,                  
+        fileSize: file.size,                                 
+      },
+    };
+  } catch (error: any) {
+    console.error('Network or other error in uploadDocument:', error);
+    return { success: false, error: error.message || 'An unexpected network error occurred during document upload.' };
+  }
 };
-
 
 export const TutorService = {
   requestTutor,
-  uploadDocument, 
+  uploadDocument,
 };
