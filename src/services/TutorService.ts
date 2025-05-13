@@ -65,7 +65,7 @@ const uploadDocument = async (file: File, userId: string): Promise<ApiResult<Doc
     return {
       success: true,
       data: {
-        documentType: file.type || 'application/octet-stream',
+        documentType: result.documentType,
         documentPath: result.documentPath,
         fileSize: file.size,
       },
