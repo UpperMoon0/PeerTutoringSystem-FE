@@ -45,8 +45,9 @@ const LoginPage: React.FC = () => {
         <CardHeader className="text-center">
           <CardTitle className="text-3xl font-bold">Log in</CardTitle>
           <CardDescription>
+            Don't have an account yet?{' '}
             <Link to="/register/student" className="font-medium text-indigo-600 hover:text-indigo-500">
-              Sign up as student
+              Sign up
             </Link>
           </CardDescription>
         </CardHeader>

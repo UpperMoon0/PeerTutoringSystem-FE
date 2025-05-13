@@ -53,7 +53,7 @@ const StudentRegisterPage: React.FC = () => {
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 py-12">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <CardTitle className="text-3xl font-bold">Sign up as a student</CardTitle>
+          <CardTitle className="text-3xl font-bold">Sign up</CardTitle>
           <CardDescription>
             Already have an account?{' '} {}
             <Link to="/login" className="font-medium text-indigo-600 hover:text-indigo-500">
