@@ -23,7 +23,16 @@ const Header: React.FC = () => {
             <p>Loading...</p> 
           ) : currentUser ? (
             <>
-              <span className="text-white">Welcome, {currentUser.fullName}</span>
+              <span className="text-white">Welcome, {currentUser.fullName} ({currentUser.role})</span>
+              {currentUser.role === 'Student' && (
+                <Button
+                  variant="default"
+                  className="bg-purple-500 hover:bg-purple-600 shadow-xs !text-white"
+                  asChild
+                >
+                  <Link to="/register-tutor">Become a Tutor</Link>
+                </Button>
+              )}
               <Button
                 variant="default"
                 className="bg-red-500 hover:bg-red-600 shadow-xs !text-white"

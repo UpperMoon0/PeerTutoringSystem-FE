@@ -3,9 +3,9 @@ import { Outlet } from 'react-router-dom';
 
 function App() {
   return (
-    <div className="flex flex-col min-h-svh"> {/* Ensure App takes full height */}
+    <div className="flex flex-col min-h-svh"> {}
       <Header />
-      <main className="flex-grow p-4"> {/* Outlet will render the matched route's component */}
+      <main className="flex-grow p-4"> {}
         <Outlet />
       </main>
     </div>
