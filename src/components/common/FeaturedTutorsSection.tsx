@@ -3,7 +3,8 @@ import SectionHeader from './SectionHeader';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Heart, Star } from 'lucide-react';
-import { type Tutor, getFeaturedTutors } from '@/services/TutorService'; // Import service and type
+import { TutorService } from '@/services/TutorService'; // Import service
+import type { Tutor } from '@/types/Tutor'; // Import type
 
 const FeaturedTutorsSection: React.FC = () => {
   const [tutors, setTutors] = useState<Tutor[]>([]);
@@ -17,8 +18,12 @@ const FeaturedTutorsSection: React.FC = () => {
       setIsLoading(true);
       setError(null);
       try {
-        const data = await getFeaturedTutors(searchTerm);
-        setTutors(data);
+        const result = await TutorService.getFeaturedTutors();
+        if (result.success && result.data) {
+          setTutors(result.data as Tutor[]);
+        } else {
+          setError(result.error || 'Failed to fetch tutors.');
+        }
       } catch (err) {
         setError('Failed to fetch tutors. Please try again later.');
         console.error(err);
@@ -90,7 +95,7 @@ const FeaturedTutorsSection: React.FC = () => {
               <p className="text-sm text-muted-foreground mb-3">Price: <span className="font-semibold text-primary">{tutor.price}</span></p>
               <h4 className="font-semibold mb-1 text-sm">Details:</h4>
               <ul className="list-disc list-inside text-sm text-muted-foreground space-y-1 max-h-24 overflow-y-auto">
-                {tutor.tutoringInfo.map((info, index) => (
+                {tutor.tutoringInfo.map((info: string, index: number) => (
                   <li key={index} className="truncate">{info}</li>
                 ))}
               </ul>

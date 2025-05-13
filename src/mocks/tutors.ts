@@ -1,4 +1,4 @@
-import type { Tutor } from '@/services/TutorService';
+import type { Tutor } from '@/types/Tutor';
 
 export const mockTutors: Tutor[] = [
   {

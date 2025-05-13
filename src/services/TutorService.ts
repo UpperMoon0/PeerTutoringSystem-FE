@@ -7,7 +7,7 @@ import type { RequestTutorResponse } from '../types/RequestTutorResponse';
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://localhost:7038/api';
 
 const requestTutor = async (userId: string, payload: RequestTutorPayload): Promise<ApiResult<RequestTutorResponse>> => {
-  const token = localStorage.getItem('accessToken'); 
+  const token = localStorage.getItem('accessToken');
   if (!token) {
     return { success: false, error: 'No access token found. Please log in.' };
   }
@@ -61,13 +61,13 @@ const uploadDocument = async (file: File, userId: string): Promise<ApiResult<Doc
     }
 
     const result: FileUploadResponse = await response.json();
-    
+
     return {
       success: true,
       data: {
         documentType: file.type || 'application/octet-stream',
-        documentPath: result.documentPath,                  
-        fileSize: file.size,                                 
+        documentPath: result.documentPath,
+        fileSize: file.size,
       },
     };
   } catch (error: any) {
@@ -76,7 +76,25 @@ const uploadDocument = async (file: File, userId: string): Promise<ApiResult<Doc
   }
 };
 
+// Placeholder for getFeaturedTutors
+// TODO: Implement actual logic to fetch featured tutors from the backend
+const getFeaturedTutors = async (): Promise<ApiResult<any[]>> => { 
+  console.warn('getFeaturedTutors is a placeholder and needs to be implemented.');
+  // Simulate API call
+  await new Promise(resolve => setTimeout(resolve, 500));
+  // Return mock data or an empty array. Replace with actual data fetching.
+  // For now, I use the mock tutors if available, otherwise an empty array.
+  try {
+    const { mockTutors } = await import('../mocks/tutors');
+    return { success: true, data: mockTutors.slice(0, 4) }; 
+  } catch (e) {
+    console.error("Could not load mock tutors for placeholder function", e);
+    return { success: true, data: [] }; 
+  }
+};
+
 export const TutorService = {
   requestTutor,
   uploadDocument,
+  getFeaturedTutors,
 };
