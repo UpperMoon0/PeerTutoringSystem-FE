@@ -24,6 +24,15 @@ const Header: React.FC = () => {
           ) : currentUser ? (
             <>
               <span className="text-white">Welcome, {currentUser.fullName} ({currentUser.role})</span>
+              {currentUser.role === 'Admin' && (
+                <Button
+                  variant="default"
+                  className="bg-indigo-500 hover:bg-indigo-600 shadow-xs !text-white"
+                  asChild
+                >
+                  <Link to="/admin">Admin Dashboard</Link>
+                </Button>
+              )}
               {currentUser.role === 'Student' && (
                 <Button
                   variant="default"

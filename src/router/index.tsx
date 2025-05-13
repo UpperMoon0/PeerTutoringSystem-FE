@@ -1,9 +1,13 @@
+import React from 'react'; 
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import LoginPage from '../pages/LoginPage';
 import StudentRegisterPage from '../pages/StudentRegisterPage';
-import TutorRegisterPage from '../pages/TutorRegisterPage'; 
-import App from '../App'; 
-import HomePage from '../pages/HomePage'; 
+import TutorRegisterPage from '../pages/TutorRegisterPage';
+import App from '../App';
+import HomePage from '../pages/HomePage';
+import AdminDashboardPage from '@/pages/admin/AdminDashboardPage';
+import TutorVerificationPage from '@/pages/admin/TutorVerificationPage';
+import ProtectedRoute from './ProtectedRoute'; 
 
 const router = createBrowserRouter([
   {
@@ -11,25 +15,33 @@ const router = createBrowserRouter([
     children: [
       {
         path: '/',
-        element: <HomePage />, 
+        element: <HomePage />,
       },
       {
         path: 'login',
         element: <LoginPage />,
       },
       {
-        path: 'register/student', 
+        path: 'register/student',
         element: <StudentRegisterPage />,
       },
       {
-        path: 'register-tutor', 
+        path: 'register-tutor',
         element: <TutorRegisterPage />,
+      },
+      {
+        path: 'admin',
+        element: <ProtectedRoute allowedRoles={['Admin']} />, 
+        children: [
+          { index: true, element: <AdminDashboardPage /> },
+          { path: 'tutor-verifications', element: <TutorVerificationPage /> },
+        ],
       },
     ],
   },
 ]);
 
-const AppRouter = () => {
+const AppRouter: React.FC = () => { 
   return <RouterProvider router={router} />;
 };
 
