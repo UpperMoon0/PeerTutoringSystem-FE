@@ -48,10 +48,6 @@ const LoginPage: React.FC = () => {
             <Link to="/register/student" className="font-medium text-indigo-600 hover:text-indigo-500">
               Sign up as student
             </Link>
-            <span className="mx-1">Or</span>
-            <Link to="/register/tutor" className="font-medium text-indigo-600 hover:text-indigo-500"> {}
-              Sign up as a tutor
-            </Link>
           </CardDescription>
         </CardHeader>
         <CardContent>
