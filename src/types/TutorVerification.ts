@@ -1,13 +1,13 @@
 export interface TutorVerification {
-  verificationId: string;
-  userId: string;
-  fullName: string;
-  citizenId: string;
-  studentId: string;
+  verificationID: string; 
+  userID: string;
+  fullName?: string; 
+  citizenID: string;
+  studentID: string;
   university: string;
   major: string;
   verificationStatus: 'Pending' | 'Approved' | 'Rejected';
   verificationDate?: string;
   adminNotes?: string;
-  documents: Array<{ documentId: string; documentType: string; documentPath: string }>;
+  documents: Array<{ documentID: string; documentType: string; documentPath: string }>; 
 }

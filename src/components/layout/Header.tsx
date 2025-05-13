@@ -49,7 +49,6 @@ const Header: React.FC = () => {
               <span className="text-white">Welcome, {currentUser.fullName} ({currentUser.role})</span>
               {}
               <Button
-                variant="default"
                 className="bg-red-500 hover:bg-red-600 shadow-xs !text-white"
                 onClick={handleLogout}
               >
