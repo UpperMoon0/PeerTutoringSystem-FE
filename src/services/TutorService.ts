@@ -110,28 +110,14 @@ const uploadDocument = async (file: File, userId: string): Promise<ApiResult<Doc
       return { success: false, error: finalErrorMessageApi };
     }
 
-    // The original code had special handling for FileUploadResponse, we need to replicate that.
-    // It first processes as FileUploadResponse and then maps to DocumentUploadDto.
     if (response.status === 204) { 
-      // This case might need specific handling if DocumentUploadDto cannot be undefined
-      // or if 204 implies a specific structure for DocumentUploadDto.
-      // For now, assuming it means no content and mapping to a successful state with undefined data if appropriate.
-      // However, the original logic implies a FileUploadResponse is expected first.
-      // This part needs careful consideration based on API contract for 204 on this endpoint.
-      // Let's assume for now that a 204 on this endpoint is not typical or means an empty successful response
-      // that doesn't fit the FileUploadResponse -> DocumentUploadDto mapping directly.
-      // Returning an error or a specific DTO structure might be necessary.
-      // For simplicity, and to match the general pattern, let's assume it's an error or needs specific handling.
-      // Given the original logic, a 204 would likely be handled by the generic parsing logic, 
-      // and if it results in an empty responseText, it would be treated as undefined data.
-      // Let's refine this based on the expected behavior for FileUploadResponse.
-      return { success: true, data: undefined as unknown as DocumentUploadDto }; // Placeholder, may need adjustment
+      return { success: true, data: undefined as unknown as DocumentUploadDto }; 
     }
 
     const responseText = await response.text();
     if (!responseText) {
         // Similar to 204, how to map an empty successful response to DocumentUploadDto?
-        return { success: true, data: undefined as unknown as DocumentUploadDto }; // Placeholder
+        return { success: true, data: undefined as unknown as DocumentUploadDto }; 
     }
 
     try {
