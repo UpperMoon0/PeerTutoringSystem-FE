@@ -1,7 +1,7 @@
 import type { ApiResult } from '../types/ApiResult';
 import type { ProfileDto, CreateProfileDto, UpdateProfileDto } from '../types/Profile'; // Adjusted path assuming Profile types are in ../types
 
-const API_URL = process.env.REACT_APP_API_URL || import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
 
 const getAuthHeaders = () => {
   const token = localStorage.getItem('accessToken');
