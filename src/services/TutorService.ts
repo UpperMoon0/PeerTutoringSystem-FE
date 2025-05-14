@@ -6,7 +6,7 @@ import type { RequestTutorResponse } from '../types/RequestTutorResponse';
 import type { Tutor } from '../types/Tutor';
 import type { TutorVerification } from '../types/TutorVerification';
 import { mockTutors } from '@/mocks/tutors';
-import { AuthService } from './AuthService';
+import { AuthService, _fetchWithAuthCore, _processJsonResponse } from './AuthService';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 const ENABLE_MOCK_API = import.meta.env.VITE_ENABLE_MOCK_API === 'true';
@@ -27,12 +27,15 @@ const uploadDocument = async (file: File, userId: string): Promise<ApiResult<Doc
   const formData = new FormData();
   formData.append('file', file);
 
-  // Use authenticatedRequest for FormData. It will handle the Content-Type correctly.
-  const result = await AuthService.authenticatedRequest<FileUploadResponse>(
-    `${API_BASE_URL}/documents/upload?userId=${userId}`,
-    'POST',
-    formData
-  );
+  const url = `${API_BASE_URL}/documents/upload?userId=${userId}`;
+  const requestOptions: RequestInit = {
+    method: 'POST',
+    body: formData,
+  };
+
+  // Use the core fetch logic with auth handling and response processing for FormData
+  const responsePromise = _fetchWithAuthCore(url, requestOptions);
+  const result = await _processJsonResponse<FileUploadResponse>(responsePromise, url);
 
   if (!result.success) {
     console.error('Document upload error:', result.error);

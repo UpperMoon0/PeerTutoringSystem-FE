@@ -211,7 +211,6 @@ async function _processJsonResponse<R>(responsePromise: Promise<Response>, reque
   }
 }
 
-// New generic authenticated request function
 const authenticatedRequest = async <R>(
   url: string,
   method: string,
@@ -228,16 +227,19 @@ const authenticatedRequest = async <R>(
 
   // Set Content-Type for relevant methods if body exists and not already set
   if (body) {
-    if (body instanceof FormData) { // FormData is handled differently
-      requestOptions.body = body;
-    } else if (method === 'POST' || method === 'PUT' || method === 'PATCH' || method === 'DELETE') {
+    if (method === 'POST' || method === 'PUT' || method === 'PATCH' || method === 'DELETE') {
       if (!headers.has('Content-Type')) {
         headers.set('Content-Type', 'application/json');
       }
-      requestOptions.body = JSON.stringify(body);
+      // If the Content-Type is application/json and the body is not already a string,
+      if (headers.get('Content-Type')?.includes('application/json') && typeof body !== 'string') {
+        requestOptions.body = JSON.stringify(body);
+      } else {
+        // If body is already a string (e.g., pre-stringified JSON by the caller)
+        requestOptions.body = body;
+      }
     } else {
-      // For GET, HEAD, etc., if a body is provided (unusual but possible), pass it as is.
-      // JSON.stringify might not be appropriate here without knowing the content type.
+      // For methods like GET or HEAD, or if the method doesn't typically involve a JSON body,
       requestOptions.body = body;
     }
   }
@@ -299,3 +301,4 @@ export const AuthService = {
 };
 
 export type { AuthResponse, GoogleLoginPayload, RegisterPayload, LoginPayload, ServiceResult };
+export { _fetchWithAuthCore, _processJsonResponse };
