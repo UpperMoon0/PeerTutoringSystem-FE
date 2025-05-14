@@ -1,28 +1,19 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthContext';
-import { ProfileService } from '@/services/ProfileService';
-import { type ProfileDto, type UpdateProfileDto } from '@/types/Profile';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Calendar } from "@/components/ui/calendar";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { cn } from "@/lib/utils";
-import { CalendarIcon } from "lucide-react";
-import { format } from "date-fns";
+import { ProfileService } from '../services/ProfileService';
+import type { ProfileDto, UpdateProfileDto } from '../types/Profile';
+import { useAuth } from '../contexts/AuthContext';
+import { Button } from '../components/ui/button';
+import { Input } from '../components/ui/input';
+import { Label } from '../components/ui/label';
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '../components/ui/card';
+import { PlusCircle } from 'lucide-react';
+
+// Imports for Tutor Profile
+import { TutorProfileService } from '../services/TutorProfileService';
+import type { TutorProfileDto, CreateTutorProfileDto, UpdateTutorProfileDto as UpdateTutorDtoInternal } from '../types/TutorProfile';
+import TutorProfileDisplay from '../components/profile/TutorProfileDisplay';
+import TutorProfileForm from '../components/profile/TutorProfileForm';
 
 const UserProfilePage: React.FC = () => {
   const { userId } = useParams<{ userId: string }>();
@@ -35,9 +26,19 @@ const UserProfilePage: React.FC = () => {
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [selectedAvatarFile, setSelectedAvatarFile] = useState<File | null>(null);
 
+  // State for Tutor Profile
+  const [tutorProfile, setTutorProfile] = useState<TutorProfileDto | null>(null);
+  const [isEditingTutorProfile, setIsEditingTutorProfile] = useState(false);
+  const [tutorProfileLoading, setTutorProfileLoading] = useState(false);
+  const [tutorProfileError, setTutorProfileError] = useState<string | null>(null);
+
   useEffect(() => {
-    const fetchProfile = async () => {
-      if (!userId) return;
+    const fetchProfileData = async () => {
+      if (!userId) {
+        setError("User ID is missing.");
+        setLoading(false);
+        return;
+      }
       setLoading(true);
       setError(null);
       try {
@@ -51,30 +52,41 @@ const UserProfilePage: React.FC = () => {
             phoneNumber: result.data.phoneNumber,
             gender: result.data.gender,
             hometown: result.data.hometown,
-            avatar: null, // Initialize avatar as null
+            avatar: null, 
           });
-          if (result.data.avatarUrl) {
-            setAvatarPreview(result.data.avatarUrl);
+          setAvatarPreview(result.data.avatarUrl || null);
+
+          if (result.data.role === 'Tutor' && currentUser?.userId === result.data.userID) {
+            await fetchTutorProfileData(userId);
           }
         } else {
-          let errorMessageText = 'Failed to fetch profile';
-          if (result.error) {
-            if (result.error instanceof Error) {
-              errorMessageText = result.error.message;
-            } else if (typeof result.error === 'string') {
-              errorMessageText = result.error;
-            }
-          }
-          setError(errorMessageText);
+          setError(result.error instanceof Error ? result.error.message : result.error || 'Failed to fetch profile.');
         }
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'An error occurred while fetching the profile.');
-        console.error(err);
+        setError(err instanceof Error ? err.message : 'An unknown error occurred.');
       }
       setLoading(false);
     };
-    fetchProfile();
-  }, [userId]);
+    fetchProfileData();
+  }, [userId, currentUser]);
+
+  const fetchTutorProfileData = async (currentUserId: string) => {
+    setTutorProfileLoading(true);
+    setTutorProfileError(null);
+    try {
+      const tutorResult = await TutorProfileService.getTutorProfileByUserId(currentUserId);
+      if (tutorResult.success && tutorResult.data) {
+        setTutorProfile(tutorResult.data);
+      } else if (tutorResult.error && (tutorResult.error instanceof Error ? tutorResult.error.message : tutorResult.error).includes("not found")) {
+        setTutorProfile(null);
+      } else {
+        setTutorProfileError(tutorResult.error instanceof Error ? tutorResult.error.message : tutorResult.error || 'Failed to fetch tutor profile.');
+      }
+    } catch (err) {
+      setTutorProfileError(err instanceof Error ? err.message : 'An unknown error occurred while fetching tutor profile.');
+    }
+    setTutorProfileLoading(false);
+  };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     if (formData) {
@@ -83,15 +95,8 @@ const UserProfilePage: React.FC = () => {
         const file = e.target.files[0];
         setSelectedAvatarFile(file);
         setAvatarPreview(URL.createObjectURL(file));
-        setFormData({
-          ...formData,
-          avatar: file, // Store the file object
-        });
       } else {
-        setFormData({
-          ...formData,
-          [name]: name === 'hourlyRate' ? (value === '' ? 0 : parseFloat(value)) : value,
-        });
+        setFormData({ ...formData, [name]: value });
       }
     }
   };
@@ -101,15 +106,6 @@ const UserProfilePage: React.FC = () => {
       setFormData({
         ...formData,
         dateOfBirth: date.toISOString(),
-      });
-    }
-  };
-
-  const handleGenderChange = (value: string) => {
-    if (formData) {
-      setFormData({
-        ...formData,
-        gender: value,
       });
     }
   };
@@ -124,173 +120,219 @@ const UserProfilePage: React.FC = () => {
         phoneNumber: formData.phoneNumber,
         gender: formData.gender,
         hometown: formData.hometown,
-        avatar: selectedAvatarFile, // Pass the selected file
+        avatar: selectedAvatarFile, 
     };
 
     setLoading(true);
     setError(null);
     try {
-      // Use userId (string) instead of profile.profileID (which was number and removed)
       const result = await ProfileService.updateProfile(userId, payloadToSave);
       if (result.success) {
-        // Refetch profile data to ensure UI is up-to-date
         const updatedProfileResult = await ProfileService.getProfileByUserId(userId);
         if (updatedProfileResult.success && updatedProfileResult.data) {
-            setProfile(updatedProfileResult.data);
-            if (updatedProfileResult.data.avatarUrl) {
-              setAvatarPreview(updatedProfileResult.data.avatarUrl);
-            }
+          setProfile(updatedProfileResult.data);
+          setAvatarPreview(updatedProfileResult.data.avatarUrl || null); 
         }
         setIsEditing(false);
-        setSelectedAvatarFile(null); // Reset selected file after save
+        setSelectedAvatarFile(null); 
       } else {
-        let errorMessageText = 'Failed to update profile';
-        if (result.error) {
-            if (result.error instanceof Error) {
-              errorMessageText = result.error.message;
-            } else if (typeof result.error === 'string') {
-              errorMessageText = result.error;
-            }
-          }
-        setError(errorMessageText);
+        setError(result.error instanceof Error ? result.error.message : result.error || 'Failed to update profile.');
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred while updating the profile.');
-      console.error(err);
+      setError(err instanceof Error ? err.message : 'An unknown error occurred while updating profile.');
     }
     setLoading(false);
   };
 
-  if (loading) return <div className="container mx-auto p-4">Loading profile...</div>;
+  const handleCreateTutorProfile = () => {
+    setIsEditingTutorProfile(true);
+    setTutorProfile(null); 
+  };
+
+  const handleEditTutorProfile = () => {
+    setIsEditingTutorProfile(true);
+  };
+
+  const handleCancelTutorProfileEdit = () => {
+    setIsEditingTutorProfile(false);
+    if (profile && profile.role === 'Tutor' && userId) {
+        fetchTutorProfileData(userId);
+    }
+  };
+
+  const handleSaveTutorProfile = async (data: CreateTutorProfileDto | UpdateTutorDtoInternal) => {
+    if (!userId) {
+      setTutorProfileError("User ID is missing.");
+      return;
+    }
+    setTutorProfileLoading(true);
+    setTutorProfileError(null);
+    try {
+      let result;
+      if (tutorProfile && tutorProfile.profileId) { 
+        result = await TutorProfileService.updateTutorProfile(tutorProfile.profileId, data as UpdateTutorDtoInternal);
+      } else { 
+        result = await TutorProfileService.createTutorProfile(data as CreateTutorProfileDto);
+      }
+
+      if (result.success && result.data) {
+        setTutorProfile(result.data);
+        setIsEditingTutorProfile(false);
+      } else {
+        setTutorProfileError(result.error instanceof Error ? result.error.message : result.error || 'Failed to save tutor profile.');
+      }
+    } catch (err) {
+      setTutorProfileError(err instanceof Error ? err.message : 'An unknown error occurred while saving tutor profile.');
+    }
+    setTutorProfileLoading(false);
+  };
+
+  if (loading && !profile) return <div className="flex justify-center items-center h-screen"><p>Loading profile...</p></div>;
   if (error) return <div className="container mx-auto p-4 text-red-500">Error: {error}</div>;
-  if (!profile) return <div className="container mx-auto p-4">Profile not found.</div>;
+  if (!profile) return <div className="container mx-auto p-4">No profile data found.</div>;
 
   const canEdit = currentUser?.userId === profile.userID || currentUser?.role === 'Admin';
+  const isTutor = profile.role === 'Tutor' && currentUser?.userId === profile.userID;
 
   return (
     <div className="container mx-auto p-4">
-      <div className="bg-white shadow-md rounded-lg p-6">
-        <div className="flex items-center justify-between mb-4">
-            {/* profile.fullName should exist as it's required in UserDto/ProfileDto */}
-            <h1 className="text-2xl font-bold">{profile.fullName}'s Profile</h1>
+      <Card className="mb-6">
+        <CardHeader>
+          <div className="flex justify-between items-center">
+            <CardTitle className="text-3xl font-bold">User Profile</CardTitle>
             {canEdit && !isEditing && (
-                <Button onClick={() => {
-                  setIsEditing(true);
-                  // Reset form data to current profile data when entering edit mode
-                  if (profile) {
-                    setFormData({
-                      fullName: profile.fullName,
-                      email: profile.email,
-                      dateOfBirth: profile.dateOfBirth,
-                      phoneNumber: profile.phoneNumber,
-                      gender: profile.gender,
-                      hometown: profile.hometown,
-                      avatar: null, // Reset avatar field
-                    });
-                    setAvatarPreview(profile.avatarUrl || null); // Set preview to current avatar
-                    setSelectedAvatarFile(null); // Clear any previously selected file
-                  }
-                }}>Edit Profile</Button>
+              <Button onClick={() => setIsEditing(true)}>Edit Profile</Button>
             )}
-        </div>
-
-        {isEditing && formData ? (
-          <div className="space-y-4">
-            <div>
-              <Label htmlFor="avatar">Avatar</Label>
-              <div className="mt-1 flex items-center space-x-4">
-                <Avatar className="h-20 w-20">
-                  <AvatarImage src={avatarPreview || undefined} alt={profile.fullName} />
-                  <AvatarFallback>{profile.fullName?.charAt(0)}</AvatarFallback>
-                </Avatar>
-                <Input id="avatar" name="avatar" type="file" onChange={handleInputChange} className="mt-1" accept="image/*" />
+          </div>
+        </CardHeader>
+        {!isEditing ? (
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="md:col-span-1 flex flex-col items-center">
+                {avatarPreview ? (
+                  <img src={avatarPreview} alt="Avatar" className="w-40 h-40 rounded-full object-cover mb-4 shadow-md" />
+                ) : (
+                  <div className="w-40 h-40 rounded-full bg-gray-300 flex items-center justify-center text-gray-500 mb-4 shadow-md">
+                    No Avatar
+                  </div>
+                )}
+                <p className="text-2xl font-semibold">{profile.fullName}</p>
+                <p className="text-muted-foreground">{profile.email}</p>
+              </div>
+              <div className="md:col-span-2 space-y-3">
+                <p><strong className="font-medium">Date of Birth:</strong> {new Date(profile.dateOfBirth).toLocaleDateString()}</p>
+                <p><strong className="font-medium">Phone Number:</strong> {profile.phoneNumber}</p>
+                <p><strong className="font-medium">Gender:</strong> {profile.gender}</p>
+                <p><strong className="font-medium">Hometown:</strong> {profile.hometown}</p>
+                <p><strong className="font-medium">Role:</strong> {profile.role}</p>
+                <p><strong className="font-medium">Status:</strong> <span className={`px-2 py-1 text-xs font-semibold rounded-full ${profile.status === 'Active' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>{profile.status}</span></p>
               </div>
             </div>
-            {/* Add form fields for the new properties from UpdateUserDto */}
-            <div>
-              <Label htmlFor="fullName">Full Name</Label>
-              <Input id="fullName" name="fullName" value={formData.fullName} onChange={handleInputChange} className="mt-1" />
-            </div>
-            <div>
-              <Label htmlFor="email">Email</Label>
-              <Input id="email" name="email" type="email" value={formData.email} onChange={handleInputChange} className="mt-1" />
-            </div>
-            <div>
-              <Label htmlFor="dateOfBirth">Date of Birth</Label>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant={"outline"}
-                    className={cn(
-                      "w-full justify-start text-left font-normal mt-1",
-                      !formData.dateOfBirth && "text-muted-foreground"
-                    )}
-                  >
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    {formData.dateOfBirth ? format(new Date(formData.dateOfBirth), "PPP") : <span>Pick a date</span>}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0">
-                  <Calendar
-                    mode="single"
-                    selected={formData.dateOfBirth ? new Date(formData.dateOfBirth) : undefined}
-                    onSelect={handleDateChange}
-                    initialFocus
-                    captionLayout="dropdown-buttons"
-                    fromYear={1900}
-                    toYear={new Date().getFullYear()}
-                  />
-                </PopoverContent>
-              </Popover>
-            </div>
-            <div>
-              <Label htmlFor="phoneNumber">Phone Number</Label>
-              <Input id="phoneNumber" name="phoneNumber" value={formData.phoneNumber} onChange={handleInputChange} className="mt-1" />
-            </div>
-            <div>
-              <Label htmlFor="gender">Gender</Label>
-              <Select onValueChange={handleGenderChange} value={formData.gender}>
-                <SelectTrigger className="w-full mt-1">
-                  <SelectValue placeholder="Select gender" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Male">Male</SelectItem>
-                  <SelectItem value="Female">Female</SelectItem>
-                  <SelectItem value="Other">Other</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label htmlFor="hometown">Hometown</Label>
-              <Input id="hometown" name="hometown" value={formData.hometown} onChange={handleInputChange} className="mt-1" />
-            </div>
-            <div className="flex space-x-2">
-                <Button onClick={handleSave} disabled={loading}>{loading ? 'Saving...' : 'Save Changes'}</Button>
-                <Button variant="outline" onClick={() => setIsEditing(false)} disabled={loading}>Cancel</Button>
-            </div>
-          </div>
+          </CardContent>
         ) : (
-          <div className="space-y-3">
-            {profile.avatarUrl && (
-                <div className="flex flex-col items-center mb-4">
-                    <Avatar className="h-32 w-32">
-                        <AvatarImage src={profile.avatarUrl} alt={`${profile.fullName}'s avatar`} />
-                        <AvatarFallback>{profile.fullName?.charAt(0)}</AvatarFallback>
-                    </Avatar>
-                </div>
-            )}
-            <p><strong>Email:</strong> {profile.email}</p>
-            <p><strong>Date of Birth:</strong> {profile.dateOfBirth ? new Date(profile.dateOfBirth).toLocaleDateString() : 'Not specified'}</p>
-            <p><strong>Phone Number:</strong> {profile.phoneNumber || 'Not specified'}</p>
-            <p><strong>Gender:</strong> {profile.gender || 'Not specified'}</p>
-            <p><strong>Hometown:</strong> {profile.hometown || 'Not specified'}</p>
-            <p><strong>Role:</strong> {profile.role}</p>
-            <p><strong>Status:</strong> {profile.status}</p>
-            {/* AvatarUrl is available in profile, can be displayed with an <img> tag */}
-            {/* {profile.avatarUrl && <div className="mt-2"><p><strong>Avatar:</strong></p><img src={profile.avatarUrl} alt={`${profile.fullName}'s avatar`} className="w-24 h-24 rounded-full object-cover" /></div>} */}
-          </div>
+          <CardContent>
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="fullName">Full Name</Label>
+                <Input id="fullName" name="fullName" value={formData?.fullName || ''} onChange={handleInputChange} />
+              </div>
+              <div>
+                <Label htmlFor="email">Email</Label>
+                <Input id="email" name="email" type="email" value={formData?.email || ''} onChange={handleInputChange} />
+              </div>
+              <div>
+                <Label htmlFor="dateOfBirth">Date of Birth</Label>
+                <Input 
+                  id="dateOfBirth" 
+                  name="dateOfBirth" 
+                  type="date" 
+                  value={formData?.dateOfBirth ? new Date(formData.dateOfBirth).toISOString().split('T')[0] : ''} 
+                  onChange={(e) => handleDateChange(e.target.value ? new Date(e.target.value) : undefined)} 
+                />
+              </div>
+              <div>
+                <Label htmlFor="phoneNumber">Phone Number</Label>
+                <Input id="phoneNumber" name="phoneNumber" value={formData?.phoneNumber || ''} onChange={handleInputChange} />
+              </div>
+              <div>
+                <Label htmlFor="gender">Gender</Label>
+                <Input id="gender" name="gender" value={formData?.gender || ''} onChange={handleInputChange} />
+              </div>
+              <div>
+                <Label htmlFor="hometown">Hometown</Label>
+                <Input id="hometown" name="hometown" value={formData?.hometown || ''} onChange={handleInputChange} />
+              </div>
+              <div>
+                <Label htmlFor="avatar">Avatar</Label>
+                <Input id="avatar" name="avatar" type="file" onChange={handleInputChange} />
+                {avatarPreview && !selectedAvatarFile && <img src={avatarPreview} alt="Current Avatar" className="mt-2 w-20 h-20 rounded-full object-cover" />}
+                {selectedAvatarFile && avatarPreview && <img src={avatarPreview} alt="New Avatar Preview" className="mt-2 w-20 h-20 rounded-full object-cover" />}
+              </div>
+            </div>
+          </CardContent>
         )}
-      </div>
+        {isEditing && (
+          <CardFooter className="flex justify-end space-x-2">
+            <Button variant="outline" onClick={() => { 
+              setIsEditing(false); 
+              if (profile) {
+                setFormData({
+                  fullName: profile.fullName,
+                  email: profile.email,
+                  dateOfBirth: profile.dateOfBirth,
+                  phoneNumber: profile.phoneNumber,
+                  gender: profile.gender,
+                  hometown: profile.hometown,
+                  avatar: null,
+                });
+                setAvatarPreview(profile.avatarUrl || null);
+                setSelectedAvatarFile(null);
+              }
+            }}>Cancel</Button>
+            <Button onClick={handleSave} disabled={loading}>{loading ? 'Saving...' : 'Save Changes'}</Button>
+          </CardFooter>
+        )}
+      </Card>
+
+      {isTutor && (
+        <div className="mt-8">
+          {tutorProfileLoading && <div className="flex justify-center items-center"><p>Loading tutor profile...</p></div>}
+          {tutorProfileError && <p className="text-red-500">Error: {tutorProfileError}</p>}
+
+          {!tutorProfileLoading && !tutorProfileError && (
+            <>
+              {isEditingTutorProfile ? (
+                <TutorProfileForm
+                  initialData={tutorProfile}
+                  onSubmit={handleSaveTutorProfile}
+                  onCancel={handleCancelTutorProfileEdit}
+                  isLoading={tutorProfileLoading}
+                />
+              ) : tutorProfile ? (
+                <TutorProfileDisplay
+                  tutorProfile={tutorProfile}
+                  onEdit={handleEditTutorProfile}
+                  canEdit={isTutor} 
+                />
+              ) : (
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Tutor Profile</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p>You do not have a tutor profile yet. Create one to offer your tutoring services.</p>
+                  </CardContent>
+                  <CardFooter>
+                    <Button onClick={handleCreateTutorProfile}>
+                      <PlusCircle className="mr-2 h-4 w-4" /> Create Tutor Profile
+                    </Button>
+                  </CardFooter>
+                </Card>
+              )}
+            </>
+          )}
+        </div>
+      )}
     </div>
   );
 };
