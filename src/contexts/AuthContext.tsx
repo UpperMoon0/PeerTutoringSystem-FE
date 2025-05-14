@@ -18,11 +18,11 @@ interface AuthContextType {
   currentUser: AppUser | null;
   accessToken: string | null;
   loading: boolean;
-  isSessionExpired: boolean; // Add state for session expiration
+  isSessionExpired: boolean; 
   handleGoogleLogin: (userDetails: Omit<GoogleLoginPayload, 'idToken'>) => Promise<boolean>;
   handleEmailRegister: (payload: RegisterPayload) => Promise<boolean>;
   handleEmailLogin: (payload: LoginPayload) => Promise<boolean>;
-  logout: (sessionExpired?: boolean) => Promise<void>; // Add optional parameter
+  logout: (sessionExpired?: boolean) => Promise<void>; 
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -57,7 +57,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setRefreshTokenIntervalId(null);
     }
     setIsSessionExpired(true); // Show session expired modal
-     // Stop periodic refresh is handled by AuthService now
   }, [refreshTokenIntervalId]);
 
   const processLoginData = useCallback((backendResponse: AuthResponse) => {
@@ -216,9 +215,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     // Always clear client-side session
     setCurrentUser(null);
     setAccessToken(null);
-    localStorage.removeItem('accessToken');
-    localStorage.removeItem('refreshToken');
-    localStorage.removeItem('user');
     if (refreshTokenIntervalId) {
       clearInterval(refreshTokenIntervalId);
       setRefreshTokenIntervalId(null);
@@ -231,8 +227,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const closeModalAndRedirect = () => {
     setIsSessionExpired(false);
-    // Redirect to login page, or handle as appropriate
-    // This might require access to router history, or a callback prop
     window.location.href = '/login'; 
   };
 
