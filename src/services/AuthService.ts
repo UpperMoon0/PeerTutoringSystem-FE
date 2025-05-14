@@ -125,8 +125,6 @@ const loginWithEmail = async (payload: LoginPayload): Promise<ServiceResult<Auth
   }
 };
 
-let refreshTokenIntervalId: NodeJS.Timeout | null = null;
-
 // Function to be called by AuthContext for periodic refresh or initial load
 const refreshTokenClient = async (): Promise<ServiceResult<AuthResponse>> => {
   const currentRefreshToken = localStorage.getItem('refreshToken');
@@ -148,14 +146,12 @@ const refreshTokenClient = async (): Promise<ServiceResult<AuthResponse>> => {
     if (!response.ok) {
       const errorMessage = responseData.error || `Token refresh failed: ${response.statusText}`;
       console.error('Error during token refresh:', errorMessage);
-      // If refresh fails (e.g. refresh token is invalid/expired), trigger a global event or handle logout in AuthContext
-      // For now, just return error. AuthContext will handle logout.
       return { success: false, error: errorMessage };
     }
 
     // Store new tokens
     localStorage.setItem('accessToken', responseData.accessToken);
-    if (responseData.refreshToken) { // Backend might issue a new refresh token
+    if (responseData.refreshToken) { 
       localStorage.setItem('refreshToken', responseData.refreshToken);
     }
     console.log('Token refresh successful');
@@ -166,12 +162,9 @@ const refreshTokenClient = async (): Promise<ServiceResult<AuthResponse>> => {
   }
 };
 
-// This is the internal refresh logic used by _fetchWithAuthCore
-// It's slightly different as it's part of a retry mechanism
 const refreshTokenInternal = async (): Promise<ServiceResult<AuthResponse>> => {
   const currentRefreshToken = localStorage.getItem('refreshToken');
   if (!currentRefreshToken) {
-    // No refresh token, so cannot refresh. _fetchWithAuthCore will return the 401.
     return { success: false, error: 'No refresh token available for internal refresh.' };
   }
 
@@ -186,13 +179,9 @@ const refreshTokenInternal = async (): Promise<ServiceResult<AuthResponse>> => {
     const responseData = await response.json();
     if (!response.ok) {
       console.error('Internal token refresh failed:', responseData.error || response.statusText);
-      // Critical: If internal refresh fails, clear tokens and effectively log out the user
-      // This prevents infinite loops if the refresh token is truly dead.
-      // AuthContext will show the modal via its periodic check or next user action.
       localStorage.removeItem('accessToken');
       localStorage.removeItem('refreshToken');
       localStorage.removeItem('user');
-      // Dispatch a custom event that AuthContext can listen to, to trigger session expired modal immediately
       window.dispatchEvent(new CustomEvent('sessionExpired'));
       return { success: false, error: responseData.error || 'Internal refresh failed and session cleared' };
     }
@@ -214,7 +203,6 @@ const refreshTokenInternal = async (): Promise<ServiceResult<AuthResponse>> => {
 let isRefreshingToken = false;
 let refreshTokenPromiseHolder: Promise<ServiceResult<AuthResponse>> | null = null;
 
-// Renamed from _fetchWithAuthCore
 async function fetchWithAuthHandler(input: RequestInfo | URL, init?: RequestInit): Promise<Response> {
   const originalFetch = async (attempt: number): Promise<Response> => {
     const token = localStorage.getItem('accessToken');
@@ -230,7 +218,6 @@ async function fetchWithAuthHandler(input: RequestInfo | URL, init?: RequestInit
     if (response.status === 401 && attempt === 1) {
       if (!isRefreshingToken) {
         isRefreshingToken = true;
-        // Use the internal refresh function for the interceptor
         refreshTokenPromiseHolder = refreshTokenInternal().finally(() => {
           isRefreshingToken = false;
           refreshTokenPromiseHolder = null;
@@ -247,17 +234,14 @@ async function fetchWithAuthHandler(input: RequestInfo | URL, init?: RequestInit
 
         if (refreshResult && refreshResult.success) {
           console.log('Token refreshed by interceptor, retrying original request.');
-          // The new token is in localStorage, originalFetch will pick it up.
-          return originalFetch(2); // Second attempt
+          return originalFetch(2); 
         } else {
           console.error('Interceptor: Failed to refresh token. Original 401 will be returned or session already cleared.');
-          // If refreshTokenInternal cleared the session, this original 401 might be less relevant
-          // or the user is already being redirected/shown a modal by AuthContext via the event.
-          return response; // Return original 401 response
+          return response; 
         }
       } catch (error) {
         console.error('Interceptor: Error during token refresh process:', error);
-        return response; // Return original 401 response
+        return response; 
       }
     }
     return response;
@@ -266,12 +250,11 @@ async function fetchWithAuthHandler(input: RequestInfo | URL, init?: RequestInit
   return originalFetch(1);
 }
 
-// Export the client-side refresh function and other necessary functions
 export const AuthService = {
   loginWithGooglePopup,
   logout,
   registerWithEmail,
   loginWithEmail,
-  refreshTokenClient, // Export this for AuthContext
-  fetchWithAuth: fetchWithAuthHandler, // Updated to use the new name
+  refreshTokenClient, 
+  fetchWithAuth: fetchWithAuthHandler,
 };
