@@ -165,7 +165,6 @@ const UserProfilePage: React.FC = () => {
   if (error) return <div className="container mx-auto p-4 text-red-500">Error: {error}</div>;
   if (!profile) return <div className="container mx-auto p-4">Profile not found.</div>;
 
-  // profile.userID should exist if profile is not null, as it's a required field in UserDto/ProfileDto
   const canEdit = currentUser?.userId === profile.userID || currentUser?.role === 'Admin';
 
   return (
