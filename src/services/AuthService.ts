@@ -291,13 +291,41 @@ const refreshToken = async (): Promise<ServiceResult<AuthResponse>> => {
   }
 };
 
+let tokenRefreshIntervalId: number | null = null;
+const TOKEN_REFRESH_INTERVAL = 10 * 60 * 1000; // 10 minutes
+
+const startPeriodicTokenRefresh = () => {
+  if (tokenRefreshIntervalId) {
+    clearInterval(tokenRefreshIntervalId);
+  }
+  console.log('Starting periodic token refresh...');
+  tokenRefreshIntervalId = window.setInterval(async () => {
+    console.log('Periodic token refresh check...');
+    const result = await refreshToken();
+    if (!result.success) {
+      console.warn('Periodic token refresh failed. Logging out.');
+      if (tokenRefreshIntervalId) clearInterval(tokenRefreshIntervalId); // Stop further attempts if refresh fails
+    }
+  }, TOKEN_REFRESH_INTERVAL);
+};
+
+const stopPeriodicTokenRefresh = () => {
+  if (tokenRefreshIntervalId) {
+    console.log('Stopping periodic token refresh.');
+    clearInterval(tokenRefreshIntervalId);
+    tokenRefreshIntervalId = null;
+  }
+};
+
 export const AuthService = {
   loginWithGooglePopup,
   registerWithEmail,
   loginWithEmail,
   logout,
   refreshToken,
-  authenticatedRequest, 
+  authenticatedRequest,
+  startPeriodicTokenRefresh, 
+  stopPeriodicTokenRefresh, 
 };
 
 export type { AuthResponse, GoogleLoginPayload, RegisterPayload, LoginPayload, ServiceResult };

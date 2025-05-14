@@ -50,6 +50,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     localStorage.setItem('accessToken', backendResponse.accessToken);
     localStorage.setItem('refreshToken', backendResponse.refreshToken);
     localStorage.setItem('user', JSON.stringify(appUser));
+    AuthService.startPeriodicTokenRefresh(); // Start periodic refresh
   };
 
   const initializeAuth = useCallback(async () => {
@@ -62,6 +63,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         const user: AppUser = JSON.parse(storedUser);
         setAccessToken(storedToken);
         setCurrentUser(user);
+        AuthService.startPeriodicTokenRefresh(); // Also start if user is already logged in
       } catch (error) {
         console.error("Failed to parse stored user data", error);
         localStorage.removeItem('accessToken');
@@ -127,7 +129,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       } else {
         console.error("Failed to login with email:", result.error);
         setLoading(false);
-        // Consider setting an error message in context to display in the form
         return false;
       }
     } catch (error) {
@@ -141,12 +142,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setLoading(true);
     const result = await AuthService.logout();
     if (!result.success) {
-      // Handle backend logout failure if necessary, e.g., show a message
       console.error("Backend logout failed:", result.error);
     }
     // Always clear client-side session
     setCurrentUser(null);
     setAccessToken(null);
+    AuthService.stopPeriodicTokenRefresh(); // Stop periodic refresh
     setLoading(false);
   };
 
