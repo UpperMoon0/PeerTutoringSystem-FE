@@ -51,7 +51,6 @@ const SocialLoginButtons: React.FC<SocialLoginButtonsProps> = ({
         <img src="https://img.icons8.com/color/16/000000/google-logo.png" alt="Google" className="mr-2 h-4 w-4" />
         Continue with Google
       </Button>
-      {/* Facebook button removed as it's not implemented in the backend */}
     </div>
   );
 };

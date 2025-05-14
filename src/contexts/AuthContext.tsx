@@ -52,13 +52,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     localStorage.removeItem('accessToken');
     localStorage.removeItem('refreshToken');
     localStorage.removeItem('user');
-    if (refreshTokenIntervalId) {
-      clearInterval(refreshTokenIntervalId);
-      setRefreshTokenIntervalId(null);
-    }
+    setRefreshTokenIntervalId(prevIntervalId => {
+      if (prevIntervalId) {
+        clearInterval(prevIntervalId);
+      }
+      return null;
+    });
     setIsSessionExpired(true); // Show session expired modal
     console.log('Session expired, user logged out, modal triggered.');
-  }, [refreshTokenIntervalId]);
+  }, []); // Empty dependency array
 
   const processLoginData = useCallback((backendResponse: AuthResponse) => {
     const appUser: AppUser = {
@@ -74,32 +76,32 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     localStorage.setItem('user', JSON.stringify(appUser));
     setIsSessionExpired(false); // Reset session expired state on new login
 
-    // Clear any existing interval before starting a new one
-    if (refreshTokenIntervalId) {
-      clearInterval(refreshTokenIntervalId);
-    }
-
-    // Start periodic refresh
-    const intervalId = setInterval(async () => {
-      console.log('Attempting periodic token refresh...');
-      const result = await AuthService.refreshToken();
-      if (!result.success) {
-        console.error('Periodic refresh failed:', result.error);
-        handleLogoutDueToExpiry(); // Logout if refresh fails
-      } else {
-        console.log('Periodic refresh successful');
-        // Update access token in state and local storage
-        if (result.data?.accessToken) {
-            setAccessToken(result.data.accessToken);
-            localStorage.setItem('accessToken', result.data.accessToken);
-        }
-        if (result.data?.refreshToken) {
-            localStorage.setItem('refreshToken', result.data.refreshToken);
-        }
+    setRefreshTokenIntervalId(prevIntervalId => {
+      if (prevIntervalId) {
+        clearInterval(prevIntervalId);
       }
-    }, 10 * 60 * 1000); // 10 minutes
-    setRefreshTokenIntervalId(intervalId);
-  }, [refreshTokenIntervalId, handleLogoutDueToExpiry]);
+      // Start periodic refresh
+      const newIntervalId = setInterval(async () => {
+        console.log('Attempting periodic token refresh...');
+        const result = await AuthService.refreshToken();
+        if (!result.success) {
+          console.error('Periodic refresh failed:', result.error);
+          handleLogoutDueToExpiry(); // Logout if refresh fails
+        } else {
+          console.log('Periodic refresh successful');
+          // Update access token in state and local storage
+          if (result.data?.accessToken) {
+              setAccessToken(result.data.accessToken);
+              localStorage.setItem('accessToken', result.data.accessToken);
+          }
+          if (result.data?.refreshToken) {
+              localStorage.setItem('refreshToken', result.data.refreshToken);
+          }
+        }
+      }, 10 * 60 * 1000); // 10 minutes
+      return newIntervalId;
+    });
+  }, [handleLogoutDueToExpiry]); 
 
   const initializeAuth = useCallback(async () => {
     setLoading(true);
@@ -133,7 +135,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         clearInterval(refreshTokenIntervalId);
       }
     };
-  }, [initializeAuth, refreshTokenIntervalId]);
+  }, [initializeAuth]); 
 
   // Listen for global sessionExpired events dispatched by AuthService
   useEffect(() => {
