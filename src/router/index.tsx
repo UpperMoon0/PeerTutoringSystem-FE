@@ -8,6 +8,7 @@ import HomePage from '../pages/HomePage';
 import AdminDashboardPage from '@/pages/admin/AdminDashboardPage';
 import TutorVerificationPage from '@/pages/admin/TutorVerificationPage';
 import ProtectedRoute from './ProtectedRoute'; 
+import UserProfilePage from '@/pages/UserProfilePage'; 
 
 const router = createBrowserRouter([
   {
@@ -28,6 +29,10 @@ const router = createBrowserRouter([
       {
         path: 'register-tutor',
         element: <TutorRegisterPage />,
+      },
+      {
+        path: 'profile/:userId', 
+        element: <UserProfilePage />,
       },
       {
         path: 'admin',

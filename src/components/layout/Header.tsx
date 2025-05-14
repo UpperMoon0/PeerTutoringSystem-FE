@@ -2,6 +2,7 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import UserProfileAvatar from './UserProfileAvatar'; 
 
 const Header: React.FC = () => {
   const { currentUser, logout, loading } = useAuth();
@@ -46,8 +47,7 @@ const Header: React.FC = () => {
             <p>Loading...</p>
           ) : currentUser ? (
             <>
-              <span className="text-white">Welcome, {currentUser.fullName} ({currentUser.role})</span>
-              {}
+              <UserProfileAvatar />
               <Button
                 className="bg-red-500 hover:bg-red-600 shadow-xs !text-white"
                 onClick={handleLogout}
