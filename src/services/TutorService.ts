@@ -6,21 +6,43 @@ import type { RequestTutorResponse } from '../types/RequestTutorResponse';
 import type { Tutor } from '../types/Tutor';
 import type { TutorVerification } from '../types/TutorVerification';
 import { mockTutors } from '@/mocks/tutors';
-import { AuthService, _fetchWithAuthCore, _processJsonResponse } from './AuthService';
+import { AuthService } from './AuthService';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 const ENABLE_MOCK_API = import.meta.env.VITE_ENABLE_MOCK_API === 'true';
 
-const requestTutor = async (userId: string, payload: RequestTutorPayload): Promise<ApiResult<RequestTutorResponse>> => {
-  const result = await AuthService.authenticatedRequest<RequestTutorResponse>(
-    `${API_BASE_URL}/Users/${userId}/request-tutor`,
-    'POST',
-    payload
-  );
-  if (!result.success) {
-    return { success: false, error: result.error instanceof Error ? result.error.message : String(result.error) };
+// Helper to process JSON response and map to ApiResult
+async function _processJsonResponse<T>(responsePromise: Promise<Response>, url: string): Promise<ApiResult<T>> {
+  try {
+    const response = await responsePromise;
+    if (!response.ok) {
+      let errorBody;
+      try {
+        errorBody = await response.json();
+      } catch (e) {
+        errorBody = await response.text();
+      }
+      console.error(`API Error ${response.status} for URL ${url}:`, errorBody);
+      const errorMessage = (errorBody as any)?.message || (typeof errorBody === 'string' ? errorBody : 'Unknown error');
+      return { success: false, error: errorMessage };
+    }
+    const data = await response.json() as T;
+    return { success: true, data };
+  } catch (error) {
+    console.error(`Request failed for URL ${url}:`, error);
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    return { success: false, error: errorMessage };
   }
-  return { success: true, data: result.data! }; 
+}
+
+const requestTutor = async (userId: string, payload: RequestTutorPayload): Promise<ApiResult<RequestTutorResponse>> => {
+  const url = `${API_BASE_URL}/Users/${userId}/request-tutor`;
+  const responsePromise = AuthService.fetchWithAuth(url, {
+    method: 'POST',
+    body: JSON.stringify(payload),
+    headers: { 'Content-Type': 'application/json' },
+  });
+  return _processJsonResponse<RequestTutorResponse>(responsePromise, url);
 };
 
 const uploadDocument = async (file: File, userId: string): Promise<ApiResult<DocumentUploadDto>> => {
@@ -28,20 +50,16 @@ const uploadDocument = async (file: File, userId: string): Promise<ApiResult<Doc
   formData.append('file', file);
 
   const url = `${API_BASE_URL}/documents/upload?userId=${userId}`;
-  const requestOptions: RequestInit = {
+  const responsePromise = AuthService.fetchWithAuth(url, {
     method: 'POST',
     body: formData,
-  };
-
-  // Use the core fetch logic with auth handling and response processing for FormData
-  const responsePromise = _fetchWithAuthCore(url, requestOptions);
+  });
+  // Process the FileUploadResponse and then map to DocumentUploadDto
   const result = await _processJsonResponse<FileUploadResponse>(responsePromise, url);
 
   if (!result.success) {
-    console.error('Document upload error:', result.error);
-    return { success: false, error: result.error instanceof Error ? result.error.message : String(result.error) };
+    return { success: false, error: result.error };
   }
-
   const responseData = result.data!;
   return {
     success: true,
@@ -65,41 +83,32 @@ const getFeaturedTutors = async (searchTerm?: string): Promise<Tutor[]> => {
         tutor.tutoringInfo.some(info => info.toLowerCase().includes(lowerSearchTerm))
       );
     }
-    return mockTutors.slice(0, 4); // Return a slice of mock tutors or all if less than 4
+    return mockTutors.slice(0, 4);
   } else {
     console.log(`[Real API] Fetching featured tutors. Search term: ${searchTerm}`);
     try {
-      // TODO: Update the endpoint when available
       const query = searchTerm ? `?search=${encodeURIComponent(searchTerm)}` : '';
+      // This is a public endpoint, so direct fetch is fine.
       const response = await fetch(`${API_BASE_URL}/tutors/featured${query}`);
 
       if (!response.ok) {
         const errorBody = await response.text();
         console.error(`API Error ${response.status}: ${response.statusText}`, errorBody);
-        return []; // Return empty list on error
+        return [];
       }
-
       const data: Tutor[] = await response.json();
       return data;
     } catch (error) {
       console.error("Error fetching tutors from real API:", error);
-      return []; // Return an empty list on error
+      return [];
     }
   }
 };
 
 const getTutorVerifications = async (): Promise<ApiResult<TutorVerification[]>> => {
-  const result = await AuthService.authenticatedRequest<TutorVerification[]>(
-    `${API_BASE_URL}/TutorVerifications`,
-    'GET'
-  );
-
-  if (!result.success) {
-    const errorMessage = result.error instanceof Error ? result.error.message : String(result.error);
-    console.error('Get tutor verifications error:', errorMessage);
-    return { success: false, error: errorMessage };
-  }
-  return { success: true, data: result.data! }; 
+  const url = `${API_BASE_URL}/TutorVerifications`;
+  const responsePromise = AuthService.fetchWithAuth(url, { method: 'GET' });
+  return _processJsonResponse<TutorVerification[]>(responsePromise, url);
 };
 
 const updateTutorVerificationStatus = async (
@@ -107,15 +116,13 @@ const updateTutorVerificationStatus = async (
   status: 'Approved' | 'Rejected',
   adminNotes?: string
 ): Promise<ApiResult<TutorVerification>> => {
-  const result = await AuthService.authenticatedRequest<TutorVerification>(
-    `${API_BASE_URL}/TutorVerifications/${verificationId}`,
-    'PUT',
-    { verificationStatus: status, adminNotes }
-  );
-  if (!result.success) {
-    return { success: false, error: result.error instanceof Error ? result.error.message : String(result.error) };
-  }
-  return { success: true, data: result.data! };
+  const url = `${API_BASE_URL}/TutorVerifications/${verificationId}`;
+  const responsePromise = AuthService.fetchWithAuth(url, {
+    method: 'PUT',
+    body: JSON.stringify({ verificationStatus: status, adminNotes }),
+    headers: { 'Content-Type': 'application/json' },
+  });
+  return _processJsonResponse<TutorVerification>(responsePromise, url);
 };
 
 export const TutorService = {

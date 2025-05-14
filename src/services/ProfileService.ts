@@ -4,18 +4,48 @@ import { AuthService } from './AuthService';
 
 const BASE_API_URL = import.meta.env.VITE_API_BASE_URL;
 
+// Helper to process JSON response and map to ServiceResult
+async function _processJsonResponse<T>(responsePromise: Promise<Response>, url: string): Promise<ServiceResult<T>> {
+  try {
+    const response = await responsePromise;
+    if (!response.ok) {
+      let errorBody;
+      try {
+        errorBody = await response.json();
+      } catch (e) {
+        // If response is not JSON, use text
+        errorBody = await response.text();
+      }
+      console.error(`API Error ${response.status} for URL ${url}:`, errorBody);
+      // Assuming errorBody has a 'message' or is the error message itself
+      const errorMessage = (errorBody as any)?.message || (typeof errorBody === 'string' ? errorBody : 'Unknown error');
+      return { success: false, error: new Error(errorMessage) };
+    }
+    const data = await response.json() as T;
+    return { success: true, data };
+  } catch (error) {
+    console.error(`Request failed for URL ${url}:`, error);
+    return { success: false, error: error instanceof Error ? error : new Error(String(error)) }; 
+  }
+}
+
 export const ProfileService = {
   getProfile: async (profileId: number): Promise<ServiceResult<ProfileDto>> => {
-    return AuthService.authenticatedRequest<ProfileDto>(`${
-    BASE_API_URL}/users/${profileId}`, 'GET');
+    const url = `${BASE_API_URL}/users/${profileId}`;
+    const responsePromise = AuthService.fetchWithAuth(url, { method: 'GET' });
+    return _processJsonResponse<ProfileDto>(responsePromise, url);
   },
 
   getProfileByUserId: async (userId: string): Promise<ServiceResult<ProfileDto>> => {
-    return AuthService.authenticatedRequest<ProfileDto>(`${BASE_API_URL}/users/${userId}`, 'GET');
+    const url = `${BASE_API_URL}/users/${userId}`;
+    const responsePromise = AuthService.fetchWithAuth(url, { method: 'GET' });
+    return _processJsonResponse<ProfileDto>(responsePromise, url);
   },
 
   updateProfile: async (userId: string, payload: UpdateProfileDto): Promise<ServiceResult<{ message: string }>> => {
-    // If payload.avatar is a File, use FormData
+    const url = `${BASE_API_URL}/users/${userId}`;
+    let responsePromise: Promise<Response>;
+
     if (payload.avatar && payload.avatar instanceof File) {
       const formData = new FormData();
       formData.append('fullName', payload.fullName);
@@ -26,15 +56,15 @@ export const ProfileService = {
       formData.append('hometown', payload.hometown);
       formData.append('avatar', payload.avatar);
       
-      // When sending FormData, the Content-Type header is set automatically by the browser
-      // So, we might need a different version of authenticatedRequest or adjust it
-      // For now, assuming AuthService.authenticatedRequest can handle FormData if headers are not manually set to application/json
-      return AuthService.authenticatedRequest<{ message: string }>(`${BASE_API_URL}/users/${userId}`, 'PUT', formData);
+      responsePromise = AuthService.fetchWithAuth(url, { method: 'PUT', body: formData });
     } else {
-      // If no avatar or avatar is not a file (e.g. null or already a URL string if backend supports it differently)
-      // Send as JSON, removing avatar if it's null to avoid sending empty field if backend expects it to be omitted
       const { avatar, ...restPayload } = payload;
-      return AuthService.authenticatedRequest<{ message: string }>(`${BASE_API_URL}/users/${userId}`, 'PUT', restPayload);
+      responsePromise = AuthService.fetchWithAuth(url, { 
+        method: 'PUT', 
+        body: JSON.stringify(restPayload),
+        headers: { 'Content-Type': 'application/json' }
+      });
     }
+    return _processJsonResponse<{ message: string }>(responsePromise, url);
   },
 };
