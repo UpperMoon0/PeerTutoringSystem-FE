@@ -1,7 +1,7 @@
 import type { ApiResult } from '../types/ApiResult';
-import type { ProfileDto, CreateProfileDto, UpdateProfileDto } from '../types/Profile'; // Adjusted path assuming Profile types are in ../types
+import type { ProfileDto, CreateProfileDto, UpdateProfileDto } from '../types/Profile'; 
 
-const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+const BASE_API_URL = import.meta.env.VITE_API_BASE_URL;
 
 const getAuthHeaders = () => {
   const token = localStorage.getItem('accessToken');
@@ -60,18 +60,22 @@ const authPut = <T_Response, T_Payload = unknown>(url: string, payload: T_Payloa
 
 export const ProfileService = {
   createProfile: async (payload: CreateProfileDto): Promise<ApiResult<ProfileDto>> => {
-    return authPost<ProfileDto, CreateProfileDto>(`${API_URL}/api/profiles`, payload);
+    return authPost<ProfileDto, CreateProfileDto>(`${
+    BASE_API_URL}/api/profiles`, payload);
   },
 
   getProfile: async (profileId: number): Promise<ApiResult<ProfileDto>> => {
-    return authGet<ProfileDto>(`${API_URL}/api/profiles/${profileId}`);
+    return authGet<ProfileDto>(`${
+    BASE_API_URL}/api/profiles/${profileId}`);
   },
 
   getProfileByUserId: async (userId: string): Promise<ApiResult<ProfileDto>> => {
-    return authGet<ProfileDto>(`${API_URL}/api/profiles/user/${userId}`);
+    return authGet<ProfileDto>(`${
+    BASE_API_URL}/api/profiles/user/${userId}`);
   },
 
   updateProfile: async (profileId: number, payload: UpdateProfileDto): Promise<ApiResult<{ message: string }>> => {
-    return authPut<{ message: string }, UpdateProfileDto>(`${API_URL}/api/profiles/${profileId}`, payload);
+    return authPut<{ message: string }, UpdateProfileDto>(`${
+    BASE_API_URL}/api/profiles/${profileId}`, payload);
   },
 };
