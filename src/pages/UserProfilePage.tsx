@@ -257,7 +257,6 @@ const UserProfilePage: React.FC = () => {
                   <SelectItem value="Male">Male</SelectItem>
                   <SelectItem value="Female">Female</SelectItem>
                   <SelectItem value="Other">Other</SelectItem>
-                  <SelectItem value="PreferNotToSay">Prefer not to say</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -265,11 +264,6 @@ const UserProfilePage: React.FC = () => {
               <Label htmlFor="hometown">Hometown</Label>
               <Input id="hometown" name="hometown" value={formData.hometown} onChange={handleInputChange} className="mt-1" />
             </div>
-            {/* Add Avatar upload field if needed - IFormFile on backend */}
-            {/* <div>
-              <Label htmlFor="avatar">Avatar</Label>
-              <Input id="avatar" name="avatar" type="file" onChange={(e) => setFormData({...formData, avatar: e.target.files ? e.target.files[0] : null})} className="mt-1" />
-            </div> */}
             <div className="flex space-x-2">
                 <Button onClick={handleSave} disabled={loading}>{loading ? 'Saving...' : 'Save Changes'}</Button>
                 <Button variant="outline" onClick={() => setIsEditing(false)} disabled={loading}>Cancel</Button>
