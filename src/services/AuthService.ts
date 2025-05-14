@@ -269,8 +269,13 @@ const refreshToken = async (): Promise<ServiceResult<AuthResponse>> => {
     const responseData = await response.json();
 
     if (!response.ok) {
-      const errorMessage = responseData.error || `Backend request failed: ${response.statusText}`;
+      const errorMessage = responseData.error || `Backend request failed: ${response.statusText} (Status: ${response.status})`;
       console.error('Error during token refresh:', errorMessage);
+      // If the refresh token is rejected (e.g., 401 Unauthorized, 403 Forbidden from /auth/refresh)
+      if (response.status === 401 || response.status === 403) {
+        console.warn(`Refresh token rejected (status ${response.status}). Logging out.`);
+        logout(); // This is AuthService.logout(), it will clear localStorage
+      }
       return { success: false, error: errorMessage };
     }
 
