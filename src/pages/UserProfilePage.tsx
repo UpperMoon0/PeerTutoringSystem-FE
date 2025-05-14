@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { ProfileService } from '@/services/ProfileService';
-import { ProfileDto, UpdateProfileDto } from '@/types/Profile';
+import type { ProfileDto, UpdateProfileDto } from '@/types/Profile';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
