@@ -4,12 +4,10 @@ import { ProfileService } from '../services/ProfileService';
 import type { ProfileDto, UpdateProfileDto } from '../types/Profile';
 import { useAuth } from '../contexts/AuthContext';
 import { Button } from '../components/ui/button';
-import { Input } from '../components/ui/input';
-import { Label } from '../components/ui/label';
-import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '../components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '../components/ui/card'; 
 import { PlusCircle } from 'lucide-react';
+import UserProfileCard from '../components/profile/UserProfileCard';
 
-// Imports for Tutor Profile
 import { TutorProfileService } from '../services/TutorProfileService';
 import type { TutorProfileDto, CreateTutorProfileDto, UpdateTutorProfileDto as UpdateTutorDtoInternal } from '../types/TutorProfile';
 import TutorProfileDisplay from '../components/profile/TutorProfileDisplay';
@@ -144,6 +142,23 @@ const UserProfilePage: React.FC = () => {
     setLoading(false);
   };
 
+  const handleCancelEdit = () => {
+    setIsEditing(false);
+    if (profile) {
+      setFormData({
+        fullName: profile.fullName,
+        email: profile.email,
+        dateOfBirth: profile.dateOfBirth,
+        phoneNumber: profile.phoneNumber,
+        gender: profile.gender,
+        hometown: profile.hometown,
+        avatar: null,
+      });
+      setAvatarPreview(profile.avatarUrl || null);
+      setSelectedAvatarFile(null);
+    }
+  };
+
   const handleCreateTutorProfile = () => {
     setIsEditingTutorProfile(true);
     setTutorProfile(null); 
@@ -196,103 +211,20 @@ const UserProfilePage: React.FC = () => {
 
   return (
     <div className="container mx-auto p-4">
-      <Card className="mb-6">
-        <CardHeader>
-          <div className="flex justify-between items-center">
-            <CardTitle className="text-3xl font-bold">User Profile</CardTitle>
-            {canEdit && !isEditing && (
-              <Button onClick={() => setIsEditing(true)}>Edit Profile</Button>
-            )}
-          </div>
-        </CardHeader>
-        {!isEditing ? (
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="md:col-span-1 flex flex-col items-center">
-                {avatarPreview ? (
-                  <img src={avatarPreview} alt="Avatar" className="w-40 h-40 rounded-full object-cover mb-4 shadow-md" />
-                ) : (
-                  <div className="w-40 h-40 rounded-full bg-gray-300 flex items-center justify-center text-gray-500 mb-4 shadow-md">
-                    No Avatar
-                  </div>
-                )}
-                <p className="text-2xl font-semibold">{profile.fullName}</p>
-                <p className="text-muted-foreground">{profile.email}</p>
-              </div>
-              <div className="md:col-span-2 space-y-3">
-                <p><strong className="font-medium">Date of Birth:</strong> {new Date(profile.dateOfBirth).toLocaleDateString()}</p>
-                <p><strong className="font-medium">Phone Number:</strong> {profile.phoneNumber}</p>
-                <p><strong className="font-medium">Gender:</strong> {profile.gender}</p>
-                <p><strong className="font-medium">Hometown:</strong> {profile.hometown}</p>
-                <p><strong className="font-medium">Role:</strong> {profile.role}</p>
-                <p><strong className="font-medium">Status:</strong> <span className={`px-2 py-1 text-xs font-semibold rounded-full ${profile.status === 'Active' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>{profile.status}</span></p>
-              </div>
-            </div>
-          </CardContent>
-        ) : (
-          <CardContent>
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="fullName">Full Name</Label>
-                <Input id="fullName" name="fullName" value={formData?.fullName || ''} onChange={handleInputChange} />
-              </div>
-              <div>
-                <Label htmlFor="email">Email</Label>
-                <Input id="email" name="email" type="email" value={formData?.email || ''} onChange={handleInputChange} />
-              </div>
-              <div>
-                <Label htmlFor="dateOfBirth">Date of Birth</Label>
-                <Input 
-                  id="dateOfBirth" 
-                  name="dateOfBirth" 
-                  type="date" 
-                  value={formData?.dateOfBirth ? new Date(formData.dateOfBirth).toISOString().split('T')[0] : ''} 
-                  onChange={(e) => handleDateChange(e.target.value ? new Date(e.target.value) : undefined)} 
-                />
-              </div>
-              <div>
-                <Label htmlFor="phoneNumber">Phone Number</Label>
-                <Input id="phoneNumber" name="phoneNumber" value={formData?.phoneNumber || ''} onChange={handleInputChange} />
-              </div>
-              <div>
-                <Label htmlFor="gender">Gender</Label>
-                <Input id="gender" name="gender" value={formData?.gender || ''} onChange={handleInputChange} />
-              </div>
-              <div>
-                <Label htmlFor="hometown">Hometown</Label>
-                <Input id="hometown" name="hometown" value={formData?.hometown || ''} onChange={handleInputChange} />
-              </div>
-              <div>
-                <Label htmlFor="avatar">Avatar</Label>
-                <Input id="avatar" name="avatar" type="file" onChange={handleInputChange} />
-                {avatarPreview && !selectedAvatarFile && <img src={avatarPreview} alt="Current Avatar" className="mt-2 w-20 h-20 rounded-full object-cover" />}
-                {selectedAvatarFile && avatarPreview && <img src={avatarPreview} alt="New Avatar Preview" className="mt-2 w-20 h-20 rounded-full object-cover" />}
-              </div>
-            </div>
-          </CardContent>
-        )}
-        {isEditing && (
-          <CardFooter className="flex justify-end space-x-2">
-            <Button variant="outline" onClick={() => { 
-              setIsEditing(false); 
-              if (profile) {
-                setFormData({
-                  fullName: profile.fullName,
-                  email: profile.email,
-                  dateOfBirth: profile.dateOfBirth,
-                  phoneNumber: profile.phoneNumber,
-                  gender: profile.gender,
-                  hometown: profile.hometown,
-                  avatar: null,
-                });
-                setAvatarPreview(profile.avatarUrl || null);
-                setSelectedAvatarFile(null);
-              }
-            }}>Cancel</Button>
-            <Button onClick={handleSave} disabled={loading}>{loading ? 'Saving...' : 'Save Changes'}</Button>
-          </CardFooter>
-        )}
-      </Card>
+      <UserProfileCard
+        profile={profile}
+        isEditing={isEditing}
+        setIsEditing={setIsEditing}
+        formData={formData}
+        handleInputChange={handleInputChange}
+        handleDateChange={handleDateChange}
+        handleSave={handleSave}
+        avatarPreview={avatarPreview}
+        selectedAvatarFile={selectedAvatarFile}
+        loading={loading}
+        canEdit={canEdit}
+        onCancelEdit={handleCancelEdit}
+      />
 
       {isTutor && (
         <div className="mt-8">
