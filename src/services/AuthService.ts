@@ -24,9 +24,9 @@ const loginWithGooglePopup = async (): Promise<ServiceResult<AuthResponse>> => {
     // Extract user details from Google Sign-In result
     const userDetails: Omit<GoogleLoginPayload, 'idToken'> = {
       fullName: result.user.displayName || "Unknown User",
-      dateOfBirth: "1900-01-01", 
+      dateOfBirth: "2000-01-01", 
       phoneNumber: "0000000000", 
-      gender: "Not specified", 
+      gender: "Male", 
       hometown: "Not specified", 
     };
 
