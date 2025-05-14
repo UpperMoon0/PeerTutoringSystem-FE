@@ -2,7 +2,6 @@ import React, { createContext, useContext, useEffect, useState, useCallback } fr
 import type { ReactNode } from 'react';
 import { AuthService} from '../services/AuthService';
 import SessionExpiredModal from '@/components/common/SessionExpiredModal'; // Import the modal
-import type { GoogleLoginPayload } from '@/types/GoogleLoginPayload';
 import type { RegisterPayload } from '@/types/RegisterPayload';
 import type { LoginPayload } from '@/types/LoginPayload';
 import type { AuthResponse } from '@/types/AuthResponse';
@@ -19,7 +18,7 @@ interface AuthContextType {
   accessToken: string | null;
   loading: boolean;
   isSessionExpired: boolean; 
-  handleGoogleLogin: (userDetails: Omit<GoogleLoginPayload, 'idToken'>) => Promise<boolean>;
+  handleGoogleLogin: () => Promise<boolean>; 
   handleEmailRegister: (payload: RegisterPayload) => Promise<boolean>;
   handleEmailLogin: (payload: LoginPayload) => Promise<boolean>;
   logout: (sessionExpired?: boolean) => Promise<void>; 
@@ -151,23 +150,26 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     };
   }, [handleLogoutDueToExpiry]);
 
-  const handleGoogleLogin = async (userDetails: Omit<GoogleLoginPayload, 'idToken'>): Promise<boolean> => {
+  // Method to handle Google login
+  const handleGoogleLogin = async (): Promise<boolean> => { // Removed userDetails parameter
     setLoading(true);
     try {
-      const result = await AuthService.loginWithGooglePopup(userDetails);
+      // Call the AuthService method that now handles user detail extraction
+      const result = await AuthService.loginWithGooglePopup(); 
       if (result.success && result.data) {
         processLoginData(result.data);
-        setLoading(false);
         return true;
       } else {
-        console.error("Failed to login with Google Popup:", result.error);
-        setLoading(false);
+        console.error('Google Login Failed:', result.error);
+        // Optionally, set an error state here to be displayed in the UI
         return false;
       }
     } catch (error) {
-      console.error("Exception during Google Popup Login:", error);
-      setLoading(false);
+      console.error('Error during Google login:', error);
+      // Optionally, set an error state here
       return false;
+    } finally {
+      setLoading(false);
     }
   };
 

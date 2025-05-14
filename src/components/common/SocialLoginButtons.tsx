@@ -17,16 +17,8 @@ const SocialLoginButtons: React.FC<SocialLoginButtonsProps> = ({
     setError(null);
     setParentLoading(true);
 
-    const placeholderUserDetails = {
-      fullName: "GoogleUser" + Date.now().toString().slice(-5),
-      dateOfBirth: "2000-01-01",
-      phoneNumber: "0000000000",
-      gender: "Other",
-      hometown: "Unknown",
-    };
-
     try {
-      const success = await auth.handleGoogleLogin(placeholderUserDetails);
+      const success = await auth.handleGoogleLogin();
       if (success) {
         console.log(`Google ${pageType} successful, navigating...`);
         navigate('/');

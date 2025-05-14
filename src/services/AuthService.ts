@@ -9,12 +9,26 @@ import type { ServiceResult } from '../types/ServiceResult';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
-const loginWithGooglePopup = async (userDetails: Omit<GoogleLoginPayload, 'idToken'>): Promise<ServiceResult<AuthResponse>> => {
+const loginWithGooglePopup = async (): Promise<ServiceResult<AuthResponse>> => {
   try {
-    const idToken = await signInWithGooglePopup();
+    const result = await signInWithGooglePopup(); // Changed: This now returns UserCredential | null
+    if (!result || !result.user) {
+      return { success: false, error: 'Google Sign-In failed or user data not found.' };
+    }
+
+    const idToken = await result.user.getIdToken();
     if (!idToken) {
       return { success: false, error: 'No Google ID Token found after popup.' };
     }
+
+    // Extract user details from Google Sign-In result
+    const userDetails: Omit<GoogleLoginPayload, 'idToken'> = {
+      fullName: result.user.displayName || "Unknown User",
+      dateOfBirth: "1900-01-01", 
+      phoneNumber: "0000000000", 
+      gender: "Not specified", 
+      hometown: "Not specified", 
+    };
 
     const payload: GoogleLoginPayload = {
       idToken,
