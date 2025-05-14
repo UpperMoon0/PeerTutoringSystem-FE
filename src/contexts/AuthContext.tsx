@@ -57,6 +57,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setRefreshTokenIntervalId(null);
     }
     setIsSessionExpired(true); // Show session expired modal
+    console.log('Session expired, user logged out, modal triggered.');
   }, [refreshTokenIntervalId]);
 
   const processLoginData = useCallback((backendResponse: AuthResponse) => {
@@ -100,36 +101,26 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setRefreshTokenIntervalId(intervalId);
   }, [refreshTokenIntervalId, handleLogoutDueToExpiry]);
 
-
   const initializeAuth = useCallback(async () => {
     setLoading(true);
-    const storedToken = localStorage.getItem('accessToken');
-    const storedUser = localStorage.getItem('user');
     const storedRefreshToken = localStorage.getItem('refreshToken');
 
-    if (storedToken && storedUser && storedRefreshToken) {
+    if (storedRefreshToken) {
       try {
-        // Attempt to refresh token immediately to validate session
         console.log('Initializing auth, attempting to refresh token...');
         const refreshResult = await AuthService.refreshToken();
         if (refreshResult.success && refreshResult.data) {
-          const user: AppUser = JSON.parse(storedUser);
-          setAccessToken(refreshResult.data.accessToken);
-          setCurrentUser(user);
-          localStorage.setItem('accessToken', refreshResult.data.accessToken);
-          if (refreshResult.data.refreshToken) {
-            localStorage.setItem('refreshToken', refreshResult.data.refreshToken);
-          }
-          // Start periodic refresh after successful initial refresh
+          console.log('Initial token refresh successful. Processing login data.');
           processLoginData(refreshResult.data);
         } else {
-          console.log('Initial token refresh failed, logging out.');
-          handleLogoutDueToExpiry();
+          console.log('Initial token refresh failed. AuthContext will sync via sessionExpired event.');
         }
       } catch (error) {
-        console.error("Error during initial auth and token refresh:", error);
-        handleLogoutDueToExpiry();
+        console.error("Exception during initial auth token refresh process:", error);
+        handleLogoutDueToExpiry(); // Safeguard: ensure context is cleaned up.
       }
+    } else {
+      console.log('No stored refresh token found during initialization. User is not logged in.');
     }
     setLoading(false);
   }, [processLoginData, handleLogoutDueToExpiry]);
@@ -143,6 +134,20 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       }
     };
   }, [initializeAuth, refreshTokenIntervalId]);
+
+  // Listen for global sessionExpired events dispatched by AuthService
+  useEffect(() => {
+    const handleGlobalSessionExpired = () => {
+      console.log('Global sessionExpired event received by AuthContext.');
+      handleLogoutDueToExpiry();
+    };
+
+    window.addEventListener('sessionExpired', handleGlobalSessionExpired);
+
+    return () => {
+      window.removeEventListener('sessionExpired', handleGlobalSessionExpired);
+    };
+  }, [handleLogoutDueToExpiry]);
 
   const handleGoogleLogin = async (userDetails: Omit<GoogleLoginPayload, 'idToken'>): Promise<boolean> => {
     setLoading(true);
