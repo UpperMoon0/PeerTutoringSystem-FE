@@ -1,7 +1,11 @@
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import type { ReactNode } from 'react';
-import { AuthService, type AuthResponse, type GoogleLoginPayload, type RegisterPayload, type LoginPayload } from '../services/AuthService';
+import { AuthService} from '../services/AuthService';
 import SessionExpiredModal from '@/components/common/SessionExpiredModal'; // Import the modal
+import type { GoogleLoginPayload } from '@/types/GoogleLoginPayload';
+import type { RegisterPayload } from '@/types/RegisterPayload';
+import type { LoginPayload } from '@/types/LoginPayload';
+import type { AuthResponse } from '@/types/AuthResponse';
 
 export interface AppUser {
   userId: string;
@@ -42,7 +46,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [isSessionExpired, setIsSessionExpired] = useState(false); // State for modal visibility
   const [refreshTokenIntervalId, setRefreshTokenIntervalId] = useState<NodeJS.Timeout | null>(null);
 
-
   const handleLogoutDueToExpiry = useCallback(() => {
     setCurrentUser(null);
     setAccessToken(null);
@@ -79,7 +82,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     // Start periodic refresh
     const intervalId = setInterval(async () => {
       console.log('Attempting periodic token refresh...');
-      const result = await AuthService.refreshTokenClient();
+      const result = await AuthService.refreshToken();
       if (!result.success) {
         console.error('Periodic refresh failed:', result.error);
         handleLogoutDueToExpiry(); // Logout if refresh fails
@@ -109,7 +112,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       try {
         // Attempt to refresh token immediately to validate session
         console.log('Initializing auth, attempting to refresh token...');
-        const refreshResult = await AuthService.refreshTokenClient();
+        const refreshResult = await AuthService.refreshToken();
         if (refreshResult.success && refreshResult.data) {
           const user: AppUser = JSON.parse(storedUser);
           setAccessToken(refreshResult.data.accessToken);

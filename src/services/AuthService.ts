@@ -125,8 +125,7 @@ const loginWithEmail = async (payload: LoginPayload): Promise<ServiceResult<Auth
   }
 };
 
-// Function to be called by AuthContext for periodic refresh or initial load
-const refreshTokenClient = async (): Promise<ServiceResult<AuthResponse>> => {
+const refreshToken = async (): Promise<ServiceResult<AuthResponse>> => {
   const currentRefreshToken = localStorage.getItem('refreshToken');
   if (!currentRefreshToken) {
     return { success: false, error: 'No refresh token available.' };
@@ -146,64 +145,30 @@ const refreshTokenClient = async (): Promise<ServiceResult<AuthResponse>> => {
     if (!response.ok) {
       const errorMessage = responseData.error || `Token refresh failed: ${response.statusText}`;
       console.error('Error during token refresh:', errorMessage);
-      return { success: false, error: errorMessage };
+      await logout();
+      window.dispatchEvent(new CustomEvent('sessionExpired'));
+      return { success: false, error: responseData.error || 'Token refresh failed and session terminated' };
     }
 
     // Store new tokens
     localStorage.setItem('accessToken', responseData.accessToken);
-    if (responseData.refreshToken) { 
+    if (responseData.refreshToken) {
       localStorage.setItem('refreshToken', responseData.refreshToken);
     }
     console.log('Token refresh successful');
     return { success: true, data: responseData as AuthResponse };
   } catch (error) {
     console.error('Exception during token refresh:', error);
-    return { success: false, error: error instanceof Error ? error : new Error(String(error)) };
-  }
-};
-
-const refreshTokenInternal = async (): Promise<ServiceResult<AuthResponse>> => {
-  const currentRefreshToken = localStorage.getItem('refreshToken');
-  if (!currentRefreshToken) {
-    return { success: false, error: 'No refresh token available for internal refresh.' };
-  }
-
-  try {
-    const response = await fetch(`${API_BASE_URL}/auth/refresh`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ refreshToken: currentRefreshToken }),
-    });
-    const responseData = await response.json();
-    if (!response.ok) {
-      console.error('Internal token refresh failed:', responseData.error || response.statusText);
-      localStorage.removeItem('accessToken');
-      localStorage.removeItem('refreshToken');
-      localStorage.removeItem('user');
-      window.dispatchEvent(new CustomEvent('sessionExpired'));
-      return { success: false, error: responseData.error || 'Internal refresh failed and session cleared' };
-    }
-    localStorage.setItem('accessToken', responseData.accessToken);
-    if (responseData.refreshToken) {
-      localStorage.setItem('refreshToken', responseData.refreshToken);
-    }
-    return { success: true, data: responseData as AuthResponse };
-  } catch (error) {
-    console.error('Exception during internal token refresh:', error);
-    localStorage.removeItem('accessToken');
-    localStorage.removeItem('refreshToken');
-    localStorage.removeItem('user');
+    await logout(); 
     window.dispatchEvent(new CustomEvent('sessionExpired'));
-    return { success: false, error: 'Exception in internal refresh and session cleared' };
+    return { success: false, error: `Exception during token refresh and session terminated: ${error instanceof Error ? error.message : String(error)}` };
   }
 };
 
 let isRefreshingToken = false;
 let refreshTokenPromiseHolder: Promise<ServiceResult<AuthResponse>> | null = null;
 
-async function fetchWithAuthHandler(input: RequestInfo | URL, init?: RequestInit): Promise<Response> {
+async function fetchWithAuth(input: RequestInfo | URL, init?: RequestInit): Promise<Response> {
   const originalFetch = async (attempt: number): Promise<Response> => {
     const token = localStorage.getItem('accessToken');
     const headers = new Headers(init?.headers);
@@ -218,7 +183,7 @@ async function fetchWithAuthHandler(input: RequestInfo | URL, init?: RequestInit
     if (response.status === 401 && attempt === 1) {
       if (!isRefreshingToken) {
         isRefreshingToken = true;
-        refreshTokenPromiseHolder = refreshTokenInternal().finally(() => {
+        refreshTokenPromiseHolder = refreshToken().finally(() => {
           isRefreshingToken = false;
           refreshTokenPromiseHolder = null;
         });
@@ -255,6 +220,6 @@ export const AuthService = {
   logout,
   registerWithEmail,
   loginWithEmail,
-  refreshTokenClient, 
-  fetchWithAuth: fetchWithAuthHandler,
+  refreshToken,
+  fetchWithAuth,
 };
