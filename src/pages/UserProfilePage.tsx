@@ -190,8 +190,11 @@ const UserProfilePage: React.FC = () => {
         result = await TutorProfileService.createTutorProfile(data as CreateTutorProfileDto);
       }
 
-      if (result.success && result.data) {
-        setTutorProfile(result.data);
+      if (result.success) {
+        // Successfully saved, now re-fetch the tutor profile to ensure UI consistency
+        if (userId) {
+          await fetchTutorProfileData(userId);
+        }
         setIsEditingTutorProfile(false);
       } else {
         setTutorProfileError(result.error instanceof Error ? result.error.message : result.error || 'Failed to save tutor profile.');
