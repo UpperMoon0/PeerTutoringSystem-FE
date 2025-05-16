@@ -6,7 +6,7 @@ const BASE_API_URL = import.meta.env.VITE_API_BASE_URL;
 
 export const TutorProfileService = {
   getTutorProfileByUserId: async (userId: string): Promise<ServiceResult<TutorProfileDto>> => {
-    const url = `${BASE_API_URL}/api/UserBio/user/${userId}`;
+    const url = `${BASE_API_URL}/UserBio/user/${userId}`;
     try {
       const response = await AuthService.fetchWithAuth(url, { method: 'GET' });
       if (!response.ok) {
@@ -35,6 +35,10 @@ export const TutorProfileService = {
         } else {
           finalErrorMessage = `Request failed with status ${response.status}`;
         }
+        // Check if the error is due to profile not found
+        if (response.status === 404 || (typeof errorBody === 'string' && errorBody.toLowerCase().includes("user bio not found"))) {
+          return { success: false, error: new Error(finalErrorMessage), isNotFoundError: true };
+        }
         return { success: false, error: new Error(finalErrorMessage) };
       }
       if (response.status === 204) {
@@ -61,7 +65,7 @@ export const TutorProfileService = {
   },
 
   createTutorProfile: async (payload: CreateTutorProfileDto): Promise<ServiceResult<TutorProfileDto>> => {
-    const url = `${BASE_API_URL}/api/UserBio`;
+    const url = `${BASE_API_URL}/UserBio`;
     try {
       const response = await AuthService.fetchWithAuth(url, {
         method: 'POST',
@@ -119,8 +123,8 @@ export const TutorProfileService = {
     }
   },
 
-  updateTutorProfile: async (profileId: number, payload: UpdateTutorProfileDto): Promise<ServiceResult<TutorProfileDto>> => {
-    const url = `${BASE_API_URL}/api/UserBio/${profileId}`;
+  updateTutorProfile: async (bioId: number, payload: UpdateTutorProfileDto): Promise<ServiceResult<TutorProfileDto>> => {
+    const url = `${BASE_API_URL}/UserBio/${bioId}`;
     try {
       const response = await AuthService.fetchWithAuth(url, {
         method: 'PUT',

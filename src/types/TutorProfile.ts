@@ -1,17 +1,20 @@
 export interface TutorProfileDto {
-  profileId: number;
+  bioID: number; 
   userID: string;
+  tutorName: string;
   bio: string;
-  yearsOfExperience: number;
-  subjectsOffered: string[]; 
-  availability: string; 
+  experience: string; 
+  availability: string;
   hourlyRate: number;
+  avatarUrl: string;
+  school?: string; 
+  createdDate: string; 
+  updatedDate?: string;
 }
 
 export interface CreateTutorProfileDto {
   bio: string;
-  yearsOfExperience: number;
-  subjectsOffered: string[];
+  experience: string; // Changed from yearsOfExperience to experience (string)
   availability: string;
   hourlyRate: number;
 }
