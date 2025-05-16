@@ -17,10 +17,9 @@ const TutorProfileDisplay: React.FC<TutorProfileDisplayProps> = ({ tutorProfile,
       </div>
       <div>
         <p className="mb-2"><strong className="font-medium">Bio:</strong> {tutorProfile.bio}</p>
-        <p className="mb-2"><strong className="font-medium">Years of Experience:</strong> {tutorProfile.yearsOfExperience}</p>
-        <p className="mb-2"><strong className="font-medium">Subjects Offered:</strong> {tutorProfile.subjectsOffered.join(', ')}</p>
+        <p className="mb-2"><strong className="font-medium">Experience:</strong> {tutorProfile.experience}</p>
         <p className="mb-2"><strong className="font-medium">Availability:</strong> {tutorProfile.availability}</p>
-        <p><strong className="font-medium">Hourly Rate:</strong> ${tutorProfile.hourlyRate.toFixed(2)}</p>
+        <p><strong className="font-medium">Hourly Rate:</strong> {typeof tutorProfile.hourlyRate === 'number' ? `$${tutorProfile.hourlyRate.toFixed(2)}` : 'N/A'}</p>
       </div>
     </div>
   );

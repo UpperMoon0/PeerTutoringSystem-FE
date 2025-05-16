@@ -184,8 +184,8 @@ const UserProfilePage: React.FC = () => {
     setTutorProfileError(null);
     try {
       let result;
-      if (tutorProfile && tutorProfile.profileId) { 
-        result = await TutorProfileService.updateTutorProfile(tutorProfile.profileId, data as UpdateTutorDtoInternal);
+      if (tutorProfile && tutorProfile.bioID) { 
+        result = await TutorProfileService.updateTutorProfile(tutorProfile.bioID, data as UpdateTutorDtoInternal);
       } else { 
         result = await TutorProfileService.createTutorProfile(data as CreateTutorProfileDto);
       }

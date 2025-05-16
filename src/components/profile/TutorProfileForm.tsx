@@ -15,23 +15,27 @@ interface TutorProfileFormProps {
 const TutorProfileForm: React.FC<TutorProfileFormProps> = ({ initialData, onSubmit, onCancel, isLoading }) => {
   const [formData, setFormData] = useState<CreateTutorProfileDto>({
     bio: initialData?.bio || '',
-    yearsOfExperience: initialData?.yearsOfExperience || 0,
-    subjectsOffered: initialData?.subjectsOffered || [],
+    experience: initialData?.experience || '', 
     availability: initialData?.availability || '',
     hourlyRate: initialData?.hourlyRate || 0,
   });
-  const [subjectsInput, setSubjectsInput] = useState(initialData?.subjectsOffered?.join(', ') || '');
 
   useEffect(() => {
     if (initialData) {
       setFormData({
-        bio: initialData.bio,
-        yearsOfExperience: initialData.yearsOfExperience,
-        subjectsOffered: initialData.subjectsOffered,
-        availability: initialData.availability,
-        hourlyRate: initialData.hourlyRate,
+        bio: initialData.bio || '',
+        experience: initialData.experience || '', 
+        availability: initialData.availability || '',
+        hourlyRate: initialData.hourlyRate || 0,
       });
-      setSubjectsInput(initialData.subjectsOffered.join(', '));
+    } else {
+      // Reset form if initialData becomes null
+      setFormData({
+        bio: '',
+        experience: '',
+        availability: '',
+        hourlyRate: 0,
+      });
     }
   }, [initialData]);
 
@@ -39,15 +43,8 @@ const TutorProfileForm: React.FC<TutorProfileFormProps> = ({ initialData, onSubm
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
-      [name]: name === 'yearsOfExperience' || name === 'hourlyRate' ? parseFloat(value) || 0 : value,
-    }));
-  };
-
-  const handleSubjectsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSubjectsInput(e.target.value);
-    setFormData(prev => ({
-      ...prev,
-      subjectsOffered: e.target.value.split(',').map(s => s.trim()).filter(s => s !== ''),
+      // Ensure experience is a string, hourlyRate is a number
+      [name]: name === 'hourlyRate' ? parseFloat(value) || 0 : value, 
     }));
   };
 
@@ -66,13 +63,8 @@ const TutorProfileForm: React.FC<TutorProfileFormProps> = ({ initialData, onSubm
       </div>
 
       <div>
-        <Label htmlFor="yearsOfExperience">Years of Experience</Label>
-        <Input id="yearsOfExperience" name="yearsOfExperience" type="number" value={formData.yearsOfExperience} onChange={handleChange} required className="mt-1" />
-      </div>
-
-      <div>
-        <Label htmlFor="subjectsOffered">Subjects Offered (comma-separated)</Label>
-        <Input id="subjectsOffered" name="subjectsOffered" value={subjectsInput} onChange={handleSubjectsChange} required className="mt-1" />
+        <Label htmlFor="experience">Experience</Label> 
+        <Textarea id="experience" name="experience" value={formData.experience} onChange={handleChange} required className="mt-1" />
       </div>
 
       <div>
