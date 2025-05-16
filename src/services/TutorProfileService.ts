@@ -6,7 +6,7 @@ const BASE_API_URL = import.meta.env.VITE_API_BASE_URL;
 
 export const TutorProfileService = {
   getTutorProfileByUserId: async (userId: string): Promise<ServiceResult<TutorProfileDto>> => {
-    const url = `${BASE_API_URL}/profiles/user/${userId}`;
+    const url = `${BASE_API_URL}/api/UserBio/user/${userId}`;
     try {
       const response = await AuthService.fetchWithAuth(url, { method: 'GET' });
       if (!response.ok) {
@@ -61,7 +61,7 @@ export const TutorProfileService = {
   },
 
   createTutorProfile: async (payload: CreateTutorProfileDto): Promise<ServiceResult<TutorProfileDto>> => {
-    const url = `${BASE_API_URL}/profiles`;
+    const url = `${BASE_API_URL}/api/UserBio`;
     try {
       const response = await AuthService.fetchWithAuth(url, {
         method: 'POST',
@@ -120,7 +120,7 @@ export const TutorProfileService = {
   },
 
   updateTutorProfile: async (profileId: number, payload: UpdateTutorProfileDto): Promise<ServiceResult<TutorProfileDto>> => {
-    const url = `${BASE_API_URL}/profiles/${profileId}`;
+    const url = `${BASE_API_URL}/api/UserBio/${profileId}`;
     try {
       const response = await AuthService.fetchWithAuth(url, {
         method: 'PUT',
