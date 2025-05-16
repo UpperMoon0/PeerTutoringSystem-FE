@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link, Outlet } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { ListChecks } from 'lucide-react';
+import { ListChecks, Users } from 'lucide-react';
 
 const AdminDashboardPage: React.FC = () => {
   return (
@@ -22,7 +22,18 @@ const AdminDashboardPage: React.FC = () => {
               </Link>
             </Button>
           </li>
-          {}
+          <li>
+            <Button
+              asChild
+              variant="default"
+              className="bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800 text-white px-6 py-3 text-lg shadow-xs"
+            >
+              <Link to="manage-users">
+                <Users className="mr-2 size-5" /> {}
+                Manage Users
+              </Link>
+            </Button>
+          </li>
         </ul>
       </nav>
       <div className="mt-4">
