@@ -1,20 +1,22 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { AdminUserService } from '@/services/AdminUserService';
 import type { User } from '@/types/User';
 import { Button } from '@/components/ui/button';
-import { useAuth } from '@/contexts/AuthContext'; 
+import { useAuth } from '@/contexts/AuthContext';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Ban, CheckCircle, ShieldAlert, Loader2 } from 'lucide-react';
 
 const ManageUsersPage: React.FC = () => {
-  const [users, setUsers] = useState<User[]>([]);
+  const [allUsers, setAllUsers] = useState<User[]>([]); 
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [selectedRoleFilter, setSelectedRoleFilter] = useState<string>('All');
   const [actionError, setActionError] = useState<string | null>(null);
   const [actionSuccess, setActionSuccess] = useState<string | null>(null);
   const [actingUserId, setActingUserId] = useState<string | null>(null);
 
-  const { accessToken: token } = useAuth(); 
+  const { accessToken: token } = useAuth();
 
   const fetchUsers = async () => {
     if (!token) {
@@ -26,7 +28,7 @@ const ManageUsersPage: React.FC = () => {
     setError(null);
     const result = await AdminUserService.getAllUsers(token);
     if (result.success && result.data) {
-      setUsers(result.data);
+      setAllUsers(result.data);
     } else {
       const errorMessage = result.error instanceof Error ? result.error.message : result.error;
       setError(errorMessage || 'Failed to fetch users.');
@@ -37,6 +39,13 @@ const ManageUsersPage: React.FC = () => {
   useEffect(() => {
     fetchUsers();
   }, [token]);
+
+  const filteredUsers = useMemo(() => {
+    if (selectedRoleFilter === 'All') {
+      return allUsers;
+    }
+    return allUsers.filter(user => user.role === selectedRoleFilter);
+  }, [allUsers, selectedRoleFilter]);
 
   const handleBanToggle = async (userId: string) => {
     if (!token) {
@@ -60,7 +69,7 @@ const ManageUsersPage: React.FC = () => {
     setActingUserId(null);
   };
 
-  if (loading && users.length === 0) {
+  if (loading && allUsers.length === 0) {
     return (
       <div className="flex justify-center items-center h-64">
         <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
@@ -81,7 +90,22 @@ const ManageUsersPage: React.FC = () => {
 
   return (
     <div className="container mx-auto p-4">
-      <h1 className="text-3xl font-bold mb-6 text-gray-800">Manage Users</h1>
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-3xl font-bold text-gray-800">Manage Users</h1>
+        <div className="w-48">
+          <Select value={selectedRoleFilter} onValueChange={setSelectedRoleFilter}>
+            <SelectTrigger>
+              <SelectValue placeholder="Filter by role" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="All">All Roles</SelectItem>
+              <SelectItem value="Admin">Admin</SelectItem>
+              <SelectItem value="Tutor">Tutor</SelectItem>
+              <SelectItem value="Student">Student</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
 
       {actionError && (
         <Alert variant="destructive" className="mb-4">
@@ -98,11 +122,13 @@ const ManageUsersPage: React.FC = () => {
         </Alert>
       )}
 
-      {users.length === 0 && !loading && (
-        <p className="text-center text-gray-500 text-lg">No users found.</p>
+      {filteredUsers.length === 0 && !loading && (
+        <p className="text-center text-gray-500 text-lg">
+          {selectedRoleFilter === 'All' ? 'No users found.' : `No users found with the role: ${selectedRoleFilter}`}
+        </p>
       )}
 
-      {users.length > 0 && (
+      {filteredUsers.length > 0 && (
         <div className="overflow-x-auto shadow-lg rounded-lg">
           <table className="min-w-full bg-white">
             <thead className="bg-gray-800 text-white">
@@ -115,7 +141,7 @@ const ManageUsersPage: React.FC = () => {
               </tr>
             </thead>
             <tbody className="text-gray-700">
-              {users.map((user) => (
+              {filteredUsers.map((user) => (
                 <tr key={user.userID} className="border-b border-gray-200 hover:bg-gray-100">
                   <td className="py-3 px-4">{user.fullName}</td>
                   <td className="py-3 px-4">{user.email}</td>
@@ -132,26 +158,28 @@ const ManageUsersPage: React.FC = () => {
                     </span>
                   </td>
                   <td className="py-3 px-4 text-center">
-                    <Button
-                      onClick={() => handleBanToggle(user.userID, user.status)}
-                      variant={user.status === 'Banned' ? 'outline' : 'destructive'}
-                      size="sm"
-                      disabled={actingUserId === user.userID}
-                      className="flex items-center justify-center"
-                    >
-                      {actingUserId === user.userID ? (
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      ) : user.status === 'Banned' ? (
-                        <CheckCircle className="mr-2 h-4 w-4 text-green-500" />
-                      ) : (
-                        <Ban className="mr-2 h-4 w-4" />
-                      )}
-                      {actingUserId === user.userID
-                        ? 'Processing...'
-                        : user.status === 'Banned'
-                        ? 'Unban'
-                        : 'Ban'}
-                    </Button>
+                    {user.role !== 'Admin' && (
+                      <Button
+                        onClick={() => handleBanToggle(user.userID)}
+                        variant={user.status === 'Banned' ? 'outline' : 'destructive'}
+                        size="sm"
+                        disabled={actingUserId === user.userID}
+                        className="flex items-center justify-center"
+                      >
+                        {actingUserId === user.userID ? (
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        ) : user.status === 'Banned' ? (
+                          <CheckCircle className="mr-2 h-4 w-4 text-green-500" />
+                        ) : (
+                          <Ban className="mr-2 h-4 w-4" />
+                        )}
+                        {actingUserId === user.userID
+                          ? 'Processing...'
+                          : user.status === 'Banned'
+                          ? 'Unban'
+                          : 'Ban'}
+                      </Button>
+                    )}
                   </td>
                 </tr>
               ))}
