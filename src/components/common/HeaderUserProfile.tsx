@@ -3,7 +3,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useAuth } from '@/contexts/AuthContext';
 import { Link } from 'react-router-dom';
 
-const UserProfileAvatar: React.FC = () => {
+const HeaderUserProfile: React.FC = () => {
   const { currentUser } = useAuth();
 
   if (!currentUser) {
@@ -21,4 +21,4 @@ const UserProfileAvatar: React.FC = () => {
   );
 };
 
-export default UserProfileAvatar;
+export default HeaderUserProfile;
