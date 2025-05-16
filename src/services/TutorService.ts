@@ -95,7 +95,7 @@ const updateTutorVerificationStatus = async (
   const url = `${API_BASE_URL}/TutorVerifications/${verificationId}`;
   const responsePromise = AuthService.fetchWithAuth(url, {
     method: 'PUT',
-    body: JSON.stringify({ verificationStatus: status, adminNotes }),
+    body: JSON.stringify({ VerificationStatus: status, AdminNotes: adminNotes }),
     headers: { 'Content-Type': 'application/json' },
   });
   return processApiResponse<TutorVerification>(responsePromise, url); 
