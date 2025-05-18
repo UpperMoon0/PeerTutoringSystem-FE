@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { ProfileService } from '../services/ProfileService';
-import type { ProfileDto, UpdateProfileDto } from '../types/Profile';
+import type { ProfileDto, UpdateProfileDto } from '@/types/user.types';
 import { useAuth } from '../contexts/AuthContext';
 import { Button } from '../components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '../components/ui/card'; 

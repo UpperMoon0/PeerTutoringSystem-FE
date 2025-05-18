@@ -1,6 +1,5 @@
-import type { ApiResult } from '@/types/ApiResult';
-import type { User } from '@/types/User';
-import type { ServiceResult } from '@/types/ServiceResult';
+import type { User } from '@/types/user.types';
+import type { ApiResult, ServiceResult } from '@/types/api.types';
 
 const API_URL = import.meta.env.VITE_API_BASE_URL;
 

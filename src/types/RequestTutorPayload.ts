@@ -1,4 +1,4 @@
-import type { DocumentUploadDto } from './DocumentUploadDto';
+import type { DocumentUploadDto } from './file.types';
 
 export interface RequestTutorPayload {
   citizenId: string;

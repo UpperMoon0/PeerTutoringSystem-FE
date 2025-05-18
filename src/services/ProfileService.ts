@@ -1,6 +1,6 @@
-import type { ServiceResult } from '../types/ServiceResult'; 
-import type { ProfileDto, UpdateProfileDto } from '../types/Profile'; 
-import { AuthService } from './AuthService'; 
+import type { ProfileDto, UpdateProfileDto } from '@/types/user.types';
+import type { ServiceResult } from '@/types/api.types';
+import { AuthService } from './AuthService';
 
 const BASE_API_URL = import.meta.env.VITE_API_BASE_URL;
 

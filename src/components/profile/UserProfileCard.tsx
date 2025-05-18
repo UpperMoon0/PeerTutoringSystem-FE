@@ -1,5 +1,5 @@
 import React from 'react';
-import type { ProfileDto, UpdateProfileDto } from '../../types/Profile';
+import type { ProfileDto, UpdateProfileDto } from '@/types/user.types';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
