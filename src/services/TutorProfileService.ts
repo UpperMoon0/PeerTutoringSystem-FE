@@ -1,6 +1,6 @@
 import type { CreateTutorProfileDto, TutorProfileDto, UpdateTutorProfileDto } from '@/types/TutorProfile';
 import { AuthService } from './AuthService';
-import type { ServiceResult } from '@/types/ServiceResult';
+import type { ServiceResult } from '@/types/api.types';
 
 const BASE_API_URL = import.meta.env.VITE_API_BASE_URL;
 

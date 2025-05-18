@@ -1,11 +1,8 @@
 import { signOut } from 'firebase/auth';
 import type { AuthError } from 'firebase/auth';
 import { auth, signInWithGooglePopup } from '../lib/firebase';
-import type { AuthResponse } from '../types/AuthResponse';
-import type { GoogleLoginPayload } from '../types/GoogleLoginPayload';
-import type { RegisterPayload } from '../types/RegisterPayload';
-import type { LoginPayload } from '../types/LoginPayload';
-import type { ServiceResult } from '../types/ServiceResult';
+import type { ServiceResult } from '@/types/api.types';
+import type { AuthResponse, GoogleLoginPayload, LoginPayload, RegisterPayload } from '@/types/auth.types';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 

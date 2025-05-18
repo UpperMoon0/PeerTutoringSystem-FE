@@ -1,12 +1,11 @@
-import type { ApiResult } from '../types/ApiResult';
-import type { DocumentUploadDto } from '../types/DocumentUploadDto';
-import type { FileUploadResponse } from '../types/FileUploadResponse';
 import type { RequestTutorPayload } from '../types/RequestTutorPayload';
 import type { RequestTutorResponse } from '../types/RequestTutorResponse';
 import type { Tutor } from '../types/Tutor';
 import type { TutorVerification } from '../types/TutorVerification';
 import { mockTutors } from '@/mocks/tutors';
 import { AuthService } from './AuthService';
+import type { ApiResult } from '@/types/api.types';
+import type { DocumentUploadDto, FileUploadResponse } from '@/types/file.types';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 const ENABLE_MOCK_API = import.meta.env.VITE_ENABLE_MOCK_API === 'true';

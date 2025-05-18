@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import type { ReactNode } from 'react';
 import { AuthService} from '../services/AuthService';
-import SessionExpiredModal from '@/components/common/SessionExpiredModal'; // Import the modal
+import SessionExpiredModal from '@/components/common/SessionExpiredModal'; 
 import type { RegisterPayload, LoginPayload, AuthResponse } from '@/types/auth.types';
 
 export interface AppUser {
