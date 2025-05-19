@@ -8,6 +8,7 @@ import HomePage from '../pages/HomePage';
 import AdminDashboardPage from '@/pages/admin/AdminDashboardPage';
 import TutorVerificationPage from '@/pages/admin/TutorVerificationPage';
 import ManageUsersPage from '@/pages/admin/ManageUsersPage'; 
+import ManageSkillsPage from '@/pages/admin/ManageSkillsPage'; 
 import ProtectedRoute from './ProtectedRoute';
 import UserProfilePage from '@/pages/UserProfilePage';
 
@@ -42,6 +43,7 @@ const router = createBrowserRouter([
           { index: true, element: <AdminDashboardPage /> },
           { path: 'tutor-verifications', element: <TutorVerificationPage /> },
           { path: 'manage-users', element: <ManageUsersPage /> }, 
+          { path: 'manage-skills', element: <ManageSkillsPage /> }, 
         ],
       },
     ],

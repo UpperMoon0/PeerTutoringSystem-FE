@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link, Outlet } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { ListChecks, Users } from 'lucide-react';
+import { ListChecks, Users, Wrench } from 'lucide-react';
 
 const AdminDashboardPage: React.FC = () => {
   return (
@@ -10,7 +10,6 @@ const AdminDashboardPage: React.FC = () => {
       <nav className="mb-4">
         <ul className="flex space-x-4">
           <li>
-            {}
             <Button
               asChild
               variant="default"
@@ -31,6 +30,18 @@ const AdminDashboardPage: React.FC = () => {
               <Link to="manage-users">
                 <Users className="mr-2 size-5" /> {}
                 Manage Users
+              </Link>
+            </Button>
+          </li>
+          <li>
+            <Button
+              asChild
+              variant="default"
+              className="bg-gradient-to-r from-purple-500 to-purple-700 hover:from-purple-600 hover:to-purple-800 text-white px-6 py-3 text-lg shadow-xs"
+            >
+              <Link to="manage-skills">
+                <Wrench className="mr-2 size-5" /> {}
+                Manage Skills
               </Link>
             </Button>
           </li>
