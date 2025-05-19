@@ -1,17 +1,17 @@
 import type { ApiResult, ServiceResult } from '../types/api.types';
 import type { Skill, CreateSkillDto, UpdateSkillDto } from '../types/skill.types';
+import { AuthService } from './AuthService';
 
 const API_URL = import.meta.env.VITE_API_BASE_URL;
 const SKILLS_ENDPOINT = `${API_URL}/Skills`;
 
 export const AdminSkillService = {
-  getAllSkills: async (token: string): Promise<ServiceResult<Skill[]>> => {
+  getAllSkills: async (): Promise<ServiceResult<Skill[]>> => {
     try {
-      const response = await fetch(SKILLS_ENDPOINT, {
+      const response = await AuthService.fetchWithAuth(SKILLS_ENDPOINT, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
         },
       });
       if (!response.ok) {
@@ -26,18 +26,16 @@ export const AdminSkillService = {
     }
   },
 
-  addSkill: async (skillData: CreateSkillDto, token: string): Promise<ServiceResult<Skill>> => {
+  addSkill: async (skillData: CreateSkillDto): Promise<ServiceResult<Skill>> => {
     try {
-      const response = await fetch(SKILLS_ENDPOINT, {
+      const response = await AuthService.fetchWithAuth(SKILLS_ENDPOINT, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(skillData),
       });
       if (!response.ok) {
-        // Attempt to parse error response, but be mindful of non-JSON responses
         let errorMessage = `HTTP error! status: ${response.status}`;
         try {
           const errorData: ApiResult<Skill> = await response.json();
@@ -55,13 +53,12 @@ export const AdminSkillService = {
     }
   },
 
-  updateSkill: async (skillId: string, skillData: UpdateSkillDto, token: string): Promise<ServiceResult<Skill>> => {
+  updateSkill: async (skillId: string, skillData: UpdateSkillDto): Promise<ServiceResult<Skill>> => {
     try {
-      const response = await fetch(`${SKILLS_ENDPOINT}/${skillId}`, {
+      const response = await AuthService.fetchWithAuth(`${SKILLS_ENDPOINT}/${skillId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(skillData),
       });
@@ -83,13 +80,12 @@ export const AdminSkillService = {
     }
   },
 
-  deleteSkill: async (skillId: string, token: string): Promise<ServiceResult<null>> => {
+  deleteSkill: async (skillId: string): Promise<ServiceResult<null>> => {
     try {
-      const response = await fetch(`${SKILLS_ENDPOINT}/${skillId}`, {
+      const response = await AuthService.fetchWithAuth(`${SKILLS_ENDPOINT}/${skillId}`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
         },
       });
       if (!response.ok) {
@@ -102,8 +98,6 @@ export const AdminSkillService = {
         }
         return { success: false, error: errorMessage };
       }
-      // DELETE typically returns 204 No Content or some success message
-      // If it returns JSON with a message: const data = await response.json();
       return { success: true, data: null };
     } catch (error) {
       console.error(`Error deleting skill ${skillId}:`, error);

@@ -1,16 +1,16 @@
 import type { User } from '@/types/user.types';
 import type { ApiResult, ServiceResult } from '@/types/api.types';
+import { AuthService } from './AuthService';
 
 const API_URL = import.meta.env.VITE_API_BASE_URL;
 
 export const AdminUserService = {
-  getAllUsers: async (token: string): Promise<ServiceResult<User[]>> => {
+  getAllUsers: async (): Promise<ServiceResult<User[]>> => {
     try {
-      const response = await fetch(`${API_URL}/Users`, {
+      const response = await AuthService.fetchWithAuth(`${API_URL}/Users`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
         },
       });
 
@@ -37,13 +37,12 @@ export const AdminUserService = {
     }
   },
 
-  banUser: async (userId: string, token: string): Promise<ServiceResult<null>> => {
+  banUser: async (userId: string): Promise<ServiceResult<null>> => {
     try {
-      const response = await fetch(`${API_URL}/Users/${userId}`, {
+      const response = await AuthService.fetchWithAuth(`${API_URL}/Users/${userId}`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
         },
       });
 
@@ -59,13 +58,12 @@ export const AdminUserService = {
     }
   },
 
-  unbanUser: async (userId: string, token: string): Promise<ServiceResult<null>> => {
+  unbanUser: async (userId: string): Promise<ServiceResult<null>> => {
     try {
-      const response = await fetch(`${API_URL}/Users/${userId}/unban`, {
+      const response = await AuthService.fetchWithAuth(`${API_URL}/Users/${userId}/unban`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
         },
       });
 
