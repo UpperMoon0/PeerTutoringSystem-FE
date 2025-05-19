@@ -58,4 +58,26 @@ export const AdminUserService = {
       return { success: false, error: error instanceof Error ? error.message : 'An unexpected error occurred' };
     }
   },
+
+  unbanUser: async (userId: string, token: string): Promise<ServiceResult<null>> => {
+    try {
+      const response = await fetch(`${API_URL}/Users/${userId}/unban`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        const data: ApiResult<null> = await response.json();
+        return { success: false, error: data.error || `HTTP error! status: ${response.status}` };
+      }
+
+      return { success: true, data: null };
+    } catch (error) {
+      console.error(`Error unbanning user ${userId}:`, error);
+      return { success: false, error: error instanceof Error ? error.message : 'An unexpected error occurred' };
+    }
+  },
 };
