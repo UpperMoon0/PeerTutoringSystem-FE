@@ -20,6 +20,16 @@ const TutorProfileDisplay: React.FC<TutorProfileDisplayProps> = ({ tutorProfile,
         <p className="mb-2"><strong className="font-medium">Experience:</strong> {tutorProfile.experience}</p>
         <p className="mb-2"><strong className="font-medium">Availability:</strong> {tutorProfile.availability}</p>
         <p><strong className="font-medium">Hourly Rate:</strong> {typeof tutorProfile.hourlyRate === 'number' ? `$${tutorProfile.hourlyRate.toFixed(2)}` : 'N/A'}</p>
+        {tutorProfile.skills && tutorProfile.skills.length > 0 && (
+          <div className="mt-4">
+            <h3 className="text-lg font-semibold">Skills:</h3>
+            <ul className="list-disc list-inside ml-4">
+              {tutorProfile.skills.map((userSkill) => (
+                <li key={userSkill.userSkillID}>{userSkill.skill.name}</li>
+              ))}
+            </ul>
+          </div>
+        )}
       </div>
     </div>
   );

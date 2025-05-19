@@ -16,3 +16,14 @@ export interface UpdateSkillDto {
   description?: string;
   skillLevel?: string; 
 }
+
+export interface UserSkillDto {
+  userID: string;
+  skillID: string;
+  isTutor: boolean;
+}
+
+export interface UserSkill extends UserSkillDto {
+  userSkillID: string;
+  skill: Skill;
+}

@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import type { CreateTutorProfileDto, TutorProfileDto } from '../../types/TutorProfile';
+import type { Skill } from '../../types/skill.types'; // Import Skill type
+import { AdminSkillService } from '../../services/AdminSkillService'; // Import AdminSkillService
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Textarea } from '../ui/textarea';
@@ -18,7 +20,21 @@ const TutorProfileForm: React.FC<TutorProfileFormProps> = ({ initialData, onSubm
     experience: initialData?.experience || '', 
     availability: initialData?.availability || '',
     hourlyRate: initialData?.hourlyRate || 0,
+    skillIds: initialData?.skills?.map(s => s.skillID) || [], 
   });
+  const [allSkills, setAllSkills] = useState<Skill[]>([]);
+  const [selectedSkills, setSelectedSkills] = useState<string[]>(initialData?.skills?.map(s => s.skillID) || []);
+
+  useEffect(() => {
+    // Fetch all skills when component mounts
+    const fetchSkills = async () => {
+      const result = await AdminSkillService.getAllSkills();
+      if (result.success && result.data) {
+        setAllSkills(result.data);
+      }
+    };
+    fetchSkills();
+  }, []);
 
   useEffect(() => {
     if (initialData) {
@@ -27,15 +43,18 @@ const TutorProfileForm: React.FC<TutorProfileFormProps> = ({ initialData, onSubm
         experience: initialData.experience || '', 
         availability: initialData.availability || '',
         hourlyRate: initialData.hourlyRate || 0,
+        skillIds: initialData.skills?.map(s => s.skillID) || [],
       });
+      setSelectedSkills(initialData.skills?.map(s => s.skillID) || []);
     } else {
-      // Reset form if initialData becomes null
       setFormData({
         bio: '',
         experience: '',
         availability: '',
         hourlyRate: 0,
+        skillIds: [],
       });
+      setSelectedSkills([]);
     }
   }, [initialData]);
 
@@ -46,6 +65,16 @@ const TutorProfileForm: React.FC<TutorProfileFormProps> = ({ initialData, onSubm
       // Ensure experience is a string, hourlyRate is a number
       [name]: name === 'hourlyRate' ? parseFloat(value) || 0 : value, 
     }));
+  };
+
+  const handleSkillChange = (skillId: string) => {
+    setSelectedSkills(prevSelectedSkills => {
+      const newSelectedSkills = prevSelectedSkills.includes(skillId)
+        ? prevSelectedSkills.filter(id => id !== skillId)
+        : [...prevSelectedSkills, skillId];
+      setFormData(prevFormData => ({ ...prevFormData, skillIds: newSelectedSkills }));
+      return newSelectedSkills;
+    });
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -75,6 +104,25 @@ const TutorProfileForm: React.FC<TutorProfileFormProps> = ({ initialData, onSubm
       <div>
         <Label htmlFor="hourlyRate">Hourly Rate ($)</Label>
         <Input id="hourlyRate" name="hourlyRate" type="number" step="0.01" value={formData.hourlyRate} onChange={handleChange} required className="mt-1" />
+      </div>
+
+      {/* Skills selection section */}
+      <div className="space-y-2">
+        <Label>Skills</Label>
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 p-2 border rounded-md">
+          {allSkills.map(skill => (
+            <div key={skill.skillID} className="flex items-center space-x-2">
+              <input
+                type="checkbox"
+                id={`skill-${skill.skillID}`}
+                checked={selectedSkills.includes(skill.skillID)}
+                onChange={() => handleSkillChange(skill.skillID)}
+                className="form-checkbox h-4 w-4 text-primary focus:ring-primary-dark border-gray-300 rounded"
+              />
+              <Label htmlFor={`skill-${skill.skillID}`} className="text-sm font-medium">{skill.name}</Label>
+            </div>
+          ))}
+        </div>
       </div>
 
       <div className="flex justify-end space-x-2 pt-4">
