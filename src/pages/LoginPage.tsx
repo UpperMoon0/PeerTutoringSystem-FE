@@ -14,14 +14,22 @@ import {
 import { Eye, EyeOff } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import SocialLoginButtons from '@/components/common/SocialLoginButtons'; 
+import SocialLoginButtons from '@/components/common/SocialLoginButtons';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { loginSchema } from '@/schemas/auth.schemas';
+import type { LoginFormValues } from '@/schemas/auth.schemas';
 
 const LoginPage: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
-  const { currentUser, loading: authLoading, handleEmailLogin } = useAuth(); 
+  const { currentUser, loading: authLoading, handleEmailLogin } = useAuth();
   const [formLoading, setFormLoading] = useState<boolean>(false);
+
+  const { register, handleSubmit, formState: { errors } } = useForm<LoginFormValues>({
+    resolver: zodResolver(loginSchema),
+  });
 
   const togglePasswordVisibility = () => setShowPassword(!showPassword);
 
@@ -38,6 +46,18 @@ const LoginPage: React.FC = () => {
   if (currentUser) {
     return null;
   }
+
+  const onSubmit = async (data: LoginFormValues) => {
+    setError(null);
+    setFormLoading(true);
+    const success = await handleEmailLogin(data);
+    setFormLoading(false);
+    if (success) {
+      navigate('/');
+    } else {
+      setError("Login failed. Please check your credentials or try again later.");
+    }
+  };
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
@@ -70,38 +90,17 @@ const LoginPage: React.FC = () => {
             </div>
           </div>
 
-          <form onSubmit={async (e) => {
-            e.preventDefault();
-            setError(null);
-            setFormLoading(true);
-            const formData = new FormData(e.currentTarget);
-            const email = formData.get('email') as string;
-            const password = formData.get('password') as string;
-
-            if (!email || !password) {
-              setError("Email and password are required.");
-              setFormLoading(false);
-              return;
-            }
-
-            const success = await handleEmailLogin({ email, password });
-            setFormLoading(false);
-            if (success) {
-              navigate('/');
-            } else {
-              setError("Login failed. Please check your credentials or try again later.");
-            }
-          }}>
+          <form onSubmit={handleSubmit(onSubmit)}>
             <div className="grid gap-4">
               <div className="grid gap-2">
                 <Label htmlFor="email">Email</Label>
                 <Input
                   type="email"
-                  name="email"
                   id="email"
                   placeholder="Your email"
-                  required
+                  {...register("email")}
                 />
+                {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email.message}</p>}
               </div>
 
               <div className="grid gap-2">
@@ -109,10 +108,9 @@ const LoginPage: React.FC = () => {
                 <div className="relative">
                   <Input
                     type={showPassword ? "text" : "password"}
-                    name="password"
                     id="password"
                     placeholder="Your password"
-                    required
+                    {...register("password")}
                   />
                   <Button
                     type="button"

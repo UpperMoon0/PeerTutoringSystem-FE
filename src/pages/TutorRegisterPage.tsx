@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { TutorService } from '../services/TutorService'; 
 import type { RequestTutorPayload } from '../types/RequestTutorPayload';
-import type { DocumentUploadDto } from '../types/DocumentUploadDto';
+import type { DocumentUploadDto } from '@/types/file.types';
 
 const TutorRegisterPage: React.FC = () => {
   const navigate = useNavigate();
