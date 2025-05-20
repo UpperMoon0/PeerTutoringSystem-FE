@@ -60,9 +60,6 @@ export const AdminSkillService = {
         }
         return { success: false, error: errorMessage };
       }
-      // The Add endpoint returns Ok(new { SkillID = skill.SkillID });
-      // It should ideally return the created skill object directly for consistency.
-      // Assuming for now it returns the full skill object as per ServiceResult<Skill>
       const createdSkill: Skill = await response.json();
       return { success: true, data: createdSkill };
     } catch (error) {

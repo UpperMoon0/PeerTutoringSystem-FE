@@ -1,7 +1,7 @@
 export interface ApiResult<T> {
   success: boolean;
   data?: T;
-  error?: string;
+  error?: string | { message: string; [key: string]: any }; 
 }
 
 export interface ServiceResult<T> {

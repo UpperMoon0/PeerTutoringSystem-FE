@@ -87,7 +87,7 @@ const ManageSkillsPage: React.FC = () => {
   };
 
   const handleEditSkill = async () => {
-    if (!editingSkill || !editingSkill.name.trim()) {
+    if (!editingSkill || !editingSkill.skillName.trim()) {
       setActionError('Skill name cannot be empty.');
       return;
     }
@@ -99,9 +99,9 @@ const ManageSkillsPage: React.FC = () => {
     setActionSuccess(null);
 
     const payload: UpdateSkillDto = {
-      skillName: editingSkill.name,
-      description: editingSkill.description,
-      skillLevel: editingSkill.skillLevel as SkillLevel 
+      skillName: editingSkill.skillName,
+      description: editingSkill.Description,
+      skillLevel: editingSkill.SkillLevel as SkillLevel 
     };
     
     const result = await AdminSkillService.updateSkill(editingSkill.skillID, payload);
@@ -251,8 +251,8 @@ const ManageSkillsPage: React.FC = () => {
           <TableBody>
             {skills.map((skill) => (
               <TableRow key={skill.skillID}>
-                <TableCell className="font-medium">{skill.name}</TableCell>
-                <TableCell>{skill.description || 'N/A'}</TableCell>
+                <TableCell className="font-medium">{skill.skillName}</TableCell>
+                <TableCell>{skill.Description || 'N/A'}</TableCell>
                 <TableCell className="text-right">
                   <Button variant="ghost" size="sm" onClick={() => openEditModal(skill)} className="mr-2">
                     <Edit3 className="h-4 w-4 text-blue-500" />
@@ -274,25 +274,25 @@ const ManageSkillsPage: React.FC = () => {
             <DialogHeader>
               <DialogTitle>Edit Skill</DialogTitle>
               <DialogDescription>
-                Update the details for the skill: {editingSkill.name}.
+                Update the details for the skill: {editingSkill.skillName}.
               </DialogDescription>
             </DialogHeader>
             <div className="grid gap-4 py-4">
               <Input
                 id="editSkillName"
                 placeholder="Skill Name"
-                value={editingSkill.name}
-                onChange={(e) => setEditingSkill({ ...editingSkill, name: e.target.value })}
+                value={editingSkill.skillName}
+                onChange={(e) => setEditingSkill({ ...editingSkill, skillName: e.target.value })}
                 className="col-span-3"
               />
               <Textarea
                 id="editSkillDescription"
                 placeholder="Skill Description (optional)"
-                value={editingSkill.description || ''}
-                onChange={(e) => setEditingSkill({ ...editingSkill, description: e.target.value })}
+                value={editingSkill.Description || ''}
+                onChange={(e) => setEditingSkill({ ...editingSkill, Description: e.target.value })}
                 className="col-span-3"
               />
-              <Select onValueChange={(value) => setEditingSkill({ ...editingSkill, skillLevel: value as SkillLevel })} value={editingSkill.skillLevel}>
+              <Select onValueChange={(value) => setEditingSkill({ ...editingSkill, SkillLevel: value as SkillLevel })} value={editingSkill.SkillLevel || ''}>
                 <SelectTrigger className="col-span-3">
                   <SelectValue placeholder="Select Skill Level" />
                 </SelectTrigger>

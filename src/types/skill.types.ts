@@ -1,10 +1,9 @@
 export interface Skill {
   skillID: string;
-  name: string;
-  description?: string;
-  skillLevel?: SkillLevel; 
+  skillName: string; 
+  Description?: string; 
+  SkillLevel?: SkillLevel;
 }
-
 export interface CreateSkillDto {
   skillName: string; 
   description?: string;
