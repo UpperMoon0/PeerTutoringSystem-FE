@@ -25,7 +25,9 @@ const TutorProfileDisplay: React.FC<TutorProfileDisplayProps> = ({ tutorProfile,
             <h3 className="text-lg font-semibold">Skills:</h3>
             <ul className="list-disc list-inside ml-4">
               {tutorProfile.skills.map((userSkill) => (
-                <li key={userSkill.userSkillID}>{userSkill.skill.name}</li>
+                <li key={userSkill.userSkillID}>
+                  {userSkill.skill.skillName} - Level: {userSkill.skill.skillLevel}
+                </li>
               ))}
             </ul>
           </div>

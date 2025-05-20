@@ -1,25 +1,26 @@
 export interface Skill {
   skillID: string;
   skillName: string;
-  description: string; // Changed from Description?: string
-  skillLevel: SkillLevel; // Changed from SkillLevel?: SkillLevel
+  description: string; 
+  skillLevel: SkillLevel; 
 }
 export interface CreateSkillDto {
   skillName: string;
-  description: string; // Changed from description?: string
+  description: string; 
   skillLevel: SkillLevel;
 }
 
 export interface UpdateSkillDto {
-  skillID: string; // Added to match BE SkillDto for PUT body
-  skillName: string; // Changed from skillName?: string
-  description: string; // Changed from description?: string
-  skillLevel: SkillLevel; // Changed from skillLevel?: SkillLevel
+  skillID: string; 
+  skillName: string; 
+  description: string; 
+  skillLevel: SkillLevel; 
 }
 
 export type SkillLevel = 'Beginner' | 'Elementary' | 'Intermediate' | 'Advanced' | 'Expert';
 
 export interface UserSkillDto {
+  userSkillID?: string; // Make userSkillID optional
   userID: string;
   skillID: string;
   isTutor: boolean;

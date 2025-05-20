@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import type { CreateTutorProfileDto, TutorProfileDto } from '../../types/TutorProfile';
-import type { Skill } from '../../types/skill.types'; // Import Skill type
-import { AdminSkillService } from '../../services/AdminSkillService'; // Import AdminSkillService
+import type { Skill } from '../../types/skill.types'; 
+import { AdminSkillService } from '../../services/AdminSkillService'; 
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Textarea } from '../ui/textarea';
 import { Label } from '../ui/label';
+import SkillSelector from '../common/SkillSelector'; 
 
 interface TutorProfileFormProps {
   initialData?: TutorProfileDto | null;
@@ -106,24 +107,13 @@ const TutorProfileForm: React.FC<TutorProfileFormProps> = ({ initialData, onSubm
         <Input id="hourlyRate" name="hourlyRate" type="number" step="0.01" value={formData.hourlyRate} onChange={handleChange} required className="mt-1" />
       </div>
 
-      {/* Skills selection section */}
-      <div className="space-y-2">
-        <Label>Skills</Label>
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 p-2 border rounded-md">
-          {allSkills.map(skill => (
-            <div key={skill.skillID} className="flex items-center space-x-2">
-              <input
-                type="checkbox"
-                id={`skill-${skill.skillID}`}
-                checked={selectedSkills.includes(skill.skillID)}
-                onChange={() => handleSkillChange(skill.skillID)}
-                className="form-checkbox h-4 w-4 text-primary focus:ring-primary-dark border-gray-300 rounded"
-              />
-              <Label htmlFor={`skill-${skill.skillID}`} className="text-sm font-medium">{skill.skillName}</Label>
-            </div>
-          ))}
-        </div>
-      </div>
+      {/* Skills selection section using the new SkillSelector component */}
+      <SkillSelector
+        allSkills={allSkills}
+        selectedSkillIds={selectedSkills}
+        onSkillChange={handleSkillChange}
+        isLoading={isLoading}
+      />
 
       <div className="flex justify-end space-x-2 pt-4">
         <Button type="button" variant="outline" onClick={onCancel} disabled={isLoading}>Cancel</Button>

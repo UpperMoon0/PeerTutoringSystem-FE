@@ -12,6 +12,7 @@ import { TutorProfileService } from '../services/TutorProfileService';
 import type { TutorProfileDto, CreateTutorProfileDto, UpdateTutorProfileDto as UpdateTutorDtoInternal } from '../types/TutorProfile';
 import TutorProfileDisplay from '../components/profile/TutorProfileDisplay';
 import TutorProfileForm from '../components/profile/TutorProfileForm';
+import { UserSkillService } from '../services/UserSkillService';
 
 const UserProfilePage: React.FC = () => {
   const { userId } = useParams<{ userId: string }>();
@@ -182,22 +183,68 @@ const UserProfilePage: React.FC = () => {
     }
     setTutorProfileLoading(true);
     setTutorProfileError(null);
+
+    // Separate skillIds from the rest of the profile data
+    const { skillIds, ...profileData } = data;
+
     try {
-      let result;
+      let profileResult;
       if (tutorProfile && tutorProfile.bioID) { 
-        result = await TutorProfileService.updateTutorProfile(tutorProfile.bioID, data as UpdateTutorDtoInternal);
+        profileResult = await TutorProfileService.updateTutorProfile(tutorProfile.bioID, profileData as UpdateTutorDtoInternal);
       } else { 
-        result = await TutorProfileService.createTutorProfile(data as CreateTutorProfileDto);
+        profileResult = await TutorProfileService.createTutorProfile(profileData as CreateTutorProfileDto);
       }
 
-      if (result.success) {
+      if (profileResult.success) {
+        // Profile saved successfully, now manage skills
+        const currentSkillsResult = await UserSkillService.getUserSkills(userId);
+        const newSkillIds = skillIds || [];
+
+        if (currentSkillsResult.success && currentSkillsResult.data) {
+          const currentSkills = currentSkillsResult.data;
+          const currentSkillIds = currentSkills.map(us => us.skill.skillID);
+
+          // Skills to delete
+          const skillsToDelete = currentSkills.filter(us => !newSkillIds.includes(us.skill.skillID));
+          for (const userSkillToDelete of skillsToDelete) {
+            if (userSkillToDelete.userSkillID) { // Ensure userSkillID exists before attempting deletion
+              await UserSkillService.deleteUserSkill(userSkillToDelete.userSkillID);
+            } else {
+              console.warn("Skipping deletion for skill without userSkillID:", userSkillToDelete);
+            }
+          }
+
+          // Skills to add
+          const skillsToAdd = newSkillIds.filter(id => !currentSkillIds.includes(id));
+          for (const skillIdToAdd of skillsToAdd) {
+            console.log("Adding skill:", skillIdToAdd);
+            // Corrected: userID instead of userId
+            const addResult = await UserSkillService.addUserSkill({ userID: userId, skillID: skillIdToAdd, isTutor: true });
+            if (!addResult.success) {
+              console.error("Failed to add skill:", skillIdToAdd, addResult.error);
+              // Optionally, notify the user about the specific skill failing
+            }
+          }
+        } else {
+          console.warn("Could not fetch current skills to compare for update, or no current skills exist:", currentSkillsResult.error);
+          // If fetching current skills failed or returned no data, assume all newSkillIds are to be added.
+          for (const skillIdToAdd of newSkillIds) {
+            console.log("Adding skill (no current skills to compare):", skillIdToAdd);
+            // Corrected: userID instead of userId
+            const addResult = await UserSkillService.addUserSkill({ userID: userId, skillID: skillIdToAdd, isTutor: true });
+            if (!addResult.success) {
+              console.error("Failed to add skill:", skillIdToAdd, addResult.error);
+            }
+          }
+        }
+        
         // Successfully saved, now re-fetch the tutor profile to ensure UI consistency
         if (userId) {
           await fetchTutorProfileData(userId);
         }
         setIsEditingTutorProfile(false);
       } else {
-        setTutorProfileError(result.error instanceof Error ? result.error.message : result.error || 'Failed to save tutor profile.');
+        setTutorProfileError(profileResult.error instanceof Error ? profileResult.error.message : profileResult.error || 'Failed to save tutor profile.');
       }
     } catch (err) {
       setTutorProfileError(err instanceof Error ? err.message : 'An unknown error occurred while saving tutor profile.');

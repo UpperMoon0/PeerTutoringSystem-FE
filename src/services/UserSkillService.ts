@@ -1,6 +1,6 @@
-import type { ApiResult, ServiceResult } from './api.types';
-import type { UserSkill, UserSkillDto } from './skill.types';
+import type { ApiResult, ServiceResult } from '@/types/api.types';
 import { AuthService } from './AuthService';
+import type { UserSkill, UserSkillDto } from '@/types/skill.types';
 
 const API_URL = import.meta.env.VITE_API_BASE_URL;
 const USER_SKILLS_ENDPOINT = `${API_URL}/Skills/user-skills`;
@@ -12,19 +12,29 @@ export const UserSkillService = {
       return { success: false, error: 'Only tutors can add skills to their profile.' };
     }
     try {
+      const payload: { userID: string; skillID: string; isTutor: boolean; userSkillID?: string } = {
+        userID: userSkillData.userID,
+        skillID: userSkillData.skillID,
+        isTutor: userSkillData.isTutor,
+      };
+      if (userSkillData.userSkillID) {
+        payload.userSkillID = userSkillData.userSkillID;
+      }
+
       const response = await AuthService.fetchWithAuth(USER_SKILLS_ENDPOINT, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(userSkillData),
+        body: JSON.stringify(payload),
       });
 
       if (!response.ok) {
         let errorMessage = `HTTP error! status: ${response.status}`;
         try {
           const errorData: ApiResult<UserSkill> = await response.json();
-          errorMessage = errorData.error || errorMessage;
+          // Ensure errorMessage is a string
+          errorMessage = typeof errorData.error === 'string' ? errorData.error : (errorData.error as any)?.message || errorMessage;
         } catch (e) {
           // If parsing fails, use the generic HTTP error
         }
@@ -48,8 +58,15 @@ export const UserSkillService = {
       });
 
       if (!response.ok) {
-        const errorData: ApiResult<UserSkill[]> = await response.json();
-        return { success: false, error: errorData.error || `HTTP error! status: ${response.status}` };
+        // Ensure error is a string before returning
+        const errorResponse = await response.json().catch(() => null); // Attempt to parse error
+        const errorMessage =
+          typeof errorResponse?.error === 'string'
+            ? errorResponse.error
+            : typeof errorResponse?.error?.message === 'string'
+            ? errorResponse.error.message
+            : `HTTP error! status: ${response.status}`;
+        return { success: false, error: errorMessage };
       }
       const userSkills: UserSkill[] = await response.json();
       return { success: true, data: userSkills };
@@ -72,7 +89,8 @@ export const UserSkillService = {
         let errorMessage = `HTTP error! status: ${response.status}`;
         try {
           const errorData: ApiResult<null> = await response.json();
-          errorMessage = errorData.error || errorMessage;
+          // Ensure errorMessage is a string
+          errorMessage = typeof errorData.error === 'string' ? errorData.error : (errorData.error as any)?.message || errorMessage;
         } catch (e) {
           // If parsing fails, use the generic HTTP error
         }
