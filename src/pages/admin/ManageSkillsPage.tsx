@@ -5,10 +5,11 @@ import { Textarea } from '@/components/ui/textarea';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { AdminSkillService } from '../../services/AdminSkillService';
-import type { Skill, CreateSkillDto, UpdateSkillDto } from '../../types/skill.types';
+import type { Skill, CreateSkillDto, UpdateSkillDto, SkillLevel } from '../../types/skill.types'; 
 import { useAuth } from '../../contexts/AuthContext';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Loader2, ShieldAlert, CheckCircle, PlusCircle, Edit3, Trash2 } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'; 
 
 const ManageSkillsPage: React.FC = () => {
   const [skills, setSkills] = useState<Skill[]>([]);
@@ -23,10 +24,11 @@ const ManageSkillsPage: React.FC = () => {
 
   const [newSkillName, setNewSkillName] = useState<string>('');
   const [newSkillDescription, setNewSkillDescription] = useState<string>('');
+  const [newSkillLevel, setNewSkillLevel] = useState<SkillLevel | '' >(''); 
   const [editingSkill, setEditingSkill] = useState<Skill | null>(null);
   const [deletingSkillId, setDeletingSkillId] = useState<string | null>(null);
 
-  const { accessToken } = useAuth();
+  const { accessToken } = useAuth(); 
 
   const fetchSkills = useCallback(async () => {
     if (!accessToken) {
@@ -36,7 +38,7 @@ const ManageSkillsPage: React.FC = () => {
     }
     setLoading(true);
     setError(null);
-    const result = await AdminSkillService.getAllSkills(accessToken);
+    const result = await AdminSkillService.getAllSkills();
     if (result.success && result.data) {
       setSkills(result.data);
     } else {
@@ -54,19 +56,31 @@ const ManageSkillsPage: React.FC = () => {
       setActionError('Skill name cannot be empty.');
       return;
     }
-    if (!accessToken) {
+    if (!newSkillLevel.trim()) {
+      setActionError('Skill level cannot be empty.');
+      return;
+    }
+    if (!accessToken) { 
       setActionError('Authentication token not found.');
       return;
     }
     setActionError(null);
     setActionSuccess(null);
-    const result = await AdminSkillService.addSkill({ name: newSkillName, description: newSkillDescription }, accessToken);
+
+    const payload: CreateSkillDto = {
+      skillName: newSkillName,
+      description: newSkillDescription,
+      skillLevel: newSkillLevel as SkillLevel 
+    };
+    
+    const result = await AdminSkillService.addSkill(payload);
     if (result.success) {
       setActionSuccess('Skill added successfully!');
       fetchSkills();
       setIsAddModalOpen(false);
       setNewSkillName('');
       setNewSkillDescription('');
+      setNewSkillLevel(''); 
     } else {
       setActionError(typeof result.error === 'string' ? result.error : result.error?.message || 'Failed to add skill.');
     }
@@ -83,8 +97,14 @@ const ManageSkillsPage: React.FC = () => {
     }
     setActionError(null);
     setActionSuccess(null);
-    const payload: UpdateSkillDto = { name: editingSkill.name, description: editingSkill.description };
-    const result = await AdminSkillService.updateSkill(editingSkill.skillID, payload, accessToken);
+
+    const payload: UpdateSkillDto = {
+      skillName: editingSkill.name,
+      description: editingSkill.description,
+      skillLevel: editingSkill.skillLevel as SkillLevel 
+    };
+    
+    const result = await AdminSkillService.updateSkill(editingSkill.skillID, payload);
     if (result.success) {
       setActionSuccess('Skill updated successfully!');
       fetchSkills();
@@ -102,7 +122,8 @@ const ManageSkillsPage: React.FC = () => {
     }
     setActionError(null);
     setActionSuccess(null);
-    const result = await AdminSkillService.deleteSkill(deletingSkillId, accessToken);
+  
+    const result = await AdminSkillService.deleteSkill(deletingSkillId);
     if (result.success) {
       setActionSuccess('Skill deleted successfully!');
       fetchSkills();
@@ -178,6 +199,18 @@ const ManageSkillsPage: React.FC = () => {
                 onChange={(e) => setNewSkillDescription(e.target.value)}
                 className="col-span-3"
               />
+              <Select onValueChange={(value) => setNewSkillLevel(value as SkillLevel)} value={newSkillLevel}>
+                <SelectTrigger className="col-span-3">
+                  <SelectValue placeholder="Select Skill Level" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Beginner">Beginner</SelectItem>
+                  <SelectItem value="Elementary">Elementary</SelectItem>
+                  <SelectItem value="Intermediate">Intermediate</SelectItem>
+                  <SelectItem value="Advanced">Advanced</SelectItem>
+                  <SelectItem value="Expert">Expert</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
             <DialogFooter>
               <Button variant="outline" onClick={() => setIsAddModalOpen(false)}>Cancel</Button>
@@ -259,6 +292,18 @@ const ManageSkillsPage: React.FC = () => {
                 onChange={(e) => setEditingSkill({ ...editingSkill, description: e.target.value })}
                 className="col-span-3"
               />
+              <Select onValueChange={(value) => setEditingSkill({ ...editingSkill, skillLevel: value as SkillLevel })} value={editingSkill.skillLevel}>
+                <SelectTrigger className="col-span-3">
+                  <SelectValue placeholder="Select Skill Level" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Beginner">Beginner</SelectItem>
+                  <SelectItem value="Elementary">Elementary</SelectItem>
+                  <SelectItem value="Intermediate">Intermediate</SelectItem>
+                  <SelectItem value="Advanced">Advanced</SelectItem>
+                  <SelectItem value="Expert">Expert</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
             <DialogFooter>
               <Button variant="outline" onClick={() => { setIsEditModalOpen(false); setEditingSkill(null); }}>Cancel</Button>

@@ -2,20 +2,22 @@ export interface Skill {
   skillID: string;
   name: string;
   description?: string;
-  skillLevel?: string; 
+  skillLevel?: SkillLevel; 
 }
 
 export interface CreateSkillDto {
   skillName: string; 
   description?: string;
-  skillLevel: string;
+  skillLevel: SkillLevel;
 }
 
 export interface UpdateSkillDto {
   skillName?: string; 
   description?: string;
-  skillLevel?: string; 
+  skillLevel?: SkillLevel; 
 }
+
+export type SkillLevel = 'Beginner' | 'Elementary' | 'Intermediate' | 'Advanced' | 'Expert';
 
 export interface UserSkillDto {
   userID: string;
