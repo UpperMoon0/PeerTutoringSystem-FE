@@ -20,7 +20,7 @@ export interface UpdateSkillDto {
 export type SkillLevel = 'Beginner' | 'Elementary' | 'Intermediate' | 'Advanced' | 'Expert';
 
 export interface UserSkillDto {
-  userSkillID?: string; // Make userSkillID optional
+  userSkillID?: string; 
   userID: string;
   skillID: string;
   isTutor: boolean;

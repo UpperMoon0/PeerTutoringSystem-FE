@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -8,11 +8,13 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { TutorService } from '../services/TutorService'; 
 import type { RequestTutorPayload } from '../types/RequestTutorPayload';
 import type { DocumentUploadDto } from '@/types/file.types';
+import type { PendingTutorVerificationStatus } from '@/types/TutorVerification';
 
 const TutorRegisterPage: React.FC = () => {
   const navigate = useNavigate();
-  const { currentUser, loading: authLoading } = useAuth(); 
-
+  const { currentUser, loading: authLoading } = useAuth();
+  const [statusLoading, setStatusLoading] = useState(true);
+  const [pendingStatus, setPendingStatus] = useState<PendingTutorVerificationStatus | null>(null);
   const [citizenId, setCitizenId] = useState('');
   const [studentId, setStudentId] = useState('');
   const [university, setUniversity] = useState('');
@@ -20,6 +22,25 @@ const TutorRegisterPage: React.FC = () => {
   const [files, setFiles] = useState<File[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    const checkStatus = async () => {
+      if (currentUser && currentUser.role === 'Student') {
+        setStatusLoading(true);
+        const result = await TutorService.checkPendingTutorVerification(currentUser.userId);
+        if (result.success) {
+          setPendingStatus(result.data || null); 
+        } else {
+          const errorMessage = typeof result.error === 'string' ? result.error : 'Failed to check application status.';
+          setError(errorMessage);
+        }
+        setStatusLoading(false);
+      }
+    };
+    if (!authLoading) {
+      checkStatus();
+    }
+  }, [currentUser, authLoading]);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files) {
@@ -32,7 +53,7 @@ const TutorRegisterPage: React.FC = () => {
     setError(null);
     setIsLoading(true);
 
-    if (authLoading) {
+    if (authLoading || statusLoading) {
       setError('Authentication state is loading. Please wait.');
       setIsLoading(false);
       return;
@@ -40,6 +61,12 @@ const TutorRegisterPage: React.FC = () => {
 
     if (!currentUser || currentUser.role !== 'Student') {
       setError('You must be logged in as a student to register as a tutor.');
+      setIsLoading(false);
+      return;
+    }
+
+    if (pendingStatus?.hasVerificationRequest) {
+      setError('Your application is already being reviewed or you have an existing verification request.');
       setIsLoading(false);
       return;
     }
@@ -57,7 +84,8 @@ const TutorRegisterPage: React.FC = () => {
         if (uploadResult.success && uploadResult.data) {
           uploadedDocuments.push(uploadResult.data);
         } else {
-          throw new Error(uploadResult.error || `Failed to upload ${file.name}`);
+          const errorMsg = typeof uploadResult.error === 'string' ? uploadResult.error : `Failed to upload ${file.name}`;
+          throw new Error(errorMsg);
         }
       }
 
@@ -82,7 +110,8 @@ const TutorRegisterPage: React.FC = () => {
         alert(result.data.message || 'Tutor registration request submitted successfully! Admin will review your application.');
         navigate('/'); 
       } else {
-        setError(result.error || 'Failed to submit tutor registration request.');
+        const errorMsg = typeof result.error === 'string' ? result.error : 'Failed to submit tutor registration request.';
+        setError(errorMsg);
       }
     } catch (err: any) {
       console.error("Error during tutor registration submission:", err);
@@ -92,6 +121,58 @@ const TutorRegisterPage: React.FC = () => {
     }
   };
 
+  if (authLoading || statusLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gray-100">
+        <p>Loading...</p>
+      </div>
+    );
+  }
+
+  if (!currentUser || currentUser.role !== 'Student') {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gray-100">
+        <Card className="w-full max-w-lg">
+          <CardHeader>
+            <CardTitle className="text-2xl font-bold text-center">Become a Tutor</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-center text-red-500">You must be logged in as a student to access this page.</p>
+          </CardContent>
+          <CardFooter>
+            <Button onClick={() => navigate('/login')} className="w-full">Login</Button>
+          </CardFooter>
+        </Card>
+      </div>
+    );
+  }
+
+  if (pendingStatus?.hasVerificationRequest) {
+    let statusMessage = 'Your application is currently being reviewed.';
+    if (pendingStatus.latestStatus === 'Approved') {
+      statusMessage = 'Congratulations! Your application to become a tutor has been approved. You can now update your tutor profile.';
+      // TODO: Navigate to profile page or show a link to it.
+    } else if (pendingStatus.latestStatus === 'Rejected') {
+      statusMessage = 'We regret to inform you that your application to become a tutor has been rejected. Please check your email for more details or contact support.';
+    }
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gray-100">
+        <Card className="w-full max-w-lg">
+          <CardHeader>
+            <CardTitle className="text-2xl font-bold text-center">Application Status</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-center">{statusMessage}</p>
+          </CardContent>
+          <CardFooter>
+            <Button onClick={() => navigate('/')} className="w-full">Back to Home</Button>
+          </CardFooter>
+        </Card>
+      </div>
+    );
+  }
+
+  // If no pending request, show the form
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100">
       <Card className="w-full max-w-lg">

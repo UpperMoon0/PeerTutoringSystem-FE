@@ -11,3 +11,8 @@ export interface TutorVerification {
   adminNotes?: string;
   documents: Array<{ documentID: string; documentType: string; documentPath: string }>; 
 }
+
+export interface PendingTutorVerificationStatus {
+  hasVerificationRequest: boolean;
+  latestStatus: 'Pending' | 'Approved' | 'Rejected' | null;
+}

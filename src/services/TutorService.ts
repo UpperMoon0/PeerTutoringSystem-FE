@@ -6,6 +6,7 @@ import { mockTutors } from '@/mocks/tutors';
 import { AuthService } from './AuthService';
 import type { ApiResult } from '@/types/api.types';
 import type { DocumentUploadDto, FileUploadResponse } from '@/types/file.types';
+import type { PendingTutorVerificationStatus } from '@/types/TutorVerification';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 const ENABLE_MOCK_API = import.meta.env.VITE_ENABLE_MOCK_API === 'true';
@@ -298,10 +299,44 @@ const updateTutorVerificationStatus = async (
   }
 };
 
+const checkPendingTutorVerification = async (userId: string): Promise<ApiResult<PendingTutorVerificationStatus>> => {
+  const url = `${API_BASE_URL}/TutorVerifications/pending/${userId}`;
+  try {
+    const response = await AuthService.fetchWithAuth(url, {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' },
+    });
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error(`API Error ${response.status}: ${response.statusText}`, errorText);
+      return { success: false, error: `Failed to check pending verification. Status: ${response.status}. ${errorText}` };
+    }
+    if (response.status === 204) {
+      return { success: true, data: { hasVerificationRequest: false, latestStatus: null } }; 
+    }
+    const responseText = await response.text();
+    if (!responseText) {
+      return { success: true, data: { hasVerificationRequest: false, latestStatus: null } }; 
+    }
+    try {
+      const data = JSON.parse(responseText) as PendingTutorVerificationStatus;
+      return { success: true, data };
+    } catch (parseError) {
+      console.error(`JSON parsing error for URL ${url}:`, parseError, "Response text:", responseText);
+      return { success: false, error: "Failed to parse server response." };
+    }
+  } catch (networkOrOtherError) {
+    console.error(`Request processing failed for URL ${url}:`, networkOrOtherError);
+    const errorString = networkOrOtherError instanceof Error ? networkOrOtherError.message : String(networkOrOtherError);
+    return { success: false, error: errorString };
+  }
+};
+
 export const TutorService = {
   requestTutor,
   uploadDocument,
   getFeaturedTutors,
   getTutorVerifications,
   updateTutorVerificationStatus,
+  checkPendingTutorVerification,
 };
