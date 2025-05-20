@@ -119,7 +119,7 @@ const TutorProfileForm: React.FC<TutorProfileFormProps> = ({ initialData, onSubm
                 onChange={() => handleSkillChange(skill.skillID)}
                 className="form-checkbox h-4 w-4 text-primary focus:ring-primary-dark border-gray-300 rounded"
               />
-              <Label htmlFor={`skill-${skill.skillID}`} className="text-sm font-medium">{skill.name}</Label>
+              <Label htmlFor={`skill-${skill.skillID}`} className="text-sm font-medium">{skill.skillName}</Label>
             </div>
           ))}
         </div>

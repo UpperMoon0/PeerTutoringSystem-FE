@@ -75,7 +75,7 @@ export const AdminSkillService = {
     try {
       // Ensure skillData includes skillID for the PUT request body as per BE SkillDto
       const response = await AuthService.fetchWithAuth(`${SKILLS_ENDPOINT}/${skillId}`, {
-        method: 'PUT', // Changed from POST to PUT
+        method: 'PUT', 
         headers: {
           'Content-Type': 'application/json',
         },
