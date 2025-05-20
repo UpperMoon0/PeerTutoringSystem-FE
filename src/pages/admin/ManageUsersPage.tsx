@@ -26,7 +26,7 @@ const ManageUsersPage: React.FC = () => {
     }
     setLoading(true);
     setError(null);
-    const result = await AdminUserService.getAllUsers(token);
+    const result = await AdminUserService.getAllUsers(); 
     if (result.success && result.data) {
       setAllUsers(result.data);
     } else {
@@ -47,7 +47,7 @@ const ManageUsersPage: React.FC = () => {
     return allUsers.filter(user => user.role === selectedRoleFilter);
   }, [allUsers, selectedRoleFilter]);
 
-  const handleBanToggle = async (userId: string) => {
+  const handleBanToggle = async (userId: string, currentUserStatus: string) => {
     if (!token) {
       setActionError('Authentication token not found.');
       return;
@@ -56,12 +56,16 @@ const ManageUsersPage: React.FC = () => {
     setActionError(null);
     setActionSuccess(null);
 
-    const result = await AdminUserService.banUser(userId, token);
+    let result;
+    if (currentUserStatus === 'Banned') {
+      result = await AdminUserService.unbanUser(userId);
+    } else {
+      result = await AdminUserService.banUser(userId);
+    }
 
     if (result.success) {
-      setActionSuccess(`User ${userId} status has been updated.`);
-      // Refresh users list to show updated status
-      await fetchUsers();
+      setActionSuccess(`User ${userId} status has been updated successfully.`);
+      await fetchUsers(); // Refresh users list
     } else {
       const errorMessage = result.error instanceof Error ? result.error.message : result.error;
       setActionError(errorMessage || `Failed to update status for user ${userId}.`);
@@ -160,7 +164,7 @@ const ManageUsersPage: React.FC = () => {
                   <td className="py-3 px-4 text-center">
                     {user.role !== 'Admin' && (
                       <Button
-                        onClick={() => handleBanToggle(user.userID)}
+                        onClick={() => handleBanToggle(user.userID, user.status)}
                         variant={user.status === 'Banned' ? 'outline' : 'destructive'}
                         size="sm"
                         disabled={actingUserId === user.userID}

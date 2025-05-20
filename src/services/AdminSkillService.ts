@@ -35,7 +35,7 @@ export const AdminSkillService = {
     }
   },
 
-  addSkill: async (skillData: CreateSkillDto): Promise<ServiceResult<Skill>> => {
+  addSkill: async (skillData: CreateSkillDto): Promise<ServiceResult<{ skillID: string }>> => {
     try {
       const response = await AuthService.fetchWithAuth(SKILLS_ENDPOINT, {
         method: 'POST',
@@ -47,21 +47,24 @@ export const AdminSkillService = {
       if (!response.ok) {
         let errorMessage = `HTTP error! status: ${response.status}`;
         try {
-          const errorData: ApiResult<Skill> = await response.json();
+          const errorData: { message?: string; error?: string | { message?: string } } = await response.json();
           if (errorData.error) {
             if (typeof errorData.error === 'string') {
               errorMessage = errorData.error;
-            } else if (errorData.error && typeof errorData.error === 'object' && 'message' in errorData.error) {
+            } else if (typeof errorData.error === 'object' && errorData.error.message) {
               errorMessage = errorData.error.message;
             }
+          } else if (errorData.message) {
+            errorMessage = errorData.message;
           }
         } catch (e) {
           // If parsing fails, use the generic HTTP error
         }
         return { success: false, error: errorMessage };
       }
-      const createdSkill: Skill = await response.json();
-      return { success: true, data: createdSkill };
+      // BE returns { skillID: "guid" } upon successful creation
+      const responseData: { skillID: string } = await response.json();
+      return { success: true, data: responseData };
     } catch (error) {
       console.error('Error adding skill:', error);
       return { success: false, error: error instanceof Error ? error.message : 'An unexpected error occurred' };
