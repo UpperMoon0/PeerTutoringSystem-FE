@@ -70,12 +70,13 @@ export const AdminSkillService = {
 
   updateSkill: async (skillId: string, skillData: UpdateSkillDto): Promise<ServiceResult<Skill>> => {
     try {
+      // Ensure skillData includes skillID for the PUT request body as per BE SkillDto
       const response = await AuthService.fetchWithAuth(`${SKILLS_ENDPOINT}/${skillId}`, {
-        method: 'PUT',
+        method: 'PUT', // Changed from POST to PUT
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(skillData),
+        body: JSON.stringify(skillData), // skillData now includes skillID
       });
       if (!response.ok) {
         let errorMessage = `HTTP error! status: ${response.status}`;
@@ -93,6 +94,7 @@ export const AdminSkillService = {
         }
         return { success: false, error: errorMessage };
       }
+      // Assuming the backend returns the updated skill object directly, not nested in a data property.
       const updatedSkill: Skill = await response.json();
       return { success: true, data: updatedSkill };
     } catch (error) {
@@ -125,7 +127,9 @@ export const AdminSkillService = {
         }
         return { success: false, error: errorMessage };
       }
-      return { success: true, data: null }; // Delete typically returns 204 No Content or 200 OK with a success message
+      // Delete typically returns 204 No Content or similar, with no body or a success message.
+      // Returning null as per the original FE service design.
+      return { success: true, data: null };
     } catch (error) {
       console.error(`Error deleting skill ${skillId}:`, error);
       return { success: false, error: error instanceof Error ? error.message : 'An unexpected error occurred' };

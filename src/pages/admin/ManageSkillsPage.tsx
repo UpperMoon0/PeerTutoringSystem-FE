@@ -99,9 +99,10 @@ const ManageSkillsPage: React.FC = () => {
     setActionSuccess(null);
 
     const payload: UpdateSkillDto = {
+      skillID: editingSkill.skillID, // Ensure skillID is included
       skillName: editingSkill.skillName,
-      description: editingSkill.Description,
-      skillLevel: editingSkill.SkillLevel as SkillLevel 
+      description: editingSkill.description, // Changed from editingSkill.Description
+      skillLevel: editingSkill.skillLevel as SkillLevel // Changed from editingSkill.SkillLevel
     };
     
     const result = await AdminSkillService.updateSkill(editingSkill.skillID, payload);
@@ -170,13 +171,95 @@ const ManageSkillsPage: React.FC = () => {
   return (
     <div className="container mx-auto p-4">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Manage Skills</h1>
+        <h1 className="text-3xl font-bold text-gray-800">Manage Skills</h1>
+        <Button onClick={() => {
+          setIsAddModalOpen(true);
+          setActionError(null);
+          setActionSuccess(null);
+          setNewSkillName('');
+          setNewSkillDescription('');
+          setNewSkillLevel('');
+        }} className="bg-green-500 hover:bg-green-600 text-white">
+          <PlusCircle className="mr-2 h-5 w-5" /> Add New Skill
+        </Button>
+      </div>
+
+      {actionError && (
+        <Alert variant="destructive" className="mb-4">
+          <ShieldAlert className="h-4 w-4" />
+          <AlertTitle>Action Failed</AlertTitle>
+          <AlertDescription>{actionError}</AlertDescription>
+        </Alert>
+      )}
+      {actionSuccess && (
+        <Alert variant="default" className="mb-4 bg-green-100 border-green-400 text-green-700">
+          <CheckCircle className="h-4 w-4 text-green-600" />
+          <AlertTitle>Success</AlertTitle>
+          <AlertDescription>{actionSuccess}</AlertDescription>
+        </Alert>
+      )}
+
+      {skills.length === 0 && !loading && (
+        <p className="text-center text-gray-500 text-lg">No skills found. Click "Add New Skill" to create one.</p>
+      )}
+
+      {skills.length > 0 && (
+        <div className="bg-white shadow-md rounded-lg overflow-hidden">
+          <table className="min-w-full leading-normal">
+            <thead>
+              <tr>
+                <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                  Name
+                </th>
+                <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                  Description
+                </th>
+                <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                  Skill Level
+                </th>
+                <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                  Actions
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {skills.map((skill) => (
+                <tr key={skill.skillID} className="hover:bg-gray-50">
+                  <td className="px-5 py-4 border-b border-gray-200 bg-white text-sm">
+                    <p className="text-gray-900 whitespace-no-wrap">{skill.skillName}</p>
+                  </td>
+                  <td className="px-5 py-4 border-b border-gray-200 bg-white text-sm">
+                    <p className="text-gray-900 whitespace-no-wrap">{skill.description || 'N/A'}</p>
+                  </td>
+                  <td className="px-5 py-4 border-b border-gray-200 bg-white text-sm">
+                    <p className="text-gray-900 whitespace-no-wrap">{skill.skillLevel}</p>
+                  </td>
+                  <td className="px-5 py-4 border-b border-gray-200 bg-white text-sm">
+                    <button
+                      onClick={() => openEditModal(skill)}
+                      className="text-indigo-600 hover:text-indigo-900 mr-3 transition duration-150 ease-in-out"
+                      aria-label="Edit skill"
+                    >
+                      <Edit3 className="h-4 w-4" />
+                    </button>
+                    <button
+                      onClick={() => openDeleteModal(skill.skillID)}
+                      className="text-red-600 hover:text-red-900 transition duration-150 ease-in-out"
+                      aria-label="Delete skill"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {/* Add Skill Modal */}
+      {isAddModalOpen && (
         <Dialog open={isAddModalOpen} onOpenChange={setIsAddModalOpen}>
-          <DialogTrigger asChild>
-            <Button className="bg-green-500 hover:bg-green-600 text-white">
-              <PlusCircle className="mr-2 h-5 w-5" /> Add New Skill
-            </Button>
-          </DialogTrigger>
           <DialogContent className="sm:max-w-[425px]">
             <DialogHeader>
               <DialogTitle>Add New Skill</DialogTitle>
@@ -218,53 +301,6 @@ const ManageSkillsPage: React.FC = () => {
             </DialogFooter>
           </DialogContent>
         </Dialog>
-      </div>
-
-      {actionError && (
-        <Alert variant="destructive" className="mb-4">
-          <ShieldAlert className="h-4 w-4" />
-          <AlertTitle>Action Failed</AlertTitle>
-          <AlertDescription>{actionError}</AlertDescription>
-        </Alert>
-      )}
-      {actionSuccess && (
-        <Alert variant="default" className="mb-4 bg-green-100 border-green-400 text-green-700">
-          <CheckCircle className="h-4 w-4 text-green-600" />
-          <AlertTitle>Success</AlertTitle>
-          <AlertDescription>{actionSuccess}</AlertDescription>
-        </Alert>
-      )}
-
-      {skills.length === 0 && !loading && (
-        <p className="text-center text-gray-500 text-lg">No skills found. Click "Add New Skill" to create one.</p>
-      )}
-
-      {skills.length > 0 && (
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Name</TableHead>
-              <TableHead>Description</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {skills.map((skill) => (
-              <TableRow key={skill.skillID}>
-                <TableCell className="font-medium">{skill.skillName}</TableCell>
-                <TableCell>{skill.Description || 'N/A'}</TableCell>
-                <TableCell className="text-right">
-                  <Button variant="ghost" size="sm" onClick={() => openEditModal(skill)} className="mr-2">
-                    <Edit3 className="h-4 w-4 text-blue-500" />
-                  </Button>
-                  <Button variant="ghost" size="sm" onClick={() => openDeleteModal(skill.skillID)}>
-                    <Trash2 className="h-4 w-4 text-red-500" />
-                  </Button>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
       )}
 
       {/* Edit Skill Modal */}
@@ -288,11 +324,11 @@ const ManageSkillsPage: React.FC = () => {
               <Textarea
                 id="editSkillDescription"
                 placeholder="Skill Description (optional)"
-                value={editingSkill.Description || ''}
-                onChange={(e) => setEditingSkill({ ...editingSkill, Description: e.target.value })}
+                value={editingSkill.description || ''}
+                onChange={(e) => setEditingSkill({ ...editingSkill, description: e.target.value })}
                 className="col-span-3"
               />
-              <Select onValueChange={(value) => setEditingSkill({ ...editingSkill, SkillLevel: value as SkillLevel })} value={editingSkill.SkillLevel || ''}>
+              <Select onValueChange={(value) => setEditingSkill({ ...editingSkill, skillLevel: value as SkillLevel })} value={editingSkill.skillLevel || ''}>
                 <SelectTrigger className="col-span-3">
                   <SelectValue placeholder="Select Skill Level" />
                 </SelectTrigger>
