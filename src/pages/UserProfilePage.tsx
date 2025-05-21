@@ -72,17 +72,36 @@ const UserProfilePage: React.FC = () => {
   const fetchTutorProfileData = async (currentUserId: string) => {
     setTutorProfileLoading(true);
     setTutorProfileError(null);
+    let fetchedTutorProfile: TutorProfileDto | null = null; // Temporary variable to hold profile data
+
     try {
       const tutorResult = await TutorProfileService.getTutorProfileByUserId(currentUserId);
+
       if (tutorResult.success && tutorResult.data) {
-        setTutorProfile(tutorResult.data);
-      } else if (tutorResult.error && (tutorResult.error instanceof Error ? tutorResult.error.message : tutorResult.error).includes("not found")) {
-        setTutorProfile(null);
-      } else {
-        setTutorProfileError(tutorResult.error instanceof Error ? tutorResult.error.message : tutorResult.error || 'Failed to fetch tutor profile.');
+        fetchedTutorProfile = tutorResult.data; // Store basic profile initially
+
+        // Fetch the user's skills
+        const skillsResult = await UserSkillService.getUserSkills(currentUserId);
+        if (skillsResult.success && skillsResult.data) {
+          // Combine the fetched skills with the tutor profile
+          fetchedTutorProfile = { ...fetchedTutorProfile, skills: skillsResult.data };
+        } else {
+          // Log an error if skills couldn't be fetched, but don't fail the entire profile load.
+          // Ensure skills is an empty array for consistent handling in TutorProfileDisplay.
+          console.warn(`Failed to fetch skills for tutor ${currentUserId}:`, skillsResult.error);
+          fetchedTutorProfile = { ...fetchedTutorProfile, skills: [] };
+        }
+        setTutorProfile(fetchedTutorProfile); // Set the combined profile to state
+
+      } else if (tutorResult.isNotFoundError) { // Check for specific not found error from service
+        setTutorProfile(null); // Tutor profile itself not found
+      } else { // Handle other errors from fetching tutor profile
+        const errorMessage = tutorResult.error instanceof Error ? tutorResult.error.message : String(tutorResult.error || 'Failed to fetch tutor profile.');
+        setTutorProfileError(errorMessage);
       }
-    } catch (err) {
-      setTutorProfileError(err instanceof Error ? err.message : 'An unknown error occurred while fetching tutor profile.');
+    } catch (err) { // Catch network errors or other unexpected exceptions during the process
+      const errorMessage = err instanceof Error ? err.message : 'An unknown error occurred while fetching tutor profile data.';
+      setTutorProfileError(errorMessage);
     }
     setTutorProfileLoading(false);
   };
