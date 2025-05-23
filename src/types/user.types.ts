@@ -23,6 +23,7 @@ export interface ProfileDto {
   avatarUrl?: string; 
   status: string; 
   role: string; 
+  bio?: string; 
 }
 
 export interface UpdateProfileDto { 

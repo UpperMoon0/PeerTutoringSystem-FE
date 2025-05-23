@@ -200,31 +200,141 @@ async function fetchWithAuth(input: RequestInfo | URL, init?: RequestInit): Prom
         });
       }
 
-      try {
-        if (!refreshTokenPromiseHolder) {
-          console.error('refreshTokenPromiseHolder is null, cannot await refresh.');
-          return response;
-        }
-        
+      if (refreshTokenPromiseHolder) {
         const refreshResult = await refreshTokenPromiseHolder;
-
-        if (refreshResult && refreshResult.success) {
-          console.log('Token refreshed by interceptor, retrying original request.');
-          return originalFetch(2); 
+        if (refreshResult.success && localStorage.getItem('accessToken')) {
+          // Token refreshed, retry original request
+          return originalFetch(2); // Indicate second attempt
         } else {
-          console.error('Interceptor: Failed to refresh token. Original 401 will be returned or session already cleared.');
+          // Refresh failed or no new token, return original 401 response
           return response; 
         }
-      } catch (error) {
-        console.error('Interceptor: Error during token refresh process:', error);
-        return response; 
       }
     }
     return response;
   };
-
-  return originalFetch(1);
+  return originalFetch(1); // Indicate first attempt
 }
+
+const apiClientInstance = {
+  async get(url: string, config?: { params?: any }) {
+    let fullUrl = `${API_BASE_URL}${url}`;
+    if (config?.params) {
+      const queryParams = new URLSearchParams(config.params).toString();
+      if (queryParams) {
+        fullUrl += `?${queryParams}`;
+      }
+    }
+    const response = await fetchWithAuth(fullUrl, { method: 'GET' });
+
+    const responseText = await response.text();
+    let responseData: any;
+    try {
+      responseData = responseText ? JSON.parse(responseText) : {};
+    } catch (e) {
+      responseData = responseText; // If not JSON, use raw text
+    }
+
+    if (!response.ok) {
+      const error: any = new Error(
+        (typeof responseData === 'object' && responseData?.error) ||
+        (typeof responseData === 'object' && responseData?.message) ||
+        (typeof responseData === 'string' && responseData) ||
+        `Request failed with status ${response.status}`
+      );
+      error.response = {
+        data: responseData,
+        status: response.status,
+        headers: response.headers
+      };
+      console.error(`API Client GET Error ${response.status} for URL ${fullUrl}:`, responseData);
+      throw error;
+    }
+    return { data: responseData, status: response.status, headers: response.headers };
+  },
+
+  async post(url: string, body?: any, config?: { params?: any }) {
+    let fullUrl = `${API_BASE_URL}${url}`;
+    if (config?.params) {
+      const queryParams = new URLSearchParams(config.params).toString();
+      if (queryParams) {
+        fullUrl += `?${queryParams}`;
+      }
+    }
+    const response = await fetchWithAuth(fullUrl, {
+      method: 'POST',
+      body: JSON.stringify(body),
+      headers: { 'Content-Type': 'application/json' },
+    });
+    
+    const responseText = await response.text();
+    let responseData: any;
+    try {
+      responseData = responseText ? JSON.parse(responseText) : {};
+    } catch (e) {
+      responseData = responseText;
+    }
+
+    if (!response.ok) {
+      const error: any = new Error(
+        (typeof responseData === 'object' && responseData?.error) ||
+        (typeof responseData === 'object' && responseData?.message) ||
+        (typeof responseData === 'string' && responseData) ||
+        `Request failed with status ${response.status}`
+      );
+      error.response = {
+        data: responseData,
+        status: response.status,
+        headers: response.headers
+      };
+      console.error(`API Client POST Error ${response.status} for URL ${fullUrl}:`, responseData);
+      throw error;
+    }
+    return { data: responseData, status: response.status, headers: response.headers };
+  },
+
+  async put(url: string, body?: any, config?: { params?: any }) {
+    let fullUrl = `${API_BASE_URL}${url}`;
+    if (config?.params) {
+      const queryParams = new URLSearchParams(config.params).toString();
+      if (queryParams) {
+        fullUrl += `?${queryParams}`;
+      }
+    }
+    const response = await fetchWithAuth(fullUrl, {
+      method: 'PUT',
+      body: JSON.stringify(body),
+      headers: { 'Content-Type': 'application/json' },
+    });
+
+    const responseText = await response.text();
+    let responseData: any;
+    try {
+      responseData = responseText ? JSON.parse(responseText) : {};
+    } catch (e) {
+      responseData = responseText;
+    }
+
+    if (!response.ok) {
+      const error: any = new Error(
+        (typeof responseData === 'object' && responseData?.error) ||
+        (typeof responseData === 'object' && responseData?.message) ||
+        (typeof responseData === 'string' && responseData) ||
+        `Request failed with status ${response.status}`
+      );
+      error.response = {
+        data: responseData,
+        status: response.status,
+        headers: response.headers
+      };
+      console.error(`API Client PUT Error ${response.status} for URL ${fullUrl}:`, responseData);
+      throw error;
+    }
+    return { data: responseData, status: response.status, headers: response.headers };
+  },
+};
+
+export const apiClient = apiClientInstance;
 
 export const AuthService = {
   loginWithGooglePopup,

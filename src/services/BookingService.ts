@@ -1,0 +1,136 @@
+import { AuthService } from "./AuthService";
+import type { ApiResult } from "@/types/api.types"; // Changed ApiResponse to ApiResult
+import type { TutorAvailabilitiesPayload } from "@/types/tutorAvailability.types";
+import type { Booking, CreateBookingDto } from "@/types/booking.types";
+
+const formatDateForQuery = (date: Date | string): string => {
+  if (typeof date === 'string') return date;
+  return date.toISOString().split('.')[0];
+};
+
+export const BookingService = {
+  async getTutorAvailableSlots(
+    tutorId: string,
+    startDate: string,
+    endDate: string,
+    page: number = 1,
+    pageSize: number = 100
+  ): Promise<ApiResult<TutorAvailabilitiesPayload>> {
+    try {
+      const queryParams = new URLSearchParams({
+        tutorId,
+        startDate: formatDateForQuery(startDate),
+        endDate: formatDateForQuery(endDate),
+        page: page.toString(),
+        pageSize: pageSize.toString(),
+      }).toString();
+      const response = await AuthService.fetchWithAuth(`/TutorAvailability/available?${queryParams}`, {
+        method: 'GET',
+      });
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: "Failed to parse error response." }));
+        throw new Error(errorData.error || `Failed to fetch available slots: ${response.statusText}`);
+      }
+      const responseData = await response.json();
+      return { success: true, data: responseData.data }; 
+    } catch (error: any) {
+      return { success: false, error: error.message || "Failed to fetch available slots." };
+    }
+  },
+
+  async createBooking(bookingData: CreateBookingDto): Promise<ApiResult<Booking>> {
+    try {
+      const response = await AuthService.fetchWithAuth("/Bookings", { 
+        method: 'POST', 
+        body: JSON.stringify(bookingData),
+        headers: { 'Content-Type': 'application/json' },
+      });
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: "Failed to parse error response." }));
+        throw new Error(errorData.error || `Failed to create booking: ${response.statusText}`);
+      }
+      const responseData = await response.json();
+      return { success: true, data: responseData.data };
+    } catch (error: any) {
+      return { success: false, error: error.message || "Failed to create booking." };
+    }
+  },
+
+  async getStudentBookings(
+    page: number = 1,
+    pageSize: number = 10
+  ): Promise<ApiResult<{ bookings: Booking[], totalCount: number }>> {
+    try {
+      const queryParams = new URLSearchParams({
+        page: page.toString(),
+        pageSize: pageSize.toString(),
+      }).toString();
+      const response = await AuthService.fetchWithAuth(`/Bookings/student?${queryParams}`, {
+        method: 'GET',
+      });
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: "Failed to parse error response." }));
+        throw new Error(errorData.error || `Failed to fetch student bookings: ${response.statusText}`);
+      }
+      const responseData = await response.json();
+      return { success: true, data: { bookings: responseData.data, totalCount: responseData.totalCount } };
+    } catch (error: any) {
+      return { success: false, error: error.message || "Failed to fetch student bookings." };
+    }
+  },
+
+  async getTutorBookings(
+    page: number = 1,
+    pageSize: number = 10
+  ): Promise<ApiResult<{ bookings: Booking[], totalCount: number }>> {
+    try {
+      const queryParams = new URLSearchParams({
+        page: page.toString(),
+        pageSize: pageSize.toString(),
+      }).toString();
+      const response = await AuthService.fetchWithAuth(`/Bookings/tutor?${queryParams}`, {
+        method: 'GET',
+      });
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: "Failed to parse error response." }));
+        throw new Error(errorData.error || `Failed to fetch tutor bookings: ${response.statusText}`);
+      }
+      const responseData = await response.json();
+      return { success: true, data: { bookings: responseData.data, totalCount: responseData.totalCount } };
+    } catch (error: any) {
+      return { success: false, error: error.message || "Failed to fetch tutor bookings." };
+    }
+  },
+  
+  async getBookingById(bookingId: string): Promise<ApiResult<Booking>> {
+    try {
+      const response = await AuthService.fetchWithAuth(`/Bookings/${bookingId}`, { method: 'GET' });
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: "Failed to parse error response." }));
+        throw new Error(errorData.error || `Failed to fetch booking details: ${response.statusText}`);
+      }
+      const responseData = await response.json();
+      return { success: true, data: responseData.data };
+    } catch (error: any) {
+      return { success: false, error: error.message || "Failed to fetch booking details." };
+    }
+  },
+
+  async updateBookingStatus(bookingId: string, status: string): Promise<ApiResult<Booking>> {
+    try {
+      const response = await AuthService.fetchWithAuth(`/Bookings/${bookingId}/status`, { 
+        method: 'PUT', 
+        body: JSON.stringify({ status }),
+        headers: { 'Content-Type': 'application/json' },
+      });
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: "Failed to parse error response." }));
+        throw new Error(errorData.error || `Failed to update booking status: ${response.statusText}`);
+      }
+      const responseData = await response.json();
+      return { success: true, data: responseData.data };
+    } catch (error: any) {
+      return { success: false, error: error.message || "Failed to update booking status." };
+    }
+  }
+};
