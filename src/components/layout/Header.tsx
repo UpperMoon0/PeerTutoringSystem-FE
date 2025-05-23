@@ -29,6 +29,16 @@ const Header: React.FC = () => {
           >
             Tutors
           </Link>
+          {currentUser && currentUser.role === 'Tutor' && (
+            <Link
+              to="/manage-availability"
+              className={`text-white hover:text-gray-200 transition-colors ${
+                location.pathname === '/manage-availability' ? 'bg-white/20 px-3 py-1 rounded-md' : ''
+              }`}
+            >
+              Manage Availability
+            </Link>
+          )}
           {currentUser && currentUser.role === 'Admin' && (
             <Link
               to="/admin"

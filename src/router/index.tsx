@@ -12,6 +12,7 @@ import ManageSkillsPage from '@/pages/admin/ManageSkillsPage';
 import ProtectedRoute from './ProtectedRoute';
 import UserProfilePage from '@/pages/UserProfilePage';
 import TutorListPage from '@/pages/TutorListPage'; 
+import ManageAvailabilityPage from '@/pages/ManageAvailabilityPage';
 
 const router = createBrowserRouter([
   {
@@ -40,6 +41,13 @@ const router = createBrowserRouter([
       {
         path: '/tutors', 
         element: <TutorListPage />, 
+      },
+      {
+        path: '/manage-availability', 
+        element: 
+          <ProtectedRoute allowedRoles={['Tutor']}>
+            <ManageAvailabilityPage />
+          </ProtectedRoute>
       },
       {
         path: 'admin',
