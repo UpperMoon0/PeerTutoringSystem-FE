@@ -380,7 +380,7 @@ const getAllTutors = async (): Promise<ApiResult<User[]>> => {
 };
 
 const getTutorById = async (tutorId: string): Promise<ApiResult<ProfileDto>> => { 
-  const url = `${API_BASE_URL}/Users/${tutorId}/profile`;
+  const url = `${API_BASE_URL}/UserBio/user/${tutorId}`; 
   try {
     const response = await AuthService.fetchWithAuth(url, { method: 'GET' });
     if (!response.ok) {

@@ -117,32 +117,30 @@ const TutorDetailPage: React.FC = () => {
     }
   };
 
-  if (isLoading && !tutor) return <div className="container mx-auto p-4">Loading tutor details...</div>;
-  if (error) return <div className="container mx-auto p-4 text-red-500">{error}</div>;
-  if (!tutor) return <div className="container mx-auto p-4">Tutor not found.</div>;
+  if (isLoading) return <p>Loading tutor profile...</p>;
+  if (error) return <Alert variant="destructive"><AlertDescription>{error}</AlertDescription></Alert>;
+  if (!tutor) return <p>Tutor not found.</p>;
 
   return (
-    <div className="container mx-auto p-4 space-y-8">
-      <Card>
+    <div className="container mx-auto p-4">
+      <Card className="mb-6">
         <CardHeader className="flex flex-row items-center space-x-4">
           <Avatar className="h-24 w-24">
-            <AvatarImage src={tutor.avatarUrl || undefined} alt={tutor.fullName} />
-            <AvatarFallback>{tutor.fullName?.split(' ').map(n => n[0]).join('')}</AvatarFallback>
+            <AvatarImage src={tutor.avatarUrl} alt={tutor.fullName} />
+            <AvatarFallback>{tutor.fullName?.charAt(0)}</AvatarFallback>
           </Avatar>
           <div>
             <CardTitle className="text-3xl">{tutor.fullName}</CardTitle>
-            <CardDescription>{tutor.email}</CardDescription>
+            {tutor.school && <CardDescription>School: {tutor.school}</CardDescription>}
           </div>
         </CardHeader>
         <CardContent>
-          {tutor.bio && (
-            <>
-              <h3 className="text-xl font-semibold mt-4 mb-2">Bio</h3>
-              <p className="text-muted-foreground">{tutor.bio}</p>
-            </>
-          )}
-
-          <h3 className="text-xl font-semibold mt-6 mb-2">Skills</h3>
+          {tutor.bio && <p className="text-gray-700 mb-2"><strong>Bio:</strong> {tutor.bio}</p>}
+          {tutor.hourlyRate !== undefined && <p className="text-gray-700 mb-2"><strong>Hourly Rate:</strong> ${tutor.hourlyRate.toFixed(2)}</p>}
+          {tutor.experience && <p className="text-gray-700 mb-2"><strong>Experience:</strong> {tutor.experience}</p>}
+          {tutor.availability && <p className="text-gray-700 mb-4"><strong>Availability:</strong> {tutor.availability}</p>}
+          
+          <h3 className="text-xl font-semibold mb-2">Skills</h3>
           {skills.length > 0 ? (
             <div className="flex flex-wrap gap-2">
               {skills.map(skill => (

@@ -14,8 +14,7 @@ export interface User {
 
 export interface ProfileDto { 
   userID: string;
-  fullName: string;
-  email: string;
+  fullName: string; 
   dateOfBirth: string; 
   phoneNumber: string; 
   gender: string; 
@@ -24,6 +23,10 @@ export interface ProfileDto {
   status: string; 
   role: string; 
   bio?: string; 
+  hourlyRate?: number; 
+  experience?: string; 
+  availability?: string; 
+  school?: string; 
 }
 
 export interface UpdateProfileDto { 
