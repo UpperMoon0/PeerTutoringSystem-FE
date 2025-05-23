@@ -15,6 +15,10 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { CalendarIcon } from 'lucide-react';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar } from '@/components/ui/calendar';
+import { cn } from '@/lib/utils'; 
 
 interface TutorProfile extends ProfileDto {
 }
@@ -27,6 +31,23 @@ const TutorDetailPage: React.FC = () => {
   const [skills, setSkills] = useState<Skill[]>([]);
   const [availabilities, setAvailabilities] = useState<TutorAvailability[]>([]);
   const [selectedAvailability, setSelectedAvailability] = useState<TutorAvailability | null>(null);
+
+  // State for date range selection
+  const [dateRangeStart, setDateRangeStart] = useState<Date | undefined>(() => {
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    tomorrow.setHours(0, 0, 0, 0);
+    return tomorrow;
+  });
+  const [dateRangeEnd, setDateRangeEnd] = useState<Date | undefined>(() => {
+    const initialStartDate = new Date();
+    initialStartDate.setDate(initialStartDate.getDate() + 1);
+    initialStartDate.setHours(0, 0, 0, 0);
+    const sevenDaysFromStart = new Date(initialStartDate);
+    sevenDaysFromStart.setDate(sevenDaysFromStart.getDate() + 7);
+    return sevenDaysFromStart;
+  });
+
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [bookingError, setBookingError] = useState<string | null>(null);
@@ -79,15 +100,20 @@ const TutorDetailPage: React.FC = () => {
     if (!tutorId) return;
     setBookingError(null);
     setBookingSuccess(null);
+
+    if (!dateRangeStart || !dateRangeEnd) {
+      setBookingError("Please select a start and end date.");
+      return;
+    }
+
+    if (dateRangeEnd < dateRangeStart) {
+      setBookingError("End date cannot be before start date.");
+      return;
+    }
+
     try {
-      const startDate = new Date();
-      startDate.setDate(startDate.getDate() + 1); // Set startDate to tomorrow
-      startDate.setHours(0, 0, 0, 0); // Set time to the beginning of the day
-
-      const endDate = new Date(startDate);
-      endDate.setDate(startDate.getDate() + 7);
-
-      const response = await BookingService.getTutorAvailableSlots(tutorId, startDate.toISOString(), endDate.toISOString());
+      // Use dateRangeStart and dateRangeEnd from state
+      const response = await BookingService.getTutorAvailableSlots(tutorId, dateRangeStart.toISOString(), dateRangeEnd.toISOString());
       if (response.success && response.data) {
         setAvailabilities(response.data.availabilities || []);
         if ((response.data.availabilities || []).length === 0) {
@@ -177,9 +203,91 @@ const TutorDetailPage: React.FC = () => {
           <CardTitle>Book a Session</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <Button onClick={handleFetchAvailabilities} disabled={isLoading}>
-            {isLoading ? 'Loading Availabilities...' : 'View Available Slots'}
-          </Button>
+          {/* Date Range Selection UI */}
+          <div className="flex flex-col sm:flex-row gap-4 mb-4 items-end">
+            <div className="flex-1 space-y-1">
+              <label htmlFor="startDate" className="block text-sm font-medium text-gray-700">
+                Start Date
+              </label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant={"outline"}
+                    className={cn(
+                      "w-full justify-start text-left font-normal",
+                      !dateRangeStart && "text-muted-foreground"
+                    )}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {dateRangeStart ? format(dateRangeStart, "PPP") : <span>Pick a date</span>}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0">
+                  <Calendar
+                    mode="single"
+                    selected={dateRangeStart}
+                    onSelect={(date) => {
+                      if (date) {
+                        date.setHours(0,0,0,0);
+                        setDateRangeStart(date);
+                        if (dateRangeEnd && dateRangeEnd < date) {
+                          const newEndDate = new Date(date);
+                          newEndDate.setDate(newEndDate.getDate() + 7);
+                          setDateRangeEnd(newEndDate);
+                        }
+                      }
+                    }}
+                    disabled={(date) => {
+                      const tomorrow = new Date();
+                      tomorrow.setDate(tomorrow.getDate()); // today, so user can select tomorrow
+                      tomorrow.setHours(0,0,0,0);
+                      return date < tomorrow;
+                    }
+                    }
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
+            <div className="flex-1 space-y-1">
+              <label htmlFor="endDate" className="block text-sm font-medium text-gray-700">
+                End Date
+              </label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant={"outline"}
+                    className={cn(
+                      "w-full justify-start text-left font-normal",
+                      !dateRangeEnd && "text-muted-foreground"
+                    )}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {dateRangeEnd ? format(dateRangeEnd, "PPP") : <span>Pick a date</span>}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0">
+                  <Calendar
+                    mode="single"
+                    selected={dateRangeEnd}
+                    onSelect={(date) => {
+                       if(date) {
+                        date.setHours(0,0,0,0);
+                        setDateRangeEnd(date);
+                       }
+                    }}
+                    disabled={(date) =>
+                      dateRangeStart ? date < dateRangeStart : false
+                    }
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
+            <Button onClick={handleFetchAvailabilities} disabled={isLoading || !dateRangeStart || !dateRangeEnd} className="sm:w-auto">
+              {isLoading ? 'Loading...' : 'View Slots'}
+            </Button>
+          </div>
 
           {bookingError && <Alert variant="destructive"><AlertDescription>{bookingError}</AlertDescription></Alert>}
           {bookingSuccess && <Alert variant="default" className="bg-green-100 text-green-700"><AlertDescription>{bookingSuccess}</AlertDescription></Alert>}
