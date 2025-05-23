@@ -7,6 +7,6 @@ export interface ApiResult<T> {
 export interface ServiceResult<T> {
   success: boolean;
   data?: T;
-  error?: string | Error; 
+  error?: string | { message: string; [key: string]: any } | Error; 
   isNotFoundError?: boolean; 
 }

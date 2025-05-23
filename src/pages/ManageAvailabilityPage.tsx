@@ -44,7 +44,7 @@ const ManageAvailabilityPage: React.FC = () => {
     if (response.success && response.data) {
       setAvailabilities(response.data.availabilities);
     } else {
-      setError(response.error instanceof Error ? response.error.message : response.error || 'Failed to fetch availabilities.');
+      setError(response.error ? (response.error instanceof Error ? response.error.message : typeof response.error === 'string' ? response.error : response.error.message) : 'Failed to fetch availabilities.');
     }
     setIsLoading(false);
   };
@@ -93,7 +93,7 @@ const ManageAvailabilityPage: React.FC = () => {
       setRecurrenceEndDate(undefined);
       fetchAvailabilities(); // Refresh the list
     } else {
-      setError(response.error instanceof Error ? response.error.message : response.error || 'Failed to add availability.');
+      setError(response.error ? (response.error instanceof Error ? response.error.message : typeof response.error === 'string' ? response.error : response.error.message) : 'Failed to add availability.');
     }
     setIsLoading(false);
   };
