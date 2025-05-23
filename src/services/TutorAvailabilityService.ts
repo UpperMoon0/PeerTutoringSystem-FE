@@ -1,6 +1,6 @@
-import type { TutorAvailability, CreateTutorAvailability } from '@/types/tutorAvailability.types';
 import type { ServiceResult } from '@/types/api.types';
 import { AuthService } from './AuthService';
+import type { CreateTutorAvailability, TutorAvailability } from '@/types/tutorAvailability.types';
 
 const BASE_API_URL = import.meta.env.VITE_API_BASE_URL;
 const TUTOR_AVAILABILITY_API_URL = `${BASE_API_URL}/TutorAvailability`;

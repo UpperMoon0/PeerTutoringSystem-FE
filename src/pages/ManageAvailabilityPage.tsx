@@ -24,17 +24,19 @@ const ManageAvailabilityPage: React.FC = () => {
     if (!currentUser || currentUser.role !== 'Tutor') return;
     setIsLoading(true);
     setError(null);
-    const response = await TutorAvailabilityService.getTutorAvailability(currentUser.userID);
+    const response = await TutorAvailabilityService.getTutorAvailability(currentUser.userId);
     if (response.success && response.data) {
       setAvailabilities(response.data.availabilities);
     } else {
-      setError(response.error || 'Failed to fetch availabilities.');
+      setError(response.error instanceof Error ? response.error.message : response.error || 'Failed to fetch availabilities.');
     }
     setIsLoading(false);
   };
 
   useEffect(() => {
-    fetchAvailabilities();
+    if (currentUser && currentUser.role === 'Tutor') {
+      fetchAvailabilities();
+    }
   }, [currentUser]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -60,7 +62,7 @@ const ManageAvailabilityPage: React.FC = () => {
       setRecurrenceEndDate(null);
       fetchAvailabilities(); // Refresh the list
     } else {
-      setError(response.error || 'Failed to add availability.');
+      setError(response.error instanceof Error ? response.error.message : response.error || 'Failed to add availability.');
     }
     setIsLoading(false);
   };

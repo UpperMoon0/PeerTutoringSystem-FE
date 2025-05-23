@@ -44,10 +44,10 @@ const router = createBrowserRouter([
       },
       {
         path: '/manage-availability', 
-        element: 
-          <ProtectedRoute allowedRoles={['Tutor']}>
-            <ManageAvailabilityPage />
-          </ProtectedRoute>
+        element: <ProtectedRoute allowedRoles={['Tutor']} />,
+        children: [
+          { index: true, element: <ManageAvailabilityPage /> }
+        ]
       },
       {
         path: 'admin',
