@@ -1,4 +1,4 @@
-import type { ProfileDto, UpdateProfileDto } from '@/types/user.types';
+import type { ProfileDto, UpdateProfileDto, User } from '@/types/user.types';
 import type { ServiceResult } from '@/types/api.types';
 import { AuthService } from './AuthService';
 
@@ -105,6 +105,61 @@ export const ProfileService = {
       } catch (parseError) {
         console.error(`JSON parsing error for URL ${url}:`, parseError, "Response text:", responseText);
         return { success: false, error: new Error("Failed to parse server response.") };
+      }
+    } catch (networkOrOtherError) {
+      console.error(`Request processing failed for URL ${url}:`, networkOrOtherError);
+      return {
+        success: false,
+        error: networkOrOtherError instanceof Error ? networkOrOtherError : new Error(String(networkOrOtherError))
+      };
+    }
+  },
+
+  getUserAccountById: async (userId: string): Promise<ServiceResult<User>> => {
+    const url = `${BASE_API_URL}/users/${userId}`;
+    try {
+      const response = await AuthService.fetchWithAuth(url, { method: 'GET' });
+      if (!response.ok) {
+        let errorBody: unknown;
+        try {
+          errorBody = await response.json();
+        } catch (e) {
+          try {
+            errorBody = await response.text();
+          } catch (textError) {
+            errorBody = `Request failed with status ${response.status} and error body could not be read.`;
+          }
+        }
+        console.error(`API Error ${response.status} for URL ${url}:`, errorBody);
+        let finalErrorMessage: string;
+        if (typeof errorBody === 'object' && errorBody !== null) {
+          if ('message' in errorBody && typeof (errorBody as any).message === 'string' && (errorBody as any).message.trim() !== '') {
+            finalErrorMessage = (errorBody as any).message;
+          } else if ('error' in errorBody && typeof (errorBody as any).error === 'string' && (errorBody as any).error.trim() !== '') {
+            finalErrorMessage = (errorBody as any).error;
+          } else {
+            finalErrorMessage = `Request failed with status ${response.status}. Response body: ${JSON.stringify(errorBody)}`;
+          }
+        } else if (typeof errorBody === 'string' && errorBody.trim() !== '') {
+          finalErrorMessage = errorBody;
+        } else {
+          finalErrorMessage = `Request failed with status ${response.status}`;
+        }
+        return { success: false, error: new Error(finalErrorMessage) };
+      }
+      if (response.status === 204) { // Should not happen for getUserById if user exists
+        return { success: false, error: new Error('User not found.') }; 
+      }
+      const responseText = await response.text();
+      if (!responseText) {
+        return { success: false, error: new Error('Empty response from server.') };
+      }
+      try {
+        const data = JSON.parse(responseText) as User; // Expecting User DTO
+        return { success: true, data };
+      } catch (parseError) {
+        console.error(`JSON parsing error for URL ${url}:`, parseError, "Response text:", responseText);
+        return { success: false, error: new Error("Failed to parse server response for user account.") };
       }
     } catch (networkOrOtherError) {
       console.error(`Request processing failed for URL ${url}:`, networkOrOtherError);

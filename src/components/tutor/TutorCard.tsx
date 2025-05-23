@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import type { User } from '../../types/user.types';
-import type { TutorProfileDto } from '../../types/TutorProfile';
-import { TutorProfileService } from '../../services/TutorProfileService';
 import { Link } from 'react-router-dom';
-import { UserSkillService } from '../../services/UserSkillService';
-import type { UserSkill } from '../../types/skill.types';
+import type { User } from '@/types/user.types';
+import type { TutorProfileDto } from '@/types/TutorProfile';
+import type { UserSkill } from '@/types/skill.types';
+import { TutorProfileService } from '@/services/TutorProfileService';
+import { UserSkillService } from '@/services/UserSkillService';
 
 interface TutorCardProps {
   tutor: User;
@@ -31,13 +31,7 @@ const TutorCard: React.FC<TutorCardProps> = ({ tutor }) => {
           setBioError('Tutor bio not found.');
           setTutorBio(null);
         } else {
-          if (result.error instanceof Error) {
-            setBioError(result.error.message || 'Failed to fetch tutor bio.');
-          } else if (typeof result.error === 'string') {
-            setBioError(result.error || 'Failed to fetch tutor bio.');
-          } else {
-            setBioError('Failed to fetch tutor bio.');
-          }
+          if (result.error instanceof Error) { setBioError(result.error.message); } else if (typeof result.error === 'string') { setBioError(result.error); } else { setBioError('Failed to fetch bio.'); }
           setTutorBio(null);
         }
       } catch (err) {
@@ -58,13 +52,7 @@ const TutorCard: React.FC<TutorCardProps> = ({ tutor }) => {
         if (result.success && result.data) {
           setSkills(result.data);
         } else {
-          if (result.error instanceof Error) {
-            setSkillsError(result.error.message || 'Failed to fetch skills.');
-          } else if (typeof result.error === 'string') {
-            setSkillsError(result.error || 'Failed to fetch skills.');
-          } else {
-            setSkillsError('Failed to fetch skills.');
-          }
+          if (result.error instanceof Error) { setSkillsError(result.error.message); } else if (typeof result.error === 'string') { setSkillsError(result.error); } else { setSkillsError('Failed to fetch skills.'); }
         }
       } catch (err) {
         console.error('Error fetching tutor skills:', err);
@@ -134,7 +122,7 @@ const TutorCard: React.FC<TutorCardProps> = ({ tutor }) => {
       </div>
 
       <div className="text-center mt-4 pt-2 border-t border-gray-200">
-        <Link to={`/profile/${tutor.userID}`} className="text-blue-600 hover:text-blue-800 hover:underline font-medium">
+        <Link to={`/tutors/${tutor.userID}`} className="text-blue-600 hover:text-blue-800 hover:underline font-medium">
           View Profile
         </Link>
       </div>

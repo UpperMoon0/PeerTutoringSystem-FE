@@ -4,7 +4,8 @@ import { useAuth } from '@/contexts/AuthContext';
 import { TutorService } from '@/services/TutorService';
 import { UserSkillService } from '@/services/UserSkillService';
 import { BookingService } from '@/services/BookingService';
-import type { ProfileDto } from '@/types/user.types'; 
+import { ProfileService } from '@/services/ProfileService';
+import type { ProfileDto, User } from '@/types/user.types'; 
 import type { Skill } from '@/types/skill.types';
 import type { TutorAvailability } from '@/types/tutorAvailability.types'; 
 import type { CreateBookingDto } from '@/types/booking.types'; 
@@ -22,6 +23,7 @@ const TutorDetailPage: React.FC = () => {
   const { tutorId } = useParams<{ tutorId: string }>();
   const { currentUser } = useAuth();
   const [tutor, setTutor] = useState<TutorProfile | null>(null);
+  const [tutorAccount, setTutorAccount] = useState<User | null>(null); // State for tutor account details (including email)
   const [skills, setSkills] = useState<Skill[]>([]);
   const [availabilities, setAvailabilities] = useState<TutorAvailability[]>([]);
   const [selectedAvailability, setSelectedAvailability] = useState<TutorAvailability | null>(null);
@@ -37,11 +39,23 @@ const TutorDetailPage: React.FC = () => {
       setIsLoading(true);
       setError(null);
       try {
-        const tutorRes = await TutorService.getTutorById(tutorId);
-        if (tutorRes.success && tutorRes.data) {
-          setTutor(tutorRes.data as TutorProfile); 
+        // Fetch UserBio details (ProfileDto)
+        const tutorBioRes = await TutorService.getTutorById(tutorId);
+        if (tutorBioRes.success && tutorBioRes.data) {
+          setTutor(tutorBioRes.data as TutorProfile); 
         } else {
-          throw new Error(tutorRes.error as string || 'Failed to fetch tutor details.');
+          throw new Error(tutorBioRes.error as string || 'Failed to fetch tutor bio details.');
+        }
+
+        // Fetch base User account details (for email)
+        const tutorAccountRes = await ProfileService.getUserAccountById(tutorId);
+        if (tutorAccountRes.success && tutorAccountRes.data) {
+          setTutorAccount(tutorAccountRes.data);
+        } else {
+          // Not throwing an error here, as email might be considered optional by some views
+          // but we should log it.
+          console.error('Failed to fetch tutor account details:', tutorAccountRes.error);
+          // setError('Failed to fetch tutor email.'); // Optionally set an error if email is critical
         }
 
         const skillsRes = await UserSkillService.getUserSkills(tutorId);
@@ -126,11 +140,13 @@ const TutorDetailPage: React.FC = () => {
       <Card className="mb-6">
         <CardHeader className="flex flex-row items-center space-x-4">
           <Avatar className="h-24 w-24">
-            <AvatarImage src={tutor.avatarUrl} alt={tutor.fullName} />
-            <AvatarFallback>{tutor.fullName?.charAt(0)}</AvatarFallback>
+            <AvatarImage src={tutor.avatarUrl} alt={tutor.fullName || tutorAccount?.fullName || "Tutor avatar"} />
+            <AvatarFallback>{(tutor.fullName || tutorAccount?.fullName)?.charAt(0) || 'T'}</AvatarFallback>
           </Avatar>
           <div>
-            <CardTitle className="text-3xl">{tutor.fullName}</CardTitle>
+            <CardTitle className="text-3xl">{tutor.fullName || tutorAccount?.fullName || "Tutor"}</CardTitle>
+            {/* Display email from tutorAccount state if available */}
+            {tutorAccount && tutorAccount.email && <CardDescription>Email: {tutorAccount.email}</CardDescription>}
             {tutor.school && <CardDescription>School: {tutor.school}</CardDescription>}
           </div>
         </CardHeader>

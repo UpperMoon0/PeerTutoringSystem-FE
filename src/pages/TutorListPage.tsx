@@ -1,10 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import type { User } from '../types/user.types';
 import { TutorService } from '../services/TutorService';
-import { Link } from 'react-router-dom';
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import TutorCard from '@/components/tutor/TutorCard'; 
 
 const TutorListPage: React.FC = () => {
   const [allTutors, setAllTutors] = useState<User[]>([]);
@@ -83,25 +80,7 @@ const TutorListPage: React.FC = () => {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredTutors.map((tutor) => (
-            <Link key={tutor.userID} to={`/tutors/${tutor.userID}`} className="block hover:no-underline">
-              <Card className="hover:shadow-lg transition-shadow duration-200 h-full flex flex-col">
-                <CardHeader className="flex items-center space-x-3 pb-3">
-                  <Avatar className="h-16 w-16">
-                    <AvatarImage src={tutor.avatarUrl || undefined} alt={tutor.fullName} />
-                    <AvatarFallback>{tutor.fullName?.[0]}</AvatarFallback>
-                  </Avatar>
-                  <div>
-                    <CardTitle className="text-xl">{tutor.fullName}</CardTitle>
-                  </div>
-                </CardHeader>
-                <CardContent className="flex-grow">
-                  <p className="text-xs text-muted-foreground">Email: {tutor.email}</p> 
-                </CardContent>
-                <CardFooter>
-                  <Button variant="outline" className="w-full">View Profile & Book</Button>
-                </CardFooter>
-              </Card>
-            </Link>
+            <TutorCard key={tutor.userID} tutor={tutor} />
           ))}
         </div>
       )}
