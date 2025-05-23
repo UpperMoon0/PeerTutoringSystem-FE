@@ -21,6 +21,14 @@ const Header: React.FC = () => {
           <Link to="/" className="text-xl font-bold !text-white hover:text-gray-200 transition-colors mr-12">
             TheTutorGroup
           </Link>
+          <Link
+            to="/tutors"
+            className={`text-white hover:text-gray-200 transition-colors ${
+              location.pathname === '/tutors' ? 'bg-white/20 px-3 py-1 rounded-md' : ''
+            }`}
+          >
+            Tutors
+          </Link>
           {currentUser && currentUser.role === 'Admin' && (
             <Link
               to="/admin"

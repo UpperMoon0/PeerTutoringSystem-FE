@@ -11,6 +11,7 @@ import ManageUsersPage from '@/pages/admin/ManageUsersPage';
 import ManageSkillsPage from '@/pages/admin/ManageSkillsPage'; 
 import ProtectedRoute from './ProtectedRoute';
 import UserProfilePage from '@/pages/UserProfilePage';
+import TutorListPage from '@/pages/TutorListPage'; 
 
 const router = createBrowserRouter([
   {
@@ -35,6 +36,10 @@ const router = createBrowserRouter([
       {
         path: 'profile/:userId', 
         element: <UserProfilePage />,
+      },
+      {
+        path: '/tutors', 
+        element: <TutorListPage />, 
       },
       {
         path: 'admin',
