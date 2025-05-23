@@ -3,6 +3,8 @@ import type { ApiResult } from "@/types/api.types"; // Changed ApiResponse to Ap
 import type { TutorAvailabilitiesPayload } from "@/types/tutorAvailability.types";
 import type { Booking, CreateBookingDto } from "@/types/booking.types";
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
 const formatDateForQuery = (date: Date | string): string => {
   if (typeof date === 'string') return date;
   return date.toISOString().split('.')[0];
@@ -23,8 +25,9 @@ export const BookingService = {
         endDate: formatDateForQuery(endDate),
         page: page.toString(),
         pageSize: pageSize.toString(),
+        status: 'Available', 
       }).toString();
-      const response = await AuthService.fetchWithAuth(`/TutorAvailability/available?${queryParams}`, {
+      const response = await AuthService.fetchWithAuth(`${API_BASE_URL}/TutorAvailability/available?${queryParams}`, {
         method: 'GET',
       });
       if (!response.ok) {
@@ -40,7 +43,7 @@ export const BookingService = {
 
   async createBooking(bookingData: CreateBookingDto): Promise<ApiResult<Booking>> {
     try {
-      const response = await AuthService.fetchWithAuth("/Bookings", { 
+      const response = await AuthService.fetchWithAuth(`${API_BASE_URL}/Bookings`, { 
         method: 'POST', 
         body: JSON.stringify(bookingData),
         headers: { 'Content-Type': 'application/json' },
@@ -65,7 +68,7 @@ export const BookingService = {
         page: page.toString(),
         pageSize: pageSize.toString(),
       }).toString();
-      const response = await AuthService.fetchWithAuth(`/Bookings/student?${queryParams}`, {
+      const response = await AuthService.fetchWithAuth(`${API_BASE_URL}/Bookings/student?${queryParams}`, {
         method: 'GET',
       });
       if (!response.ok) {
@@ -88,7 +91,7 @@ export const BookingService = {
         page: page.toString(),
         pageSize: pageSize.toString(),
       }).toString();
-      const response = await AuthService.fetchWithAuth(`/Bookings/tutor?${queryParams}`, {
+      const response = await AuthService.fetchWithAuth(`${API_BASE_URL}/Bookings/tutor?${queryParams}`, {
         method: 'GET',
       });
       if (!response.ok) {
@@ -104,7 +107,7 @@ export const BookingService = {
   
   async getBookingById(bookingId: string): Promise<ApiResult<Booking>> {
     try {
-      const response = await AuthService.fetchWithAuth(`/Bookings/${bookingId}`, { method: 'GET' });
+      const response = await AuthService.fetchWithAuth(`${API_BASE_URL}/Bookings/${bookingId}`, { method: 'GET' });
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({ error: "Failed to parse error response." }));
         throw new Error(errorData.error || `Failed to fetch booking details: ${response.statusText}`);
@@ -118,7 +121,7 @@ export const BookingService = {
 
   async updateBookingStatus(bookingId: string, status: string): Promise<ApiResult<Booking>> {
     try {
-      const response = await AuthService.fetchWithAuth(`/Bookings/${bookingId}/status`, { 
+      const response = await AuthService.fetchWithAuth(`${API_BASE_URL}/Bookings/${bookingId}/status`, { 
         method: 'PUT', 
         body: JSON.stringify({ status }),
         headers: { 'Content-Type': 'application/json' },

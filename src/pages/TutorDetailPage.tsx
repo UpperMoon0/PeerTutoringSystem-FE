@@ -81,7 +81,10 @@ const TutorDetailPage: React.FC = () => {
     setBookingSuccess(null);
     try {
       const startDate = new Date();
-      const endDate = new Date();
+      startDate.setDate(startDate.getDate() + 1); // Set startDate to tomorrow
+      startDate.setHours(0, 0, 0, 0); // Set time to the beginning of the day
+
+      const endDate = new Date(startDate);
       endDate.setDate(startDate.getDate() + 7);
 
       const response = await BookingService.getTutorAvailableSlots(tutorId, startDate.toISOString(), endDate.toISOString());
