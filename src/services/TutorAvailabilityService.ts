@@ -29,9 +29,9 @@ export const TutorAvailabilityService = {
     }
   },
 
-  getTutorAvailability: async (tutorId: string, page: number = 1, pageSize: number = 10): Promise<ServiceResult<{ availabilities: TutorAvailability[], totalCount: number }>> => {
+  getTutorAvailability: async (tutorId: string, page: number = 1, pageSize: number = 10, status: string = "ANY"): Promise<ServiceResult<{ availabilities: TutorAvailability[], totalCount: number }>> => {
     try {
-      const response = await AuthService.fetchWithAuth(`${TUTOR_AVAILABILITY_API_URL}/tutor/${tutorId}?page=${page}&pageSize=${pageSize}`, {
+      const response = await AuthService.fetchWithAuth(`${TUTOR_AVAILABILITY_API_URL}/tutor/${tutorId}?page=${page}&pageSize=${pageSize}&Status=${encodeURIComponent(status)}`, {
         method: 'GET'
       });
 
