@@ -305,8 +305,8 @@ const TutorDetailPage: React.FC = () => {
                       !dateRangeStart && "text-muted-foreground"
                     )}
                   >
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    {dateRangeStart ? format(dateRangeStart, "PPP") : <span>Pick a date</span>}
+                    <CalendarIcon className="mr-2 size-4 text-white" />
+                    {dateRangeStart ? format(dateRangeStart, "PPP") : <span className="text-white">Pick a date</span>}
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0">
@@ -349,8 +349,8 @@ const TutorDetailPage: React.FC = () => {
                       !dateRangeEnd && "text-muted-foreground"
                     )}
                   >
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    {dateRangeEnd ? format(dateRangeEnd, "PPP") : <span>Pick a date</span>}
+                    <CalendarIcon className="mr-2 size-4 text-white" />
+                    {dateRangeEnd ? format(dateRangeEnd, "PPP") : <span className="text-white">Pick a date</span>}
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0">

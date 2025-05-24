@@ -147,8 +147,8 @@ const ManageAvailabilityPage: React.FC = () => {
                         getErrorForField('selectedDate') && "border-red-500"
                       )}
                     >
-                      <CalendarIcon className="mr-2 h-4 w-4" />
-                      {selectedDate ? format(selectedDate, "PPP") : <span>Pick a date</span>}
+                      <CalendarIcon className="mr-2 size-4 text-white" />
+                      {selectedDate ? format(selectedDate, "PPP") : <span className="text-white">Pick a date</span>}
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent className="w-auto p-0">
@@ -215,8 +215,8 @@ const ManageAvailabilityPage: React.FC = () => {
                           !recurrenceEndDate && "text-muted-foreground"
                         )}
                       >
-                        <CalendarIcon className="mr-2 h-4 w-4" />
-                        {recurrenceEndDate ? format(recurrenceEndDate, "PPP") : <span>Pick a date</span>}
+                        <CalendarIcon className="mr-2 h-4 w-4 opacity-50 text-white" />
+                        {recurrenceEndDate ? format(recurrenceEndDate, "PPP") : <span className="text-white">Pick a date</span>}
                       </Button>
                     </PopoverTrigger>
                     <PopoverContent className="w-auto p-0">
