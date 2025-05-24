@@ -4,12 +4,17 @@ export interface Booking {
   bookingId: string;
   studentId: string;
   tutorId: string;
-  availabilityId: string;
+  availabilityId: string; 
   startTime: string;
   endTime: string;
-  status: 'Pending' | 'Confirmed' | 'CancelledByStudent' | 'CancelledByTutor' | 'Completed' | 'Missed';
+  status: 'Pending' | 'Confirmed' | 'Cancelled' | 'Completed'; 
   createdAt: string;
-  updatedAt: string;
+  updatedAt?: string; 
+  studentName?: string; 
+  tutorName?: string; 
+  topic: string; 
+  description: string; 
+  skillId?: string; 
   student?: AuthResponse;
   tutor?: AuthResponse;
 }
@@ -26,8 +31,7 @@ export interface CreateBookingDto {
 }
 
 export interface UpdateBookingStatusDto {
-  status: 'Pending' | 'Confirmed' | 'CancelledByStudent' | 'CancelledByTutor' | 'Completed' | 'Missed';
-  reason?: string;
+  status: 'Pending' | 'Confirmed' | 'Cancelled' | 'Completed';
 }
 
 export interface BookingListResponse {
