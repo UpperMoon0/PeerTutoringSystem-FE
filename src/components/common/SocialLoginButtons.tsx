@@ -2,7 +2,13 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import type { SocialLoginButtonsProps } from '@/types/SocialLoginButtonsProps';
+
+interface SocialLoginButtonsProps {
+  loading: boolean;
+  setLoading: (loading: boolean) => void;
+  setError: (error: string | null) => void;
+  pageType?: 'login' | 'register';
+}
 
 const SocialLoginButtons: React.FC<SocialLoginButtonsProps> = ({
   loading: parentLoading,

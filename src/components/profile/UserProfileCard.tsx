@@ -4,6 +4,8 @@ import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '../ui/card';
+import TutorProfileSection from './TutorProfileSection'; 
+import type { AppUser } from '../../contexts/AuthContext'; 
 
 interface UserProfileCardProps {
   profile: ProfileDto;
@@ -18,6 +20,8 @@ interface UserProfileCardProps {
   loading: boolean;
   canEdit: boolean;
   onCancelEdit: () => void;
+  currentUser: AppUser | null; 
+  userId: string;
 }
 
 const UserProfileCard: React.FC<UserProfileCardProps> = ({
@@ -33,7 +37,11 @@ const UserProfileCard: React.FC<UserProfileCardProps> = ({
   loading,
   canEdit,
   onCancelEdit,
+  currentUser,
+  userId,
 }) => {
+  const isTutorOwner = profile.role === 'Tutor' && currentUser?.userId === profile.userID;
+
   return (
     <Card className="mb-6">
       <CardHeader>
@@ -115,6 +123,10 @@ const UserProfileCard: React.FC<UserProfileCardProps> = ({
           <Button variant="outline" onClick={onCancelEdit}>Cancel</Button>
           <Button onClick={handleSave} disabled={loading}>{loading ? 'Saving...' : 'Save Changes'}</Button>
         </CardFooter>
+      )}
+
+      {isTutorOwner && userId && (
+        <TutorProfileSection userId={userId} currentUser={currentUser} profile={profile} />
       )}
     </Card>
   );

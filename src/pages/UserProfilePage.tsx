@@ -3,16 +3,7 @@ import { useParams } from 'react-router-dom';
 import { ProfileService } from '../services/ProfileService';
 import type { ProfileDto, UpdateProfileDto } from '@/types/user.types';
 import { useAuth } from '../contexts/AuthContext';
-import { Button } from '../components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '../components/ui/card'; 
-import { PlusCircle } from 'lucide-react';
 import UserProfileCard from '../components/profile/UserProfileCard';
-
-import { TutorProfileService } from '../services/TutorProfileService';
-import type { TutorProfileDto, CreateTutorProfileDto, UpdateTutorProfileDto as UpdateTutorDtoInternal } from '../types/TutorProfile';
-import TutorProfileDisplay from '../components/profile/TutorProfileDisplay';
-import TutorProfileForm from '../components/profile/TutorProfileForm';
-import { UserSkillService } from '../services/UserSkillService';
 
 const UserProfilePage: React.FC = () => {
   const { userId } = useParams<{ userId: string }>();
@@ -24,12 +15,6 @@ const UserProfilePage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [selectedAvatarFile, setSelectedAvatarFile] = useState<File | null>(null);
-
-  // State for Tutor Profile
-  const [tutorProfile, setTutorProfile] = useState<TutorProfileDto | null>(null);
-  const [isEditingTutorProfile, setIsEditingTutorProfile] = useState(false);
-  const [tutorProfileLoading, setTutorProfileLoading] = useState(false);
-  const [tutorProfileError, setTutorProfileError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchProfileData = async () => {
@@ -54,12 +39,8 @@ const UserProfilePage: React.FC = () => {
             avatar: null, 
           });
           setAvatarPreview(result.data.avatarUrl || null);
-
-          if (result.data.role === 'Tutor' && currentUser?.userId === result.data.userID) {
-            await fetchTutorProfileData(userId);
-          }
         } else {
-          setError(result.error instanceof Error ? result.error.message : result.error || 'Failed to fetch profile.');
+          setError(result.error instanceof Error ? result.error.message : typeof result.error === 'string' ? result.error : (result.error && typeof result.error.message === 'string') ? result.error.message : 'Failed to fetch profile.');
         }
       } catch (err) {
         setError(err instanceof Error ? err.message : 'An unknown error occurred.');
@@ -68,43 +49,6 @@ const UserProfilePage: React.FC = () => {
     };
     fetchProfileData();
   }, [userId, currentUser]);
-
-  const fetchTutorProfileData = async (currentUserId: string) => {
-    setTutorProfileLoading(true);
-    setTutorProfileError(null);
-    let fetchedTutorProfile: TutorProfileDto | null = null; // Temporary variable to hold profile data
-
-    try {
-      const tutorResult = await TutorProfileService.getTutorProfileByUserId(currentUserId);
-
-      if (tutorResult.success && tutorResult.data) {
-        fetchedTutorProfile = tutorResult.data; // Store basic profile initially
-
-        // Fetch the user's skills
-        const skillsResult = await UserSkillService.getUserSkills(currentUserId);
-        if (skillsResult.success && skillsResult.data) {
-          // Combine the fetched skills with the tutor profile
-          fetchedTutorProfile = { ...fetchedTutorProfile, skills: skillsResult.data };
-        } else {
-          // Log an error if skills couldn't be fetched, but don't fail the entire profile load.
-          // Ensure skills is an empty array for consistent handling in TutorProfileDisplay.
-          console.warn(`Failed to fetch skills for tutor ${currentUserId}:`, skillsResult.error);
-          fetchedTutorProfile = { ...fetchedTutorProfile, skills: [] };
-        }
-        setTutorProfile(fetchedTutorProfile); // Set the combined profile to state
-
-      } else if (tutorResult.isNotFoundError) { // Check for specific not found error from service
-        setTutorProfile(null); // Tutor profile itself not found
-      } else { // Handle other errors from fetching tutor profile
-        const errorMessage = tutorResult.error instanceof Error ? tutorResult.error.message : String(tutorResult.error || 'Failed to fetch tutor profile.');
-        setTutorProfileError(errorMessage);
-      }
-    } catch (err) { // Catch network errors or other unexpected exceptions during the process
-      const errorMessage = err instanceof Error ? err.message : 'An unknown error occurred while fetching tutor profile data.';
-      setTutorProfileError(errorMessage);
-    }
-    setTutorProfileLoading(false);
-  };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     if (formData) {
@@ -154,7 +98,7 @@ const UserProfilePage: React.FC = () => {
         setIsEditing(false);
         setSelectedAvatarFile(null); 
       } else {
-        setError(result.error instanceof Error ? result.error.message : result.error || 'Failed to update profile.');
+        setError(result.error instanceof Error ? result.error.message : typeof result.error === 'string' ? result.error : (result.error && typeof result.error.message === 'string') ? result.error.message : 'Failed to update profile.');
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An unknown error occurred while updating profile.');
@@ -179,104 +123,11 @@ const UserProfilePage: React.FC = () => {
     }
   };
 
-  const handleCreateTutorProfile = () => {
-    setIsEditingTutorProfile(true);
-    setTutorProfile(null); 
-  };
-
-  const handleEditTutorProfile = () => {
-    setIsEditingTutorProfile(true);
-  };
-
-  const handleCancelTutorProfileEdit = () => {
-    setIsEditingTutorProfile(false);
-    if (profile && profile.role === 'Tutor' && userId) {
-        fetchTutorProfileData(userId);
-    }
-  };
-
-  const handleSaveTutorProfile = async (data: CreateTutorProfileDto | UpdateTutorDtoInternal) => {
-    if (!userId) {
-      setTutorProfileError("User ID is missing.");
-      return;
-    }
-    setTutorProfileLoading(true);
-    setTutorProfileError(null);
-
-    // Separate skillIds from the rest of the profile data
-    const { skillIds, ...profileData } = data;
-
-    try {
-      let profileResult;
-      if (tutorProfile && tutorProfile.bioID) { 
-        profileResult = await TutorProfileService.updateTutorProfile(tutorProfile.bioID, profileData as UpdateTutorDtoInternal);
-      } else { 
-        profileResult = await TutorProfileService.createTutorProfile(profileData as CreateTutorProfileDto);
-      }
-
-      if (profileResult.success) {
-        // Profile saved successfully, now manage skills
-        const currentSkillsResult = await UserSkillService.getUserSkills(userId);
-        const newSkillIds = skillIds || [];
-
-        if (currentSkillsResult.success && currentSkillsResult.data) {
-          const currentSkills = currentSkillsResult.data;
-          const currentSkillIds = currentSkills.map(us => us.skill.skillID);
-
-          // Skills to delete
-          const skillsToDelete = currentSkills.filter(us => !newSkillIds.includes(us.skill.skillID));
-          for (const userSkillToDelete of skillsToDelete) {
-            if (userSkillToDelete.userSkillID) { // Ensure userSkillID exists before attempting deletion
-              await UserSkillService.deleteUserSkill(userSkillToDelete.userSkillID);
-            } else {
-              console.warn("Skipping deletion for skill without userSkillID:", userSkillToDelete);
-            }
-          }
-
-          // Skills to add
-          const skillsToAdd = newSkillIds.filter(id => !currentSkillIds.includes(id));
-          for (const skillIdToAdd of skillsToAdd) {
-            console.log("Adding skill:", skillIdToAdd);
-            // Corrected: userID instead of userId
-            const addResult = await UserSkillService.addUserSkill({ userID: userId, skillID: skillIdToAdd, isTutor: true });
-            if (!addResult.success) {
-              console.error("Failed to add skill:", skillIdToAdd, addResult.error);
-              // Optionally, notify the user about the specific skill failing
-            }
-          }
-        } else {
-          console.warn("Could not fetch current skills to compare for update, or no current skills exist:", currentSkillsResult.error);
-          // If fetching current skills failed or returned no data, assume all newSkillIds are to be added.
-          for (const skillIdToAdd of newSkillIds) {
-            console.log("Adding skill (no current skills to compare):", skillIdToAdd);
-            // Corrected: userID instead of userId
-            const addResult = await UserSkillService.addUserSkill({ userID: userId, skillID: skillIdToAdd, isTutor: true });
-            if (!addResult.success) {
-              console.error("Failed to add skill:", skillIdToAdd, addResult.error);
-            }
-          }
-        }
-        
-        // Successfully saved, now re-fetch the tutor profile to ensure UI consistency
-        if (userId) {
-          await fetchTutorProfileData(userId);
-        }
-        setIsEditingTutorProfile(false);
-      } else {
-        setTutorProfileError(profileResult.error instanceof Error ? profileResult.error.message : profileResult.error || 'Failed to save tutor profile.');
-      }
-    } catch (err) {
-      setTutorProfileError(err instanceof Error ? err.message : 'An unknown error occurred while saving tutor profile.');
-    }
-    setTutorProfileLoading(false);
-  };
-
   if (loading && !profile) return <div className="flex justify-center items-center h-screen"><p>Loading profile...</p></div>;
   if (error) return <div className="container mx-auto p-4 text-red-500">Error: {error}</div>;
   if (!profile) return <div className="container mx-auto p-4">No profile data found.</div>;
 
   const canEdit = currentUser?.userId === profile.userID || currentUser?.role === 'Admin';
-  const isTutor = profile.role === 'Tutor' && currentUser?.userId === profile.userID;
 
   return (
     <div className="container mx-auto p-4">
@@ -293,47 +144,9 @@ const UserProfilePage: React.FC = () => {
         loading={loading}
         canEdit={canEdit}
         onCancelEdit={handleCancelEdit}
+        currentUser={currentUser}
+        userId={userId || ''}
       />
-
-      {isTutor && (
-        <div className="mt-8">
-          {tutorProfileLoading && <div className="flex justify-center items-center"><p>Loading tutor profile...</p></div>}
-          {tutorProfileError && <p className="text-red-500">Error: {tutorProfileError}</p>}
-
-          {!tutorProfileLoading && !tutorProfileError && (
-            <>
-              {isEditingTutorProfile ? (
-                <TutorProfileForm
-                  initialData={tutorProfile}
-                  onSubmit={handleSaveTutorProfile}
-                  onCancel={handleCancelTutorProfileEdit}
-                  isLoading={tutorProfileLoading}
-                />
-              ) : tutorProfile ? (
-                <TutorProfileDisplay
-                  tutorProfile={tutorProfile}
-                  onEdit={handleEditTutorProfile}
-                  canEdit={isTutor} 
-                />
-              ) : (
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Tutor Profile</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p>You do not have a tutor profile yet. Create one to offer your tutoring services.</p>
-                  </CardContent>
-                  <CardFooter>
-                    <Button onClick={handleCreateTutorProfile}>
-                      <PlusCircle className="mr-2 h-4 w-4" /> Create Tutor Profile
-                    </Button>
-                  </CardFooter>
-                </Card>
-              )}
-            </>
-          )}
-        </div>
-      )}
     </div>
   );
 };

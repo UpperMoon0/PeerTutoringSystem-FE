@@ -1,12 +1,12 @@
 import type { ServiceResult } from '@/types/api.types';
 import { AuthService } from './AuthService';
-import type { CreateTutorAvailability, TutorAvailability } from '@/types/tutorAvailability.types';
+import type { CreateTutorAvailabilityDto, TutorAvailability } from '@/types/availability.types';
 
 const BASE_API_URL = import.meta.env.VITE_API_BASE_URL;
 const TUTOR_AVAILABILITY_API_URL = `${BASE_API_URL}/TutorAvailability`;
 
 export const TutorAvailabilityService = {
-  addAvailability: async (availabilityData: CreateTutorAvailability): Promise<ServiceResult<TutorAvailability>> => {
+  addAvailability: async (availabilityData: CreateTutorAvailabilityDto): Promise<ServiceResult<TutorAvailability>> => {
     try {
       const response = await AuthService.fetchWithAuth(TUTOR_AVAILABILITY_API_URL, {
         method: 'POST',

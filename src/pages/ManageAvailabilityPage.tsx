@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { TutorAvailabilityService } from '@/services/TutorAvailabilityService';
-import type { TutorAvailability, CreateTutorAvailability } from '@/types/tutorAvailability.types';
+import type { TutorAvailability, CreateTutorAvailabilityDto } from '@/types/availability.types';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -12,20 +12,21 @@ import { Calendar } from "@/components/ui/calendar";
 import { format } from 'date-fns';
 import { Calendar as CalendarIcon } from 'lucide-react';
 import { cn } from "@/lib/utils";
+import { z } from 'zod';
+import { createAvailabilitySchema, type CreateAvailabilityFormValues, getDayOfWeekString } from '@/schemas/availability.schemas'; // Import getDayOfWeekString
 
 const ManageAvailabilityPage: React.FC = () => {
   const { currentUser } = useAuth();
   const [availabilities, setAvailabilities] = useState<TutorAvailability[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [validationErrors, setValidationErrors] = useState<z.ZodError<CreateAvailabilityFormValues> | null>(null);
 
-  // Form state using Date objects for calendar and string for time
-  const [startDate, setStartDate] = useState<Date | undefined>(undefined);
-  const [startTimeStr, setStartTimeStr] = useState(''); // HH:mm
-  const [endDate, setEndDate] = useState<Date | undefined>(undefined);
-  const [endTimeStr, setEndTimeStr] = useState(''); // HH:mm
+  // Form state
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
+  const [startTimeStr, setStartTimeStr] = useState('');
+  const [endTimeStr, setEndTimeStr] = useState('');
   const [isRecurring, setIsRecurring] = useState(false);
-  const [recurringDay, setRecurringDay] = useState('Monday');
   const [recurrenceEndDate, setRecurrenceEndDate] = useState<Date | undefined>(undefined);
 
   // Helper to combine Date and time string into ISO string
@@ -44,7 +45,7 @@ const ManageAvailabilityPage: React.FC = () => {
     if (response.success && response.data) {
       setAvailabilities(response.data.availabilities);
     } else {
-      setError(response.error ? (response.error instanceof Error ? response.error.message : typeof response.error === 'string' ? response.error : response.error.message) : 'Failed to fetch availabilities.');
+      setError(response.error ? (response.error instanceof Error ? response.error.message : typeof response.error === 'string' ? response.error : String(response.error)) : 'Failed to fetch availabilities.');
     }
     setIsLoading(false);
   };
@@ -57,45 +58,66 @@ const ManageAvailabilityPage: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!currentUser || !startDate || !startTimeStr || !endDate || !endTimeStr) {
-      setError("Please select start and end dates and times.");
+    setError(null);
+    setValidationErrors(null);
+
+    if (!currentUser) {
+      setError("User not authenticated.");
       return;
     }
-    setError(null);
+
+    const parseResult = createAvailabilitySchema.safeParse({
+      selectedDate,
+      startTimeStr,
+      endTimeStr,
+      isRecurring,
+      recurrenceEndDate: isRecurring ? recurrenceEndDate : undefined,
+    });
+
+    if (!parseResult.success) {
+      setValidationErrors(parseResult.error);
+      setError("Please correct the form errors.");
+      return;
+    }
+
+    const validatedData = parseResult.data;
+
     setIsLoading(true);
 
-    const finalStartTime = combineDateAndTime(startDate, startTimeStr);
-    const finalEndTime = combineDateAndTime(endDate, endTimeStr);
-    const finalRecurrenceEndDate = recurrenceEndDate ? recurrenceEndDate.toISOString().split('T')[0] : null; // Just the date part
+    const finalStartTime = combineDateAndTime(validatedData.selectedDate, validatedData.startTimeStr);
+    const finalEndTime = combineDateAndTime(validatedData.selectedDate, validatedData.endTimeStr);
+    const finalRecurrenceEndDate = validatedData.recurrenceEndDate ? validatedData.recurrenceEndDate.toISOString().split('T')[0] : undefined;
+    
+    const calculatedRecurringDay = validatedData.isRecurring && validatedData.selectedDate 
+                                   ? getDayOfWeekString(validatedData.selectedDate) 
+                                   : '';
 
-    if (new Date(finalEndTime) <= new Date(finalStartTime)) {
-      setError("End time must be after start time.");
-      setIsLoading(false);
-      return;
-    }
-
-    const newAvailability: CreateTutorAvailability = {
+    const newAvailability: CreateTutorAvailabilityDto = {
       startTime: finalStartTime,
       endTime: finalEndTime,
-      isRecurring,
-      recurringDay: isRecurring ? recurringDay : '',
-      recurrenceEndDate: isRecurring ? finalRecurrenceEndDate : null,
+      isRecurring: validatedData.isRecurring || false,
+      isDailyRecurring: false, 
+      recurringDay: calculatedRecurringDay,
+      recurrenceEndDate: validatedData.isRecurring ? finalRecurrenceEndDate : undefined,
     };
 
     const response = await TutorAvailabilityService.addAvailability(newAvailability);
     if (response.success) {
-      setStartDate(undefined);
+      setSelectedDate(undefined);
       setStartTimeStr('');
-      setEndDate(undefined);
       setEndTimeStr('');
       setIsRecurring(false);
-      setRecurringDay('Monday');
       setRecurrenceEndDate(undefined);
+      setValidationErrors(null);
       fetchAvailabilities(); // Refresh the list
     } else {
-      setError(response.error ? (response.error instanceof Error ? response.error.message : typeof response.error === 'string' ? response.error : response.error.message) : 'Failed to add availability.');
+      setError(response.error ? (response.error instanceof Error ? response.error.message : typeof response.error === 'string' ? response.error : String(response.error)) : 'Failed to add availability.');
     }
     setIsLoading(false);
+  };
+  
+  const getErrorForField = (fieldName: keyof CreateAvailabilityFormValues) => {
+    return validationErrors?.errors.find(err => err.path.includes(fieldName))?.message;
   };
 
   if (!currentUser || currentUser.role !== 'Tutor') {
@@ -112,67 +134,66 @@ const ManageAvailabilityPage: React.FC = () => {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
               <div>
-                <Label htmlFor="startDate">Start Date</Label>
+                <Label htmlFor="selectedDate">Date</Label>
                 <Popover>
                   <PopoverTrigger asChild>
                     <Button
                       variant={"outline"}
                       className={cn(
                         "w-full justify-start text-left font-normal",
-                        !startDate && "text-muted-foreground"
+                        !selectedDate && "text-muted-foreground",
+                        getErrorForField('selectedDate') && "border-red-500"
                       )}
                     >
                       <CalendarIcon className="mr-2 h-4 w-4" />
-                      {startDate ? format(startDate, "PPP") : <span>Pick a date</span>}
+                      {selectedDate ? format(selectedDate, "PPP") : <span>Pick a date</span>}
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent className="w-auto p-0">
                     <Calendar
                       mode="single"
-                      selected={startDate}
-                      onSelect={setStartDate}
+                      selected={selectedDate}
+                      onSelect={(date) => {
+                        setSelectedDate(date);
+                        if (validationErrors) setValidationErrors(null); // Clear errors on change
+                      }}
                       initialFocus
                     />
                   </PopoverContent>
                 </Popover>
+                {getErrorForField('selectedDate') && <p className="text-red-500 text-xs mt-1">{getErrorForField('selectedDate')}</p>}
               </div>
               <div>
-                <Label htmlFor="startTime">Start Time</Label>
-                <Input type="time" id="startTime" value={startTimeStr} onChange={(e) => setStartTimeStr(e.target.value)} required className="w-full" />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="endDate">End Date</Label>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant={"outline"}
-                      className={cn(
-                        "w-full justify-start text-left font-normal",
-                        !endDate && "text-muted-foreground"
-                      )}
-                    >
-                      <CalendarIcon className="mr-2 h-4 w-4" />
-                      {endDate ? format(endDate, "PPP") : <span>Pick a date</span>}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0">
-                    <Calendar
-                      mode="single"
-                      selected={endDate}
-                      onSelect={setEndDate}
-                      initialFocus
-                    />
-                  </PopoverContent>
-                </Popover>
+                <Label htmlFor="startTimeInput">Start Time</Label>
+                <Input 
+                  type="time" 
+                  id="startTimeInput" 
+                  value={startTimeStr} 
+                  onChange={(e) => {
+                    setStartTimeStr(e.target.value); 
+                    if (validationErrors) setValidationErrors(null); // Clear errors on change
+                  }}
+                  required 
+                  className={cn("w-full", getErrorForField('startTimeStr') && "border-red-500")}
+                />
+                {getErrorForField('startTimeStr') && <p className="text-red-500 text-xs mt-1">{getErrorForField('startTimeStr')}</p>}
               </div>
               <div>
-                <Label htmlFor="endTime">End Time</Label>
-                <Input type="time" id="endTime" value={endTimeStr} onChange={(e) => setEndTimeStr(e.target.value)} required className="w-full"/>
+                <Label htmlFor="endTimeInput">End Time</Label>
+                <Input 
+                  type="time" 
+                  id="endTimeInput" 
+                  value={endTimeStr} 
+                  onChange={(e) => {
+                    setEndTimeStr(e.target.value); 
+                    if (validationErrors) setValidationErrors(null); // Clear errors on change
+                  }}
+                  required 
+                  className={cn("w-full", getErrorForField('endTimeStr') && "border-red-500")}
+                />
+                {getErrorForField('endTimeStr') && <p className="text-red-500 text-xs mt-1">{getErrorForField('endTimeStr')}</p>}
               </div>
             </div>
 
@@ -183,14 +204,6 @@ const ManageAvailabilityPage: React.FC = () => {
 
             {isRecurring && (
               <div className="space-y-4 p-4 border rounded-md bg-muted/30">
-                <div>
-                  <Label htmlFor="recurringDay">Recurring Day</Label>
-                  <select id="recurringDay" value={recurringDay} onChange={(e) => setRecurringDay(e.target.value)} className="w-full p-2 border rounded bg-background text-foreground focus:ring-ring focus:border-ring">
-                    {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map(day => (
-                      <option key={day} value={day}>{day}</option>
-                    ))}
-                  </select>
-                </div>
                 <div>
                   <Label htmlFor="recurrenceEndDate">Recurrence End Date (Optional)</Label>
                   <Popover>

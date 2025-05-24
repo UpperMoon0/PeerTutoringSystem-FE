@@ -15,6 +15,7 @@ export interface User {
 export interface ProfileDto { 
   userID: string;
   fullName: string; 
+  email: string; // Added email field
   dateOfBirth: string; 
   phoneNumber: string; 
   gender: string; 
