@@ -16,10 +16,13 @@ export interface Booking {
 
 export interface CreateBookingDto {
   tutorId: string;
-  studentId: string;
+  studentId: string; 
   availabilityId: string;
-  startTime: string;
-  endTime: string;
+  startTime: string; 
+  endTime: string; 
+  topic: string; 
+  description: string;
+  skillId?: string; 
 }
 
 export interface UpdateBookingStatusDto {

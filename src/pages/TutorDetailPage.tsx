@@ -17,6 +17,9 @@ import { CalendarIcon } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import { cn } from '@/lib/utils'; 
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
 
 interface TutorProfile extends ProfileDto {
 }
@@ -25,8 +28,8 @@ const TutorDetailPage: React.FC = () => {
   const { tutorId } = useParams<{ tutorId: string }>();
   const { currentUser } = useAuth();
   const [tutor, setTutor] = useState<TutorProfile | null>(null);
-  const [tutorAccount, setTutorAccount] = useState<User | null>(null);
-  const [skills, setSkills] = useState<Skill[]>([]);
+  const [tutorAccount] = useState<User | null>(null);
+  const [skills] = useState<Skill[]>([]);
   const [availabilities, setAvailabilities] = useState<TutorAvailability[]>([]);
   const [selectedAvailability, setSelectedAvailability] = useState<TutorAvailability | null>(null);
   const [isFetchingSlots, setIsFetchingSlots] = useState(false); 
@@ -39,6 +42,10 @@ const TutorDetailPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [bookingError, setBookingError] = useState<string | null>(null);
   const [bookingSuccess, setBookingSuccess] = useState<string | null>(null);
+  // Add state for topic and description
+  const [topic, setTopic] = useState<string>("");
+  const [description, setDescription] = useState<string>("");
+  const [selectedSkillId, setSelectedSkillId] = useState<string | undefined>(undefined);
 
   useEffect(() => {
     const fetchTutorDetails = async () => {
@@ -200,6 +207,16 @@ const TutorDetailPage: React.FC = () => {
       setBookingError("Please select an availability slot and ensure you are logged in.");
       return;
     }
+    // Add validation for topic and description
+    if (!topic.trim()) {
+      setBookingError("Please enter a topic for the session.");
+      return;
+    }
+    if (!description.trim()) {
+      setBookingError("Please enter a description for the session.");
+      return;
+    }
+
     setBookingError(null);
     setBookingSuccess(null);
     setIsLoading(true);
@@ -209,7 +226,10 @@ const TutorDetailPage: React.FC = () => {
       studentId: currentUser.userId, 
       availabilityId: selectedAvailability.availabilityId, 
       startTime: selectedAvailability.startTime, 
-      endTime: selectedAvailability.endTime,     
+      endTime: selectedAvailability.endTime, 
+      topic: topic, // Add topic
+      description: description, // Add description
+      skillId: selectedSkillId, // Add skillId (optional)
     };
 
     try {
@@ -364,9 +384,14 @@ const TutorDetailPage: React.FC = () => {
               <h4 className="font-semibold">Available Slots:</h4>
               <ul className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
                 {availabilities.filter(slot => !slot.isBooked).map(avail => (
-                  <li key={avail.availabilityId}>
+                  <li key={`${avail.availabilityId}-${avail.startTime}`}>
                     <Button
-                      variant={selectedAvailability?.availabilityId === avail.availabilityId ? "default" : "outline"}
+                      variant={
+                        selectedAvailability?.availabilityId === avail.availabilityId &&
+                        selectedAvailability?.startTime === avail.startTime
+                        ? "default"
+                        : "outline"
+                      }
                       className="w-full text-left justify-start h-auto py-2"
                       onClick={() => setSelectedAvailability(avail)}
                     >
@@ -381,13 +406,42 @@ const TutorDetailPage: React.FC = () => {
             </div>
           )}
           
-          {selectedAvailability && !bookingSuccess && (
-            <div className="pt-4 space-y-3">
-              <p>Selected: <strong>{format(new Date(selectedAvailability.startTime), "PPP, p")}</strong> to <strong>{format(new Date(selectedAvailability.endTime), "p")}</strong></p>
-              <Button onClick={handleBookSession} disabled={isLoading || !currentUser} className="w-full">
-                {isLoading ? 'Booking...' : 'Confirm Booking'}
+          {selectedAvailability && (
+            <div className="mt-4 space-y-4">
+              <div>
+                <Label htmlFor="topic">Topic</Label>
+                <Input 
+                  id="topic" 
+                  value={topic} 
+                  onChange={(e) => setTopic(e.target.value)} 
+                  placeholder="Enter session topic (e.g., Algebra Basics, React Hooks)"
+                />
+              </div>
+              <div>
+                <Label htmlFor="description">Description</Label>
+                <Textarea 
+                  id="description" 
+                  value={description} 
+                  onChange={(e) => setDescription(e.target.value)} 
+                  placeholder="Briefly describe what you want to learn or discuss."
+                />
+              </div>
+              {/* Optional: Skill selection - assuming you have a way to get and select skills */}
+              {/* <Select onValueChange={setSelectedSkillId} value={selectedSkillId}>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Select a skill (optional)" />
+                </SelectTrigger>
+                <SelectContent>
+                  {skills.map(skill => (
+                    <SelectItem key={skill.skillId} value={skill.skillId}>
+                      {skill.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select> */}
+              <Button onClick={handleBookSession} disabled={isLoading || !selectedAvailability} className="w-full">
+                {isLoading ? 'Booking...' : 'Book Session'}
               </Button>
-              {!currentUser && <p className="text-sm text-red-500">Please log in to book a session.</p>}
             </div>
           )}
         </CardContent>

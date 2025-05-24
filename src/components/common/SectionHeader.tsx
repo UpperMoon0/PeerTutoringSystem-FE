@@ -1,7 +1,13 @@
 import React from 'react';
 import { Input } from '@/components/ui/input';
 import { Search } from 'lucide-react';
-import type { SectionHeaderProps } from '@/types/SectionHeaderProps';
+
+export interface SectionHeaderProps {
+  title: string;
+  showSearch?: boolean;
+  onSearchChange?: (searchTerm: string) => void;
+  searchTerm?: string;
+}
 
 const SectionHeader: React.FC<SectionHeaderProps> = ({ title, showSearch = false, onSearchChange, searchTerm }) => {
   return (

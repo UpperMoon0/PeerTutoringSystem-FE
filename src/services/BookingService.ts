@@ -30,14 +30,33 @@ export const BookingService = {
       const response = await AuthService.fetchWithAuth(`${API_BASE_URL}/TutorAvailability/available?${queryParams}`, {
         method: 'GET',
       });
+
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ error: "Failed to parse error response." }));
-        throw new Error(errorData.error || `Failed to fetch available slots: ${response.statusText}`);
+        // Improved error handling
+        let errorPayload: any;
+        try {
+          errorPayload = await response.json();
+        } catch (e) {
+          // If response.json() fails (e.g. not valid JSON, or empty for some errors)
+          return { success: false, error: `API request failed with status ${response.status}. Unable to parse error response.` };
+        }
+        const errorMessage = errorPayload?.message || errorPayload?.error || `API request failed with status ${response.status}`;
+        return { success: false, error: typeof errorMessage === 'string' ? errorMessage : JSON.stringify(errorMessage) };
       }
-      const responseData = await response.json();
-      return { success: true, data: responseData.data }; 
+
+      const apiJsonResponse = await response.json(); // This is the full API JSON response
+
+      // Construct the TutorAvailabilitiesPayload object as expected by the return type
+      const constructedPayload: TutorAvailabilitiesPayload = {
+        availabilities: apiJsonResponse.data, 
+        totalCount: apiJsonResponse.totalCount,
+        page: apiJsonResponse.page,
+        pageSize: apiJsonResponse.pageSize,
+      };
+      return { success: true, data: constructedPayload };
     } catch (error: any) {
-      return { success: false, error: error.message || "Failed to fetch available slots." };
+      // Catch network errors or other issues before fetchWithAuth completes
+      return { success: false, error: error.message || "Failed to fetch available slots due to a network or client-side error." };
     }
   },
 

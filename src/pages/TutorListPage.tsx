@@ -66,7 +66,7 @@ const TutorListPage: React.FC = () => {
       <div className="mb-6 max-w-lg mx-auto">
         <input 
           type="text"
-          placeholder="Search tutors by name, email or skills..." 
+          placeholder="Search tutors by name or skills..." 
           className="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
