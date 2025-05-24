@@ -27,23 +27,19 @@ const TutorBookingsPage: React.FC = () => {
       }
       try {
         setIsLoading(true);
-        const response = await BookingService.getTutorBookings(currentPage, pageSize);
-        setBookings(response.data);
-        // Assuming the API returns pagination info in headers or a specific structure
-        // For now, let's simulate or assume a way to get total pages
-        // If the API returns totalItems, calculate totalPages: Math.ceil(response.totalItems / pageSize)
-        // If the API returns totalPages directly: setTotalPages(response.totalPages)
-        // For this example, if less than pageSize items are returned, it's the last page.
-        if (response.data.length < pageSize) {
-          setTotalPages(currentPage);
+        // TODO: Pass a default status or allow status selection
+        const response = await BookingService.getTutorBookings('Pending', currentPage, pageSize); 
+        if (response.success && response.data) {
+          setBookings(response.data.bookings);
+          setTotalPages(Math.ceil(response.data.totalCount / pageSize));
         } else {
-          // This is a placeholder; ideally, the API provides total pages or total items
-          // For now, if we get a full page, assume there might be a next one.
-          setTotalPages(currentPage + 1);
+          setError(typeof response.error === 'string' ? response.error : response.error?.message || 'Failed to fetch bookings.');
+          setBookings([]); // Ensure bookings is an array in case of error
         }
-        setError(null);
-      } catch (err) {
-        setError('Failed to fetch bookings.');
+        // setError(null); // setError(null) is called implicitly if response.success is true
+      } catch (err: any) {
+        setError(err.message || 'Failed to fetch bookings.');
+        setBookings([]); // Ensure bookings is an array in case of error
         console.error(err);
       } finally {
         setIsLoading(false);
@@ -104,7 +100,7 @@ const TutorBookingsPage: React.FC = () => {
             </TableHeader>
             <TableBody>
               {bookings.map((booking) => (
-                <TableRow key={booking.id}>
+                <TableRow key={booking.bookingId}>
                   <TableCell>{booking.studentName || 'N/A'}</TableCell>
                   <TableCell>{booking.topic}</TableCell>
                   <TableCell>{new Date(booking.startTime).toLocaleDateString()}</TableCell>
@@ -114,7 +110,7 @@ const TutorBookingsPage: React.FC = () => {
                   </TableCell>
                   <TableCell>
                     <Button asChild variant="link">
-                      <Link to={`/tutor/bookings/${booking.id}`}>View Details</Link>
+                      <Link to={`/tutor/bookings/${booking.bookingId}`}>View Details</Link>
                     </Button>
                   </TableCell>
                 </TableRow>

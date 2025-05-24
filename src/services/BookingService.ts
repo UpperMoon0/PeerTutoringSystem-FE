@@ -102,11 +102,13 @@ export const BookingService = {
   },
 
   async getTutorBookings(
+    status: string, 
     page: number = 1,
     pageSize: number = 10
   ): Promise<ApiResult<{ bookings: Booking[], totalCount: number }>> {
     try {
       const queryParams = new URLSearchParams({
+        Status: status, 
         page: page.toString(),
         pageSize: pageSize.toString(),
       }).toString();
@@ -140,9 +142,9 @@ export const BookingService = {
 
   async updateBookingStatus(bookingId: string, status: string): Promise<ApiResult<Booking>> {
     try {
-      const response = await AuthService.fetchWithAuth(`${API_BASE_URL}/Bookings/${bookingId}/status`, { 
-        method: 'PUT', 
-        body: JSON.stringify({ status }),
+      const response = await AuthService.fetchWithAuth(`${API_BASE_URL}/Bookings/${bookingId}/status`, {
+        method: 'PUT',
+        body: JSON.stringify({ Status: status }),
         headers: { 'Content-Type': 'application/json' },
       });
       if (!response.ok) {
