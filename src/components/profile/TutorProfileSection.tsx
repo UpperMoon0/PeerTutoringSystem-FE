@@ -20,11 +20,9 @@ const TutorProfileSection: React.FC<TutorProfileSectionProps> = ({ userId, curre
   const [tutorProfile, setTutorProfile] = useState<TutorProfileDto | null>(null);
   const [isEditingTutorProfile, setIsEditingTutorProfile] = useState(false);
   const [tutorProfileLoading, setTutorProfileLoading] = useState(false);
-  const [tutorProfileError, setTutorProfileError] = useState<string | null>(null);
 
   const fetchTutorProfileData = useCallback(async (currentUserId: string) => {
     setTutorProfileLoading(true);
-    setTutorProfileError(null);
     let fetchedTutorProfile: TutorProfileDto | null = null;
     try {
       const tutorResult = await TutorProfileService.getTutorProfileByUserId(currentUserId);
@@ -41,15 +39,15 @@ const TutorProfileSection: React.FC<TutorProfileSectionProps> = ({ userId, curre
       } else if (tutorResult.isNotFoundError) {
         setTutorProfile(null);
       } else {
-        const errorMessage = tutorResult.error instanceof Error ? tutorResult.error.message : typeof tutorResult.error === 'string' ? tutorResult.error : (tutorResult.error && typeof tutorResult.error.message === 'string') ? tutorResult.error.message : 'Failed to fetch tutor profile.';
-        setTutorProfileError(errorMessage);
+        console.error('Failed to fetch tutor profile:', tutorResult.error);
+        setTutorProfile(null);
       }
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'An unknown error occurred while fetching tutor profile data.';
-      setTutorProfileError(errorMessage);
+      console.error('An unknown error occurred while fetching tutor profile data:', err);
+      setTutorProfile(null);
     }
     setTutorProfileLoading(false);
-  }, [setTutorProfile, setTutorProfileError, setTutorProfileLoading]);
+  }, [setTutorProfile, setTutorProfileLoading]);
 
   useEffect(() => {
     if (profile.role === 'Tutor' && currentUser?.userId === profile.userID && userId) {
@@ -57,7 +55,6 @@ const TutorProfileSection: React.FC<TutorProfileSectionProps> = ({ userId, curre
     } else {
       setTutorProfile(null);
       setTutorProfileLoading(false);
-      setTutorProfileError(null);
       setIsEditingTutorProfile(false);
     }
   }, [userId, currentUser, profile, fetchTutorProfileData]);
@@ -80,21 +77,21 @@ const TutorProfileSection: React.FC<TutorProfileSectionProps> = ({ userId, curre
 
   const handleSaveTutorProfile = useCallback(async (data: CreateTutorProfileDto | UpdateTutorDtoInternal) => {
     if (!userId) {
-      setTutorProfileError("User ID is missing.");
+      console.error("User ID is missing.");
       return;
     }
     setTutorProfileLoading(true);
-    setTutorProfileError(null);
     const { skillIds, ...profileData } = data;
     try {
       let profileResult;
       if (tutorProfile && tutorProfile.bioID) {
         profileResult = await TutorProfileService.updateTutorProfile(tutorProfile.bioID, profileData as UpdateTutorDtoInternal);
       } else {
-        profileResult = await TutorProfileService.createTutorProfile({ ...profileData, userID: userId } as CreateTutorProfileDto);      }
+        // The userID is typically handled by the backend via the auth token for create operations
+        profileResult = await TutorProfileService.createTutorProfile(profileData as CreateTutorProfileDto);
+      }
 
       if (profileResult.success && profileResult.data) {
-        const newBioId = profileResult.data.bioID;
         const currentSkillsResult = await UserSkillService.getUserSkills(userId);
         const newSkillIds = skillIds || [];
         if (currentSkillsResult.success && currentSkillsResult.data) {
@@ -126,13 +123,13 @@ const TutorProfileSection: React.FC<TutorProfileSectionProps> = ({ userId, curre
         }
         setIsEditingTutorProfile(false);
       } else {
-        setTutorProfileError(profileResult.error instanceof Error ? profileResult.error.message : typeof profileResult.error === 'string' ? profileResult.error : (profileResult.error && typeof profileResult.error.message === 'string') ? profileResult.error.message : 'Failed to save tutor profile.');
+        console.error('Failed to save tutor profile:', profileResult.error);
       }
     } catch (err) {
-      setTutorProfileError(err instanceof Error ? err.message : 'An unknown error occurred while saving tutor profile.');
+      console.error('An unknown error occurred while saving tutor profile:', err);
     }
     setTutorProfileLoading(false);
-  }, [userId, tutorProfile, fetchTutorProfileData, setIsEditingTutorProfile, setTutorProfileError, setTutorProfileLoading]);
+  }, [userId, tutorProfile, fetchTutorProfileData, setIsEditingTutorProfile, setTutorProfileLoading]);
 
   // This section is only rendered if profile.role is Tutor and current user is the owner.
   // This is ensured by the calling component (UserProfileCard), but good to keep in mind.
@@ -158,9 +155,8 @@ const TutorProfileSection: React.FC<TutorProfileSectionProps> = ({ userId, curre
             onEdit={handleEditTutorProfile}
             canEdit={true} // This section is only for the owner tutor
           />
-        ) : tutorProfileError ? (
-          <p className="text-red-500">Error: {tutorProfileError}</p>
         ) : (
+          // If not editing, not loading, and no tutorProfile (due to error or not existing)
           <>
             <p className="text-muted-foreground mb-4">
               You don't have a bio yet. Please create one to attract students.

@@ -2,7 +2,7 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import HeaderUserProfile from '../common/HeaderUserProfile'; 
+import HeaderUserProfile from './HeaderUserProfile'; 
 
 const Header: React.FC = () => {
   const { currentUser, logout, loading } = useAuth();
