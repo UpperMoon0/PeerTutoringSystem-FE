@@ -16,6 +16,7 @@ import TutorDetailPage from '@/pages/TutorDetailPage';
 import ManageAvailabilityPage from '@/pages/ManageAvailabilityPage';
 import TutorBookingsPage from '@/pages/TutorBookingsPage';
 import TutorBookingDetailPage from '@/pages/TutorBookingDetailPage';
+import TutorDashboardPage from '@/pages/TutorDashboardPage';
 
 const router = createBrowserRouter([
   {
@@ -32,10 +33,16 @@ const router = createBrowserRouter([
       {
         path: 'register/student',
         element: <StudentRegisterPage />,
-      },
-      {
+      },      {
         path: 'register-tutor',
         element: <TutorRegisterPage />,
+      },
+      {
+        path: '/tutor/dashboard',
+        element: <ProtectedRoute allowedRoles={['Tutor']} />,
+        children: [
+          { index: true, element: <TutorDashboardPage /> }
+        ]
       },
       {
         path: 'profile/:userId', 
