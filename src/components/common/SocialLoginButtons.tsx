@@ -41,13 +41,12 @@ const SocialLoginButtons: React.FC<SocialLoginButtonsProps> = ({
   return (
     <div className="space-y-2 mb-6">
       <Button
-        variant="outline"
-        className="w-full flex items-center justify-center"
+        className="w-full flex items-center justify-center text-white bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"
         onClick={handleGoogleAuthClick}
         disabled={parentLoading || auth.loading}
       >
         <img src="https://img.icons8.com/color/16/000000/google-logo.png" alt="Google" className="mr-2 h-4 w-4" />
-        Continue with Google
+        <span className="text-white">Continue with Google</span>
       </Button>
     </div>
   );
