@@ -16,6 +16,7 @@ import TutorDetailPage from '@/pages/TutorDetailPage';
 import ManageAvailabilityPage from '@/pages/ManageAvailabilityPage';
 import TutorBookingsPage from '@/pages/TutorBookingsPage';
 import TutorBookingDetailPage from '@/pages/TutorBookingDetailPage';
+import TutorDashboardPage from '@/pages/tutor/TutorDashboardPage';
 
 const router = createBrowserRouter([
   {
@@ -50,7 +51,18 @@ const router = createBrowserRouter([
         element: <TutorDetailPage />,
       },
       {
-        path: '/manage-availability', 
+        path: 'tutor',
+        element: <ProtectedRoute allowedRoles={['Tutor']} />,
+        children: [
+          { index: true, element: <TutorDashboardPage /> },
+          { path: 'availability', element: <ManageAvailabilityPage /> },
+          { path: 'bookings', element: <TutorBookingsPage /> },
+          { path: 'bookings/:bookingId', element: <TutorBookingDetailPage /> },
+        ],
+      },
+      // Backward compatibility routes
+      {
+        path: '/manage-availability',
         element: <ProtectedRoute allowedRoles={['Tutor']} />,
         children: [
           { index: true, element: <ManageAvailabilityPage /> }

@@ -30,24 +30,14 @@ const Header: React.FC = () => {
             Tutors
           </Link>
           {currentUser && currentUser.role === 'Tutor' && (
-            <>
-              <Link
-                to="/manage-availability"
-                className={`text-white hover:text-gray-200 transition-colors ${
-                  location.pathname === '/manage-availability' ? 'bg-white/20 px-3 py-1 rounded-md' : ''
-                }`}
-              >
-                Manage Availability
-              </Link>
-              <Link
-                to="/tutor/bookings"
-                className={`text-white hover:text-gray-200 transition-colors ${
-                  location.pathname === '/tutor/bookings' ? 'bg-white/20 px-3 py-1 rounded-md' : ''
-                }`}
-              >
-                Bookings
-              </Link>
-            </>
+            <Link
+              to="/tutor"
+              className={`text-white hover:text-gray-200 transition-colors ${
+                location.pathname.startsWith('/tutor') ? 'bg-white/20 px-3 py-1 rounded-md' : ''
+              }`}
+            >
+              Tutor Dashboard
+            </Link>
           )}
           {currentUser && currentUser.role === 'Admin' && (
             <Link
