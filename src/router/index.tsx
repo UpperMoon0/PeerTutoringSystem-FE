@@ -1,5 +1,5 @@
-import React from 'react'; 
-import { createBrowserRouter, RouterProvider } from 'react-router-dom';
+import React from 'react';
+import { createBrowserRouter, RouterProvider, Navigate } from 'react-router-dom';
 import LoginPage from '../pages/LoginPage';
 import StudentRegisterPage from '../pages/StudentRegisterPage';
 import TutorRegisterPage from '../pages/TutorRegisterPage';
@@ -13,7 +13,6 @@ import ProtectedRoute from './ProtectedRoute';
 import UserProfilePage from '@/pages/UserProfilePage';
 import TutorListPage from '@/pages/TutorListPage';
 import TutorDetailPage from '@/pages/TutorDetailPage';
-import ManageAvailabilityPage from '@/pages/ManageAvailabilityPage';
 import TutorBookingsPage from '@/pages/TutorBookingsPage';
 import TutorBookingDetailPage from '@/pages/TutorBookingDetailPage';
 import TutorDashboardPage from '@/pages/tutor/TutorDashboardPage';
@@ -55,7 +54,10 @@ const router = createBrowserRouter([
         element: <ProtectedRoute allowedRoles={['Tutor']} />,
         children: [
           { index: true, element: <TutorDashboardPage /> },
-          { path: 'availability', element: <ManageAvailabilityPage /> },
+          {
+            path: 'availability',
+            element: <Navigate to="/tutor?section=availability" replace />
+          },
           { path: 'bookings', element: <TutorBookingsPage /> },
           { path: 'bookings/:bookingId', element: <TutorBookingDetailPage /> },
         ],
@@ -63,10 +65,7 @@ const router = createBrowserRouter([
       // Backward compatibility routes
       {
         path: '/manage-availability',
-        element: <ProtectedRoute allowedRoles={['Tutor']} />,
-        children: [
-          { index: true, element: <ManageAvailabilityPage /> }
-        ]
+        element: <Navigate to="/tutor?section=availability" replace />
       },
       {
         path: '/tutor/bookings',

@@ -5,7 +5,6 @@ import {
   Calendar,
   BookOpen,
   User,
-  Clock,
   DollarSign,
   BarChart3,
   Settings,
@@ -17,25 +16,27 @@ import {
 interface SidebarItem {
   icon: React.ComponentType<{ className?: string }>;
   label: string;
-  href: string;
+  href?: string;
+  onClick?: () => void;
 }
-
-const sidebarItems: SidebarItem[] = [
-  { icon: Home, label: 'Dashboard', href: '/tutor' },
-  { icon: BookOpen, label: 'My Bookings', href: '/tutor/bookings' },
-  { icon: Calendar, label: 'Manage Availability', href: '/tutor/availability' },
-  { icon: User, label: 'Profile', href: '/profile' },
-  { icon: BarChart3, label: 'Analytics', href: '/tutor/analytics' },
-  { icon: Settings, label: 'Settings', href: '/tutor/settings' },
-];
 
 interface TutorSidebarProps {
   className?: string;
+  onAvailabilityClick?: () => void;
 }
 
-const TutorSidebar: React.FC<TutorSidebarProps> = ({ className }) => {
+const TutorSidebar: React.FC<TutorSidebarProps> = ({ className, onAvailabilityClick }) => {
   const location = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  const sidebarItems: SidebarItem[] = [
+    { icon: Home, label: 'Dashboard', href: '/tutor' },
+    { icon: BookOpen, label: 'My Bookings', href: '/tutor/bookings' },
+    { icon: Calendar, label: 'Manage Availability', onClick: onAvailabilityClick || (() => {}), href: onAvailabilityClick ? undefined : '/tutor/availability' },
+    { icon: User, label: 'Profile', href: '/profile' },
+    { icon: BarChart3, label: 'Analytics', href: '/tutor/analytics' },
+    { icon: Settings, label: 'Settings', href: '/tutor/settings' },
+  ];
 
   return (
     <>
@@ -89,14 +90,37 @@ const TutorSidebar: React.FC<TutorSidebarProps> = ({ className }) => {
 
       {/* Navigation */}
       <nav className="flex-1 p-4 space-y-2">
-        {sidebarItems.map((item) => {
+        {sidebarItems.map((item, index) => {
           const isActive = location.pathname === item.href;
           const Icon = item.icon;
+          const key = item.href || `item-${index}`;
+          
+          if (item.onClick) {
+            return (
+              <button
+                key={key}
+                onClick={item.onClick}
+                className={cn(
+                  "w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all duration-200 group",
+                  isActive
+                    ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg"
+                    : "text-gray-300 hover:text-white hover:bg-gray-800"
+                )}
+                aria-label={item.label}
+              >
+                <Icon className={cn(
+                  "w-5 h-5 transition-colors",
+                  isActive ? "text-white" : "text-gray-400 group-hover:text-white"
+                )} />
+                <span className="font-medium">{item.label}</span>
+              </button>
+            );
+          }
           
           return (
             <Link
-              key={item.href}
-              to={item.href}
+              key={key}
+              to={item.href!}
               className={cn(
                 "flex items-center space-x-3 px-4 py-3 rounded-lg transition-all duration-200 group",
                 isActive

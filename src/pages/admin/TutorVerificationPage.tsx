@@ -68,7 +68,8 @@ const TutorVerificationPage: React.FC = () => {
         setVerifications(result.data);
         setError(null);
       } else {
-        setError(result.error || 'Failed to fetch tutor verifications.');
+        const errorMessage = typeof result.error === 'string' ? result.error : result.error?.message || 'Failed to fetch tutor verifications.';
+        setError(errorMessage);
       }
     } catch (err: any) {
       setError(err.message || 'An unexpected error occurred.');

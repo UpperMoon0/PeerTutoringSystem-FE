@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import TutorSidebar from '@/components/layout/TutorSidebar';
+import ManageAvailabilitySection from '@/components/tutor/ManageAvailabilitySection';
 import { BookingService } from '@/services/BookingService';
-import { TutorAvailabilityService } from '@/services/TutorAvailabilityService';
-import { 
+import {
   Calendar,
   BookOpen,
   Clock,
@@ -17,10 +17,10 @@ import {
   Eye,
   CheckCircle,
   AlertCircle,
-  Plus,
   Edit,
   User,
-  CalendarDays
+  CalendarDays,
+  ArrowLeft
 } from 'lucide-react';
 import type { Booking } from '@/types/booking.types';
 
@@ -31,7 +31,12 @@ interface DashboardStats {
   earnings: number;
 }
 
+type DashboardSection = 'overview' | 'availability';
+
 const TutorDashboardPage: React.FC = () => {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const [activeSection, setActiveSection] = useState<DashboardSection>('overview');
   const [stats, setStats] = useState<DashboardStats>({
     totalBookings: 0,
     availableSlots: 0,
@@ -40,6 +45,24 @@ const TutorDashboardPage: React.FC = () => {
   });
   const [recentBookings, setRecentBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // Handle URL-based navigation
+  useEffect(() => {
+    const searchParams = new URLSearchParams(location.search);
+    const section = searchParams.get('section');
+    if (section === 'availability') {
+      setActiveSection('availability');
+    } else {
+      setActiveSection('overview');
+    }
+  }, [location.search]);
+
+  // Update URL when section changes
+  const handleSectionChange = (section: DashboardSection) => {
+    setActiveSection(section);
+    const newUrl = section === 'availability' ? '/tutor?section=availability' : '/tutor';
+    navigate(newUrl, { replace: true });
+  };
 
   useEffect(() => {
     loadDashboardData();
@@ -95,36 +118,57 @@ const TutorDashboardPage: React.FC = () => {
   return (
     <div className="h-screen bg-gray-950 flex">
       {/* Sidebar */}
-      <TutorSidebar />
+      <TutorSidebar onAvailabilityClick={() => handleSectionChange('availability')} />
       
       {/* Main Content */}
       <div className="flex-1 flex flex-col">
         {/* Header */}
         <header className="bg-gray-900 border-b border-gray-800 px-6 py-4">
           <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-xl lg:text-2xl font-bold text-white">Dashboard</h1>
-              <p className="text-gray-400 mt-1 text-sm lg:text-base">Welcome back! Here's your tutoring overview.</p>
+            <div className="flex items-center space-x-4">
+              {activeSection !== 'overview' && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => handleSectionChange('overview')}
+                  className="text-gray-400 hover:text-white p-2"
+                >
+                  <ArrowLeft className="w-4 h-4" />
+                </Button>
+              )}
+              <div>
+                <h1 className="text-xl lg:text-2xl font-bold text-white">
+                  {activeSection === 'overview' ? 'Dashboard' : 'Manage Availability'}
+                </h1>
+                <p className="text-gray-400 mt-1 text-sm lg:text-base">
+                  {activeSection === 'overview'
+                    ? "Welcome back! Here's your tutoring overview."
+                    : "Set your available time slots for tutoring sessions."
+                  }
+                </p>
+              </div>
             </div>
             <div className="flex items-center space-x-3">
-              <Button
-                asChild
-                className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-sm lg:text-base px-3 lg:px-4"
-              >
-                <Link to="/tutor/availability">
-                  <Plus className="w-4 h-4 mr-1 lg:mr-2" />
-                  <span className="hidden sm:inline">Quick Actions</span>
-                  <span className="sm:hidden">Actions</span>
-                </Link>
-              </Button>
+              {activeSection === 'overview' && (
+                <Button
+                  onClick={() => handleSectionChange('availability')}
+                  className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-sm lg:text-base px-3 lg:px-4"
+                >
+                  <CalendarDays className="w-4 h-4 mr-1 lg:mr-2" />
+                  <span className="hidden sm:inline">Manage Availability</span>
+                  <span className="sm:hidden">Availability</span>
+                </Button>
+              )}
             </div>
           </div>
         </header>
 
         {/* Dashboard Content */}
         <main className="flex-1 p-6 overflow-auto bg-gray-950">
-          {/* Stats Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          {activeSection === 'overview' ? (
+            <>
+              {/* Stats Grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
             {/* Total Bookings */}
             <Card className="bg-gray-900 border-gray-800">
               <CardContent className="p-4 lg:p-6">
@@ -215,15 +259,13 @@ const TutorDashboardPage: React.FC = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-3">
-                <Button 
-                  asChild 
-                  variant="outline" 
+                <Button
+                  variant="outline"
+                  onClick={() => handleSectionChange('availability')}
                   className="w-full justify-start bg-gray-800 border-gray-700 hover:bg-gray-700 text-white"
                 >
-                  <Link to="/tutor/availability">
-                    <CalendarDays className="w-4 h-4 mr-2" />
-                    Manage Availability
-                  </Link>
+                  <CalendarDays className="w-4 h-4 mr-2" />
+                  Manage Availability
                 </Button>
                 <Button 
                   asChild 
@@ -323,6 +365,11 @@ const TutorDashboardPage: React.FC = () => {
               </CardContent>
             </Card>
           </div>
+            </>
+          ) : (
+            /* Availability Management Section */
+            <ManageAvailabilitySection />
+          )}
         </main>
       </div>
     </div>

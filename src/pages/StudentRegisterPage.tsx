@@ -27,7 +27,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { FormControl } from '@/components/ui/form';
 
 const StudentRegisterPage: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
