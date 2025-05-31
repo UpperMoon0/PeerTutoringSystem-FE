@@ -93,16 +93,16 @@ const TutorDashboardPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-950 lg:flex">
+    <div className="h-screen bg-gray-950 flex">
       {/* Sidebar */}
       <TutorSidebar />
       
       {/* Main Content */}
-      <div className="flex-1 flex flex-col lg:ml-0 ml-0">
+      <div className="flex-1 flex flex-col">
         {/* Header */}
-        <header className="bg-gray-900 border-b border-gray-800 px-4 lg:px-6 py-4">
+        <header className="bg-gray-900 border-b border-gray-800 px-6 py-4">
           <div className="flex items-center justify-between">
-            <div className="lg:ml-0 ml-12">
+            <div>
               <h1 className="text-xl lg:text-2xl font-bold text-white">Dashboard</h1>
               <p className="text-gray-400 mt-1 text-sm lg:text-base">Welcome back! Here's your tutoring overview.</p>
             </div>
@@ -122,9 +122,9 @@ const TutorDashboardPage: React.FC = () => {
         </header>
 
         {/* Dashboard Content */}
-        <main className="flex-1 p-4 lg:p-6 overflow-auto">
+        <main className="flex-1 p-6 overflow-auto bg-gray-950">
           {/* Stats Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-6 lg:mb-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
             {/* Total Bookings */}
             <Card className="bg-gray-900 border-gray-800">
               <CardContent className="p-4 lg:p-6">
@@ -202,7 +202,7 @@ const TutorDashboardPage: React.FC = () => {
             </Card>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Quick Actions */}
             <Card className="bg-gray-900 border-gray-800">
               <CardHeader>

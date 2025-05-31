@@ -5,7 +5,7 @@ function App() {
   return (
     <div className="flex flex-col min-h-svh"> {}
       <Header />
-      <main className="flex-grow p-4"> {}
+      <main className="flex-grow"> {}
         <Outlet />
       </main>
     </div>
