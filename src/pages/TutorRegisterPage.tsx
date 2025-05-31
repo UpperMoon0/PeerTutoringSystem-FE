@@ -123,7 +123,7 @@ const TutorRegisterPage: React.FC = () => {
 
   if (authLoading || statusLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-100">
+      <div className="flex items-center justify-center min-h-screen bg-gray-950 text-white">
         <p>Loading...</p>
       </div>
     );
@@ -131,16 +131,16 @@ const TutorRegisterPage: React.FC = () => {
 
   if (!currentUser || currentUser.role !== 'Student') {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-100">
-        <Card className="w-full max-w-lg">
+      <div className="flex items-center justify-center min-h-screen bg-gray-950 text-gray-300">
+        <Card className="w-full max-w-lg bg-gray-900 border-gray-800">
           <CardHeader>
-            <CardTitle className="text-2xl font-bold text-center">Become a Tutor</CardTitle>
+            <CardTitle className="text-2xl font-bold text-center text-white">Become a Tutor</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-center text-red-500">You must be logged in as a student to access this page.</p>
+            <p className="text-center text-red-400">You must be logged in as a student to access this page.</p>
           </CardContent>
           <CardFooter>
-            <Button onClick={() => navigate('/login')} className="w-full">Login</Button>
+            <Button onClick={() => navigate('/login')} className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white">Login</Button>
           </CardFooter>
         </Card>
       </div>
@@ -156,16 +156,16 @@ const TutorRegisterPage: React.FC = () => {
       statusMessage = 'We regret to inform you that your application to become a tutor has been rejected. Please check your email for more details or contact support.';
     }
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-100">
-        <Card className="w-full max-w-lg">
+      <div className="flex items-center justify-center min-h-screen bg-gray-950 text-gray-300">
+        <Card className="w-full max-w-lg bg-gray-900 border-gray-800">
           <CardHeader>
-            <CardTitle className="text-2xl font-bold text-center">Application Status</CardTitle>
+            <CardTitle className="text-2xl font-bold text-center text-white">Application Status</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-center">{statusMessage}</p>
+            <p className="text-center text-gray-300">{statusMessage}</p>
           </CardContent>
           <CardFooter>
-            <Button onClick={() => navigate('/')} className="w-full">Back to Home</Button>
+            <Button onClick={() => navigate('/')} className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white">Back to Home</Button>
           </CardFooter>
         </Card>
       </div>
@@ -174,79 +174,79 @@ const TutorRegisterPage: React.FC = () => {
 
   // If no pending request, show the form
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100">
-      <Card className="w-full max-w-lg">
+    <div className="flex items-center justify-center min-h-screen bg-gray-950 text-gray-300">
+      <Card className="w-full max-w-lg bg-gray-900 border-gray-800">
         <CardHeader>
-          <CardTitle className="text-2xl font-bold text-center">Become a Tutor</CardTitle>
-          <CardDescription className="text-center">
+          <CardTitle className="text-2xl font-bold text-center text-white">Become a Tutor</CardTitle>
+          <CardDescription className="text-center text-gray-400">
             Fill in the details below to apply as a tutor.
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <Label htmlFor="citizenId">Citizen ID</Label>
+              <Label htmlFor="citizenId" className="text-gray-300">Citizen ID</Label>
               <Input
                 id="citizenId"
                 type="text"
                 value={citizenId}
                 onChange={(e) => setCitizenId(e.target.value)}
                 required
-                className="mt-1"
+                className="mt-1 bg-gray-800 border-gray-700 text-white placeholder-gray-500 focus:ring-blue-500 focus:border-blue-500"
               />
             </div>
             <div>
-              <Label htmlFor="studentId">Student ID</Label>
+              <Label htmlFor="studentId" className="text-gray-300">Student ID</Label>
               <Input
                 id="studentId"
                 type="text"
                 value={studentId}
                 onChange={(e) => setStudentId(e.target.value)}
                 required
-                className="mt-1"
+                className="mt-1 bg-gray-800 border-gray-700 text-white placeholder-gray-500 focus:ring-blue-500 focus:border-blue-500"
               />
             </div>
             <div>
-              <Label htmlFor="university">University</Label>
+              <Label htmlFor="university" className="text-gray-300">University</Label>
               <Input
                 id="university"
                 type="text"
                 value={university}
                 onChange={(e) => setUniversity(e.target.value)}
                 required
-                className="mt-1"
+                className="mt-1 bg-gray-800 border-gray-700 text-white placeholder-gray-500 focus:ring-blue-500 focus:border-blue-500"
               />
             </div>
             <div>
-              <Label htmlFor="major">Major</Label>
+              <Label htmlFor="major" className="text-gray-300">Major</Label>
               <Input
                 id="major"
                 type="text"
                 value={major}
                 onChange={(e) => setMajor(e.target.value)}
                 required
-                className="mt-1"
+                className="mt-1 bg-gray-800 border-gray-700 text-white placeholder-gray-500 focus:ring-blue-500 focus:border-blue-500"
               />
             </div>
             <div>
-              <Label htmlFor="documents">Supporting Documents (e.g., Student ID Card, Transcripts)</Label>
+              <Label htmlFor="documents" className="text-gray-300">Supporting Documents (e.g., Student ID Card, Transcripts)</Label>
               <Input
                 id="documents"
                 type="file"
                 multiple
                 onChange={handleFileChange}
                 required
-                className="mt-1"
+                className="mt-1 bg-gray-800 border-gray-700 text-white file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700"
               />
               <p className="text-sm text-gray-500 mt-1">Upload at least one document.</p>
             </div>
-            {error && <p className="text-red-500 text-sm">{error}</p>}
-            <Button type="submit" className="w-full" disabled={isLoading}>
+            {error && <p className="text-red-400 text-sm">{error}</p>}
+            <Button type="submit" className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white" disabled={isLoading}>
               {isLoading ? 'Submitting...' : 'Submit Application'}
             </Button>
           </form>
         </CardContent>
-        <CardFooter className="text-center text-sm">
+        <CardFooter className="text-center text-sm text-gray-400">
           Your application will be reviewed by an administrator.
         </CardFooter>
       </Card>

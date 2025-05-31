@@ -30,8 +30,8 @@ const ManageUsersPage: React.FC = () => {
     if (result.success && result.data) {
       setAllUsers(result.data);
     } else {
-      const errorMessage = result.error instanceof Error ? result.error.message : result.error;
-      setError(errorMessage || 'Failed to fetch users.');
+      const errorMessage = typeof result.error === 'string' ? result.error : result.error?.message || 'Failed to fetch users.';
+      setError(errorMessage);
     }
     setLoading(false);
   };
@@ -67,8 +67,8 @@ const ManageUsersPage: React.FC = () => {
       setActionSuccess(`User ${userId} status has been updated successfully.`);
       await fetchUsers(); // Refresh users list
     } else {
-      const errorMessage = result.error instanceof Error ? result.error.message : result.error;
-      setActionError(errorMessage || `Failed to update status for user ${userId}.`);
+      const errorMessage = typeof result.error === 'string' ? result.error : result.error?.message || `Failed to update status for user ${userId}.`;
+      setActionError(errorMessage);
     }
     setActingUserId(null);
   };
