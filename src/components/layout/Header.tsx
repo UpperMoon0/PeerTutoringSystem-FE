@@ -15,83 +15,95 @@ const Header: React.FC = () => {
   };
 
   return (
-    <header className="p-4 bg-gradient-to-r from-[var(--interactive-primary-gradient-from)] to-[var(--interactive-primary-gradient-to)] text-white">
-      <div className="container mx-auto flex items-center justify-between">
-        <div className="flex items-center space-x-4"> {}
-          <Link to="/" className="text-xl font-bold !text-white hover:text-gray-200 transition-colors mr-12">
-            TheTutorGroup
-          </Link>
-          <Link
-            to="/tutors"
-            className={`text-white hover:text-gray-200 transition-colors ${
-              location.pathname === '/tutors' ? 'bg-white/20 px-3 py-1 rounded-md' : ''
-            }`}
-          >
-            Tutors
-          </Link>
-          {currentUser && currentUser.role === 'Tutor' && (
-            <Link
-              to="/tutor"
-              className={`text-white hover:text-gray-200 transition-colors ${
-                location.pathname.startsWith('/tutor') ? 'bg-white/20 px-3 py-1 rounded-md' : ''
-              }`}
-            >
-              Tutor Dashboard
+    <header className="bg-gray-900 border-b border-gray-800 text-white shadow-lg">
+      <div className="container mx-auto px-4 py-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-6">
+            <Link to="/" className="text-xl font-bold text-white hover:text-gray-200 transition-colors">
+              TheTutorGroup
             </Link>
-          )}
-          {currentUser && currentUser.role === 'Admin' && (
-            <Link
-              to="/admin"
-              className={`text-white hover:text-gray-200 transition-colors ${
-                location.pathname === '/admin' ? 'bg-white/20 px-3 py-1 rounded-md' : ''
-              }`}
-            >
-              Admin Dashboard
-            </Link>
-          )}
-          {currentUser && currentUser.role === 'Student' && (
-            <Link
-              to="/register-tutor"
-              className={`text-white hover:text-gray-200 transition-colors ${
-                location.pathname === '/register-tutor' ? 'bg-white/20 px-3 py-1 rounded-md' : ''
-              }`}
-            >
-              Become a Tutor
-            </Link>
-          )}
+            <div className="hidden md:flex items-center space-x-4">
+              <Link
+                to="/tutors"
+                className={`px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                  location.pathname === '/tutors'
+                    ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg'
+                    : 'text-gray-300 hover:text-white hover:bg-gray-800'
+                }`}
+              >
+                Tutors
+              </Link>
+              {currentUser && currentUser.role === 'Tutor' && (
+                <Link
+                  to="/tutor"
+                  className={`px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                    location.pathname.startsWith('/tutor')
+                      ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg'
+                      : 'text-gray-300 hover:text-white hover:bg-gray-800'
+                  }`}
+                >
+                  Tutor Dashboard
+                </Link>
+              )}
+              {currentUser && currentUser.role === 'Admin' && (
+                <Link
+                  to="/admin"
+                  className={`px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                    location.pathname.startsWith('/admin')
+                      ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg'
+                      : 'text-gray-300 hover:text-white hover:bg-gray-800'
+                  }`}
+                >
+                  Admin Dashboard
+                </Link>
+              )}
+              {currentUser && currentUser.role === 'Student' && (
+                <Link
+                  to="/register-tutor"
+                  className={`px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                    location.pathname === '/register-tutor'
+                      ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg'
+                      : 'text-gray-300 hover:text-white hover:bg-gray-800'
+                  }`}
+                >
+                  Become a Tutor
+                </Link>
+              )}
+            </div>
+          </div>
+          <nav className="flex items-center space-x-3">
+            {loading ? (
+              <div className="text-gray-400">Loading...</div>
+            ) : currentUser ? (
+              <>
+                <HeaderUserProfile />
+                <Button
+                  className="bg-red-600 hover:bg-red-700 text-white text-sm px-4 py-2 rounded-lg transition-colors duration-200 shadow-lg"
+                  onClick={handleLogout}
+                >
+                  Logout
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button
+                  variant="default"
+                  className="bg-blue-600 hover:bg-blue-700 text-white text-sm px-4 py-2 rounded-lg transition-colors duration-200 shadow-lg"
+                  asChild
+                >
+                  <Link to="/login">Sign In</Link>
+                </Button>
+                <Button
+                  variant="default"
+                  className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white text-sm px-4 py-2 rounded-lg transition-all duration-200 shadow-lg"
+                  asChild
+                >
+                  <Link to="/register/student">Sign Up</Link>
+                </Button>
+              </>
+            )}
+          </nav>
         </div>
-        <nav className="flex items-center space-x-4"> {}
-          {loading ? (
-            <p>Loading...</p>
-          ) : currentUser ? (
-            <>
-              <HeaderUserProfile />
-              <Button
-                className="bg-red-500 hover:bg-red-600 shadow-xs !text-white"
-                onClick={handleLogout}
-              >
-                Logout
-              </Button>
-            </>
-          ) : (
-            <>
-              <Button
-                variant="default"
-                className="bg-blue-500 hover:bg-blue-600 shadow-xs"
-                asChild
-              >
-                <Link to="/login" className="!text-white">Sign In</Link>
-              </Button>
-              <Button
-                variant="default"
-                className="bg-green-500 hover:bg-green-600 shadow-xs"
-                asChild
-              >
-                <Link to="/register/student" className="!text-white">Sign Up</Link>
-              </Button>
-            </>
-          )}
-        </nav>
       </div>
     </header>
   );
