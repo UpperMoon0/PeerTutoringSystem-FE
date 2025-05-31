@@ -13,8 +13,6 @@ import ProtectedRoute from './ProtectedRoute';
 import UserProfilePage from '@/pages/UserProfilePage';
 import TutorListPage from '@/pages/TutorListPage';
 import TutorDetailPage from '@/pages/TutorDetailPage';
-import TutorBookingsPage from '@/pages/TutorBookingsPage';
-import TutorBookingDetailPage from '@/pages/TutorBookingDetailPage';
 import TutorDashboardPage from '@/pages/tutor/TutorDashboardPage';
 
 const router = createBrowserRouter([
@@ -58,8 +56,14 @@ const router = createBrowserRouter([
             path: 'availability',
             element: <Navigate to="/tutor?section=availability" replace />
           },
-          { path: 'bookings', element: <TutorBookingsPage /> },
-          { path: 'bookings/:bookingId', element: <TutorBookingDetailPage /> },
+          {
+            path: 'bookings',
+            element: <Navigate to="/tutor?section=bookings" replace />
+          },
+          {
+            path: 'bookings/:bookingId',
+            element: <Navigate to="/tutor?section=bookings" replace />
+          },
         ],
       },
       // Backward compatibility routes
@@ -67,13 +71,14 @@ const router = createBrowserRouter([
         path: '/manage-availability',
         element: <Navigate to="/tutor?section=availability" replace />
       },
+      // Backward compatibility for bookings routes
       {
         path: '/tutor/bookings',
-        element: <ProtectedRoute allowedRoles={['Tutor']} />,
-        children: [
-          { index: true, element: <TutorBookingsPage /> },
-          { path: ':bookingId', element: <TutorBookingDetailPage /> },
-        ]
+        element: <Navigate to="/tutor?section=bookings" replace />
+      },
+      {
+        path: '/tutor/bookings/:bookingId',
+        element: <Navigate to="/tutor?section=bookings" replace />
       },
       {
         path: 'admin',

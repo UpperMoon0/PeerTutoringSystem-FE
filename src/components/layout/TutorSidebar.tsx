@@ -23,15 +23,16 @@ interface SidebarItem {
 interface TutorSidebarProps {
   className?: string;
   onAvailabilityClick?: () => void;
+  onBookingsClick?: () => void;
 }
 
-const TutorSidebar: React.FC<TutorSidebarProps> = ({ className, onAvailabilityClick }) => {
+const TutorSidebar: React.FC<TutorSidebarProps> = ({ className, onAvailabilityClick, onBookingsClick }) => {
   const location = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const sidebarItems: SidebarItem[] = [
     { icon: Home, label: 'Dashboard', href: '/tutor' },
-    { icon: BookOpen, label: 'My Bookings', href: '/tutor/bookings' },
+    { icon: BookOpen, label: 'My Bookings', onClick: onBookingsClick || (() => {}), href: onBookingsClick ? undefined : '/tutor/bookings' },
     { icon: Calendar, label: 'Manage Availability', onClick: onAvailabilityClick || (() => {}), href: onAvailabilityClick ? undefined : '/tutor/availability' },
     { icon: User, label: 'Profile', href: '/profile' },
     { icon: BarChart3, label: 'Analytics', href: '/tutor/analytics' },

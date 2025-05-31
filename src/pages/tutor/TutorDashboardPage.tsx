@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import TutorSidebar from '@/components/layout/TutorSidebar';
 import ManageAvailabilitySection from '@/components/tutor/ManageAvailabilitySection';
+import ManageBookingsSection from '@/components/tutor/ManageBookingsSection';
 import { BookingService } from '@/services/BookingService';
 import {
   Calendar,
@@ -31,7 +32,7 @@ interface DashboardStats {
   earnings: number;
 }
 
-type DashboardSection = 'overview' | 'availability';
+type DashboardSection = 'overview' | 'availability' | 'bookings';
 
 const TutorDashboardPage: React.FC = () => {
   const location = useLocation();
@@ -52,6 +53,8 @@ const TutorDashboardPage: React.FC = () => {
     const section = searchParams.get('section');
     if (section === 'availability') {
       setActiveSection('availability');
+    } else if (section === 'bookings') {
+      setActiveSection('bookings');
     } else {
       setActiveSection('overview');
     }
@@ -60,7 +63,12 @@ const TutorDashboardPage: React.FC = () => {
   // Update URL when section changes
   const handleSectionChange = (section: DashboardSection) => {
     setActiveSection(section);
-    const newUrl = section === 'availability' ? '/tutor?section=availability' : '/tutor';
+    let newUrl = '/tutor';
+    if (section === 'availability') {
+      newUrl = '/tutor?section=availability';
+    } else if (section === 'bookings') {
+      newUrl = '/tutor?section=bookings';
+    }
     navigate(newUrl, { replace: true });
   };
 
@@ -118,7 +126,10 @@ const TutorDashboardPage: React.FC = () => {
   return (
     <div className="h-screen bg-gray-950 flex">
       {/* Sidebar */}
-      <TutorSidebar onAvailabilityClick={() => handleSectionChange('availability')} />
+      <TutorSidebar
+        onAvailabilityClick={() => handleSectionChange('availability')}
+        onBookingsClick={() => handleSectionChange('bookings')}
+      />
       
       {/* Main Content */}
       <div className="flex-1 flex flex-col">
@@ -138,26 +149,38 @@ const TutorDashboardPage: React.FC = () => {
               )}
               <div>
                 <h1 className="text-xl lg:text-2xl font-bold text-white">
-                  {activeSection === 'overview' ? 'Dashboard' : 'Manage Availability'}
+                  {activeSection === 'overview' && 'Dashboard'}
+                  {activeSection === 'availability' && 'Manage Availability'}
+                  {activeSection === 'bookings' && 'Manage Bookings'}
                 </h1>
                 <p className="text-gray-400 mt-1 text-sm lg:text-base">
-                  {activeSection === 'overview'
-                    ? "Welcome back! Here's your tutoring overview."
-                    : "Set your available time slots for tutoring sessions."
-                  }
+                  {activeSection === 'overview' && "Welcome back! Here's your tutoring overview."}
+                  {activeSection === 'availability' && "Set your available time slots for tutoring sessions."}
+                  {activeSection === 'bookings' && "Review and manage your tutoring sessions."}
                 </p>
               </div>
             </div>
             <div className="flex items-center space-x-3">
               {activeSection === 'overview' && (
-                <Button
-                  onClick={() => handleSectionChange('availability')}
-                  className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-sm lg:text-base px-3 lg:px-4"
-                >
-                  <CalendarDays className="w-4 h-4 mr-1 lg:mr-2" />
-                  <span className="hidden sm:inline">Manage Availability</span>
-                  <span className="sm:hidden">Availability</span>
-                </Button>
+                <div className="flex space-x-2">
+                  <Button
+                    onClick={() => handleSectionChange('availability')}
+                    className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-sm lg:text-base px-3 lg:px-4"
+                  >
+                    <CalendarDays className="w-4 h-4 mr-1 lg:mr-2" />
+                    <span className="hidden sm:inline">Manage Availability</span>
+                    <span className="sm:hidden">Availability</span>
+                  </Button>
+                  <Button
+                    onClick={() => handleSectionChange('bookings')}
+                    variant="outline"
+                    className="bg-gray-800 border-gray-700 hover:bg-gray-700 text-white text-sm lg:text-base px-3 lg:px-4"
+                  >
+                    <BookOpen className="w-4 h-4 mr-1 lg:mr-2" />
+                    <span className="hidden sm:inline">Manage Bookings</span>
+                    <span className="sm:hidden">Bookings</span>
+                  </Button>
+                </div>
               )}
             </div>
           </div>
@@ -267,15 +290,13 @@ const TutorDashboardPage: React.FC = () => {
                   <CalendarDays className="w-4 h-4 mr-2" />
                   Manage Availability
                 </Button>
-                <Button 
-                  asChild 
-                  variant="outline" 
+                <Button
+                  onClick={() => handleSectionChange('bookings')}
+                  variant="outline"
                   className="w-full justify-start bg-gray-800 border-gray-700 hover:bg-gray-700 text-white"
                 >
-                  <Link to="/tutor/bookings">
-                    <Eye className="w-4 h-4 mr-2" />
-                    View Bookings
-                  </Link>
+                  <Eye className="w-4 h-4 mr-2" />
+                  Manage Bookings
                 </Button>
                 <Button 
                   asChild 
@@ -366,9 +387,12 @@ const TutorDashboardPage: React.FC = () => {
             </Card>
           </div>
             </>
-          ) : (
+          ) : activeSection === 'availability' ? (
             /* Availability Management Section */
             <ManageAvailabilitySection />
+          ) : (
+            /* Bookings Management Section */
+            <ManageBookingsSection />
           )}
         </main>
       </div>
