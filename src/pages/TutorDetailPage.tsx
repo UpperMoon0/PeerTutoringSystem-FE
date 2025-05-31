@@ -32,7 +32,7 @@ const TutorDetailPage: React.FC = () => {
   const [skills] = useState<Skill[]>([]);
   const [availabilities, setAvailabilities] = useState<TutorAvailability[]>([]);
   const [selectedAvailability, setSelectedAvailability] = useState<TutorAvailability | null>(null);
-  const [isFetchingSlots, setIsFetchingSlots] = useState(false); 
+  const [, setIsFetchingSlots] = useState(false);
 
   // State for date range selection
   const [dateRangeStart, setDateRangeStart] = useState<Date | undefined>(undefined);
@@ -45,7 +45,7 @@ const TutorDetailPage: React.FC = () => {
   // Add state for topic and description
   const [topic, setTopic] = useState<string>("");
   const [description, setDescription] = useState<string>("");
-  const [selectedSkillId, setSelectedSkillId] = useState<string | undefined>(undefined);
+  const [selectedSkillId] = useState<string | undefined>(undefined);
 
   useEffect(() => {
     const fetchTutorDetails = async () => {

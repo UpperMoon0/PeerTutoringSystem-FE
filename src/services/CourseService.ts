@@ -1,6 +1,9 @@
 import { mockCourses } from '@/mocks/courses';
 import type { Course } from '@/types/Course';
 
+// Re-export Course type for use in other modules
+export type { Course };
+
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 const ENABLE_MOCK_API = import.meta.env.VITE_ENABLE_MOCK_API === 'true';
 
