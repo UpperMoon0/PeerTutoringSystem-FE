@@ -3,10 +3,14 @@ import { useParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { BookingService } from '@/services/BookingService';
 import { TutorService } from '@/services/TutorService';
-import type { ProfileDto, User } from '@/types/user.types'; 
+import { ReviewService } from '@/services/ReviewService'; // Added
+import type { ProfileDto, User } from '@/types/user.types';
 import type { Skill } from '@/types/skill.types';
-import type { TutorAvailability } from '@/types/tutorAvailability.types'; 
-import type { CreateBookingDto } from '@/types/booking.types'; 
+import type { TutorAvailability } from '@/types/tutorAvailability.types';
+import type { CreateBookingDto } from '@/types/booking.types';
+import type { ReviewDto } from '@/types/review.types'; // Added
+import ReviewList from '@/components/reviews/ReviewList'; // Added
+import SubmitReviewForm from '@/components/reviews/SubmitReviewForm'; // Added
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -28,8 +32,8 @@ const TutorDetailPage: React.FC = () => {
   const { tutorId } = useParams<{ tutorId: string }>();
   const { currentUser } = useAuth();
   const [tutor, setTutor] = useState<TutorProfile | null>(null);
-  const [tutorAccount] = useState<User | null>(null); // Assuming this might be populated elsewhere or is legacy
-  const [skills] = useState<Skill[]>([]); // Assuming this might be populated elsewhere or is legacy
+  const [tutorAccount] = useState<User | null>(null);
+  const [skills] = useState<Skill[]>([]);
   const [availabilities, setAvailabilities] = useState<TutorAvailability[]>([]);
   const [selectedAvailability, setSelectedAvailability] = useState<TutorAvailability | null>(null);
   const [isFetchingSlots, setIsFetchingSlots] = useState(false);
@@ -37,13 +41,38 @@ const TutorDetailPage: React.FC = () => {
   const [dateRangeStart, setDateRangeStart] = useState<Date | undefined>(undefined);
   const [dateRangeEnd, setDateRangeEnd] = useState<Date | undefined>(undefined);
 
-  const [isLoading, setIsLoading] = useState(true); 
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [bookingError, setBookingError] = useState<string | null>(null);
   const [bookingSuccess, setBookingSuccess] = useState<string | null>(null);
   const [topic, setTopic] = useState<string>("");
   const [description, setDescription] = useState<string>("");
-  const [selectedSkillId] = useState<string | undefined>(undefined); // Assuming this might be populated elsewhere or is legacy
+  const [selectedSkillId] = useState<string | undefined>(undefined);
+
+  // Review State
+  const [reviews, setReviews] = useState<ReviewDto[]>([]);
+  const [isLoadingReviews, setIsLoadingReviews] = useState(false);
+  const [reviewsError, setReviewsError] = useState<string | null>(null);
+  // TODO: Determine a real bookingId for the review form. For now, a placeholder.
+  // This might come from a list of past bookings for this tutor by the current user.
+  const [exampleBookingIdForReview, setExampleBookingIdForReview] = useState<string>("placeholder-booking-id-123");
+
+  const fetchTutorReviews = useCallback(async () => {
+    if (!tutorId) return;
+    setIsLoadingReviews(true);
+    setReviewsError(null);
+    const result = await ReviewService.getReviewsByTutorId(tutorId);
+    if (result.success && result.data) {
+      setReviews(result.data);
+    } else {
+      setReviewsError(result.error as string || 'Failed to fetch reviews.');
+    }
+    setIsLoadingReviews(false);
+  }, [tutorId]);
+
+  useEffect(() => {
+    fetchTutorReviews();
+  }, [fetchTutorReviews]);
 
   useEffect(() => {
     const fetchTutorDetails = async () => {
@@ -71,7 +100,8 @@ const TutorDetailPage: React.FC = () => {
       }
     };
     fetchTutorDetails();
-  }, [tutorId]);
+    if (tutorId) fetchTutorReviews(); // Fetch reviews when tutorId is available
+  }, [tutorId, fetchTutorReviews]); // Added fetchTutorReviews dependency
 
   const handleFetchAvailabilities = useCallback(async () => {
     if (!tutorId) {
@@ -430,6 +460,40 @@ const TutorDetailPage: React.FC = () => {
           )}
         </CardContent>
       </Card>
+
+      {/* Reviews Section */}
+      <Card className="bg-gray-900 border-gray-800 shadow-xl">
+        <CardHeader className="p-6">
+          <CardTitle className="text-2xl text-white">Tutor Reviews</CardTitle>
+        </CardHeader>
+        <CardContent className="p-6 space-y-6">
+          <ReviewList reviews={reviews} isLoading={isLoadingReviews} error={reviewsError} />
+        </CardContent>
+      </Card>
+
+      {/* Submit Review Section - Conditionally render based on if user can review */}
+      {/* TODO: Add logic to determine if the currentUser has a completed booking with this tutor
+          and hasn't reviewed it yet. For now, showing if logged in and tutorId exists.
+          A more robust solution would involve checking past bookings.
+      */}
+      {currentUser && tutorId && exampleBookingIdForReview && (
+        <Card className="bg-gray-900 border-gray-800 shadow-xl">
+          <CardHeader className="p-6">
+            <CardTitle className="text-2xl text-white">Leave a Review</CardTitle>
+            <CardDescription className="text-gray-400">
+              Share your experience with {tutor?.fullName || "this tutor"}.
+              (Using placeholder booking ID: {exampleBookingIdForReview} for now)
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="p-6">
+            <SubmitReviewForm
+              tutorId={tutorId}
+              bookingId={exampleBookingIdForReview} // Replace with actual booking ID
+              onReviewSubmitted={fetchTutorReviews} // Refresh reviews after submission
+            />
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 };
