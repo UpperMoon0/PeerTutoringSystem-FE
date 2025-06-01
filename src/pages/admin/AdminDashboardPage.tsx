@@ -5,15 +5,15 @@ import { ListChecks, Users, Wrench } from 'lucide-react';
 
 const AdminDashboardPage: React.FC = () => {
   return (
-    <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">Admin Dashboard</h1>
+    <div className="container mx-auto p-4 bg-background text-foreground">
+      <h1 className="text-2xl font-bold mb-4 text-foreground">Admin Dashboard</h1>
       <nav className="mb-4">
         <ul className="flex space-x-4">
           <li>
             <Button
               asChild
               variant="default"
-              className="bg-gradient-to-r from-yellow-300 to-yellow-500 hover:from-yellow-400 hover:to-yellow-600 text-white px-6 py-3 text-lg shadow-xs"
+              className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-6 py-3 text-lg shadow-md"
             >
               <Link to="tutor-verifications">
                 <ListChecks className="mr-2 size-5" /> {}
@@ -25,7 +25,7 @@ const AdminDashboardPage: React.FC = () => {
             <Button
               asChild
               variant="default"
-              className="bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800 text-white px-6 py-3 text-lg shadow-xs"
+              className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-6 py-3 text-lg shadow-md"
             >
               <Link to="manage-users">
                 <Users className="mr-2 size-5" /> {}
@@ -37,7 +37,7 @@ const AdminDashboardPage: React.FC = () => {
             <Button
               asChild
               variant="default"
-              className="bg-gradient-to-r from-purple-500 to-purple-700 hover:from-purple-600 hover:to-purple-800 text-white px-6 py-3 text-lg shadow-xs"
+              className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-6 py-3 text-lg shadow-md"
             >
               <Link to="manage-skills">
                 <Wrench className="mr-2 size-5" /> {}
@@ -47,7 +47,7 @@ const AdminDashboardPage: React.FC = () => {
           </li>
         </ul>
       </nav>
-      <div className="mt-4">
+      <div className="mt-4 bg-card text-card-foreground p-6 rounded-lg shadow-lg">
         <Outlet />
       </div>
     </div>

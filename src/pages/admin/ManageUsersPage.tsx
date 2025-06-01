@@ -75,16 +75,16 @@ const ManageUsersPage: React.FC = () => {
 
   if (loading && allUsers.length === 0) {
     return (
-      <div className="flex justify-center items-center h-64">
-        <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
-        <p className="ml-2 text-lg">Loading users...</p>
+      <div className="flex justify-center items-center h-64 bg-background">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <p className="ml-2 text-lg text-muted-foreground">Loading users...</p>
       </div>
     );
   }
 
   if (error) {
     return (
-      <Alert variant="destructive" className="mb-4">
+      <Alert variant="destructive" className="mb-4 bg-destructive/10 text-destructive-foreground border-destructive">
         <ShieldAlert className="h-4 w-4" />
         <AlertTitle>Error</AlertTitle>
         <AlertDescription>{error}</AlertDescription>
@@ -93,15 +93,15 @@ const ManageUsersPage: React.FC = () => {
   }
 
   return (
-    <div className="container mx-auto p-4">
+    <div className="container mx-auto p-4 bg-background text-foreground min-h-screen">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold text-gray-800">Manage Users</h1>
+        <h1 className="text-3xl font-bold text-foreground">Manage Users</h1>
         <div className="w-48">
           <Select value={selectedRoleFilter} onValueChange={setSelectedRoleFilter}>
-            <SelectTrigger>
+            <SelectTrigger className="bg-input border-input text-foreground">
               <SelectValue placeholder="Filter by role" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="bg-popover text-popover-foreground border-border">
               <SelectItem value="All">All Roles</SelectItem>
               <SelectItem value="Admin">Admin</SelectItem>
               <SelectItem value="Tutor">Tutor</SelectItem>
@@ -112,30 +112,30 @@ const ManageUsersPage: React.FC = () => {
       </div>
 
       {actionError && (
-        <Alert variant="destructive" className="mb-4">
+        <Alert variant="destructive" className="mb-4 bg-destructive/10 text-destructive-foreground border-destructive">
           <ShieldAlert className="h-4 w-4" />
           <AlertTitle>Action Failed</AlertTitle>
           <AlertDescription>{actionError}</AlertDescription>
         </Alert>
       )}
       {actionSuccess && (
-        <Alert variant="default" className="mb-4 bg-green-100 border-green-400 text-green-700">
-          <CheckCircle className="h-4 w-4 text-green-600" />
+        <Alert variant="default" className="mb-4 bg-green-700/30 border-green-500 text-green-400">
+          <CheckCircle className="h-4 w-4 text-green-400" />
           <AlertTitle>Action Successful</AlertTitle>
           <AlertDescription>{actionSuccess}</AlertDescription>
         </Alert>
       )}
 
       {filteredUsers.length === 0 && !loading && (
-        <p className="text-center text-gray-500 text-lg">
+        <p className="text-center text-muted-foreground text-lg">
           {selectedRoleFilter === 'All' ? 'No users found.' : `No users found with the role: ${selectedRoleFilter}`}
         </p>
       )}
 
       {filteredUsers.length > 0 && (
-        <div className="overflow-x-auto shadow-lg rounded-lg">
-          <table className="min-w-full bg-white">
-            <thead className="bg-gray-800 text-white">
+        <div className="overflow-x-auto bg-card border border-border shadow-lg rounded-lg">
+          <table className="min-w-full">
+            <thead className="bg-gray-900 text-muted-foreground">
               <tr>
                 <th className="text-left py-3 px-4 uppercase font-semibold text-sm">Full Name</th>
                 <th className="text-left py-3 px-4 uppercase font-semibold text-sm">Email</th>
@@ -144,18 +144,18 @@ const ManageUsersPage: React.FC = () => {
                 <th className="text-center py-3 px-4 uppercase font-semibold text-sm">Actions</th>
               </tr>
             </thead>
-            <tbody className="text-gray-700">
+            <tbody className="text-foreground">
               {filteredUsers.map((user) => (
-                <tr key={user.userID} className="border-b border-gray-200 hover:bg-gray-100">
+                <tr key={user.userID} className="border-b border-border hover:bg-gray-800/50">
                   <td className="py-3 px-4">{user.fullName}</td>
                   <td className="py-3 px-4">{user.email}</td>
                   <td className="py-3 px-4">{user.role}</td>
                   <td className="py-3 px-4">
                     <span
                       className={`px-2 py-1 text-xs font-semibold rounded-full ${
-                        user.status === 'Active' ? 'bg-green-200 text-green-800' :
-                        user.status === 'Banned' ? 'bg-red-200 text-red-800' :
-                        'bg-gray-200 text-gray-800'
+                        user.status === 'Active' ? 'bg-green-500/20 text-green-400' :
+                        user.status === 'Banned' ? 'bg-red-500/20 text-red-400' :
+                        'bg-gray-500/20 text-gray-400'
                       }`}
                     >
                       {user.status}
@@ -168,12 +168,12 @@ const ManageUsersPage: React.FC = () => {
                         variant={user.status === 'Banned' ? 'outline' : 'destructive'}
                         size="sm"
                         disabled={actingUserId === user.userID}
-                        className="flex items-center justify-center"
+                        className={`flex items-center justify-center ${user.status === 'Banned' ? 'border-green-500 text-green-400 hover:bg-green-500/10 hover:text-green-300' : 'bg-red-600 hover:bg-red-700 text-destructive-foreground'}`}
                       >
                         {actingUserId === user.userID ? (
                           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                         ) : user.status === 'Banned' ? (
-                          <CheckCircle className="mr-2 h-4 w-4 text-green-500" />
+                          <CheckCircle className="mr-2 h-4 w-4" />
                         ) : (
                           <Ban className="mr-2 h-4 w-4" />
                         )}

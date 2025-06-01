@@ -150,16 +150,16 @@ const ManageSkillsPage: React.FC = () => {
 
   if (loading && skills.length === 0) {
     return (
-      <div className="flex justify-center items-center h-64">
-        <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
-        <p className="ml-2 text-lg">Loading skills...</p>
+      <div className="flex justify-center items-center h-64 bg-background">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <p className="ml-2 text-lg text-muted-foreground">Loading skills...</p>
       </div>
     );
   }
 
   if (error) {
     return (
-      <Alert variant="destructive" className="mb-4">
+      <Alert variant="destructive" className="mb-4 bg-destructive/10 text-destructive-foreground border-destructive">
         <ShieldAlert className="h-4 w-4" />
         <AlertTitle>Error</AlertTitle>
         <AlertDescription>{error}</AlertDescription>
@@ -168,9 +168,9 @@ const ManageSkillsPage: React.FC = () => {
   }
 
   return (
-    <div className="container mx-auto p-4">
+    <div className="container mx-auto p-4 bg-background text-foreground min-h-screen">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold text-gray-800">Manage Skills</h1>
+        <h1 className="text-3xl font-bold text-foreground">Manage Skills</h1>
         <Button onClick={() => {
           setIsAddModalOpen(true);
           setActionError(null);
@@ -178,72 +178,72 @@ const ManageSkillsPage: React.FC = () => {
           setNewSkillName('');
           setNewSkillDescription('');
           setNewSkillLevel('');
-        }} className="bg-green-500 hover:bg-green-600 text-white">
+        }} className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-primary-foreground">
           <PlusCircle className="mr-2 h-5 w-5" /> Add New Skill
         </Button>
       </div>
 
       {actionError && (
-        <Alert variant="destructive" className="mb-4">
+        <Alert variant="destructive" className="mb-4 bg-destructive/10 text-destructive-foreground border-destructive">
           <ShieldAlert className="h-4 w-4" />
           <AlertTitle>Action Failed</AlertTitle>
           <AlertDescription>{actionError}</AlertDescription>
         </Alert>
       )}
       {actionSuccess && (
-        <Alert variant="default" className="mb-4 bg-green-100 border-green-400 text-green-700">
-          <CheckCircle className="h-4 w-4 text-green-600" />
+        <Alert variant="default" className="mb-4 bg-green-700/30 border-green-500 text-green-400">
+          <CheckCircle className="h-4 w-4 text-green-400" />
           <AlertTitle>Success</AlertTitle>
           <AlertDescription>{actionSuccess}</AlertDescription>
         </Alert>
       )}
 
       {skills.length === 0 && !loading && (
-        <p className="text-center text-gray-500 text-lg">No skills found. Click "Add New Skill" to create one.</p>
+        <p className="text-center text-muted-foreground text-lg">No skills found. Click "Add New Skill" to create one.</p>
       )}
 
       {skills.length > 0 && (
-        <div className="bg-white shadow-md rounded-lg overflow-hidden">
+        <div className="bg-card border border-border shadow-lg rounded-lg overflow-hidden">
           <table className="min-w-full leading-normal">
-            <thead>
+            <thead className="bg-gray-900">
               <tr>
-                <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                <th className="px-5 py-3 border-b-2 border-border text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                   Name
                 </th>
-                <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                <th className="px-5 py-3 border-b-2 border-border text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                   Description
                 </th>
-                <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                <th className="px-5 py-3 border-b-2 border-border text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                   Skill Level
                 </th>
-                <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                <th className="px-5 py-3 border-b-2 border-border text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                   Actions
                 </th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className="text-card-foreground">
               {skills.map((skill) => (
-                <tr key={skill.skillID} className="hover:bg-gray-50">
-                  <td className="px-5 py-4 border-b border-gray-200 bg-white text-sm">
-                    <p className="text-gray-900 whitespace-no-wrap">{skill.skillName}</p>
+                <tr key={skill.skillID} className="hover:bg-gray-800/50">
+                  <td className="px-5 py-4 border-b border-border bg-card text-sm">
+                    <p className="text-foreground whitespace-no-wrap">{skill.skillName}</p>
                   </td>
-                  <td className="px-5 py-4 border-b border-gray-200 bg-white text-sm">
-                    <p className="text-gray-900 whitespace-no-wrap">{skill.description || 'N/A'}</p>
+                  <td className="px-5 py-4 border-b border-border bg-card text-sm">
+                    <p className="text-foreground whitespace-no-wrap">{skill.description || 'N/A'}</p>
                   </td>
-                  <td className="px-5 py-4 border-b border-gray-200 bg-white text-sm">
-                    <p className="text-gray-900 whitespace-no-wrap">{skill.skillLevel}</p>
+                  <td className="px-5 py-4 border-b border-border bg-card text-sm">
+                    <p className="text-foreground whitespace-no-wrap">{skill.skillLevel}</p>
                   </td>
-                  <td className="px-5 py-4 border-b border-gray-200 bg-white text-sm">
+                  <td className="px-5 py-4 border-b border-border bg-card text-sm">
                     <button
                       onClick={() => openEditModal(skill)}
-                      className="text-indigo-600 hover:text-indigo-900 mr-3 transition duration-150 ease-in-out"
+                      className="text-blue-400 hover:text-blue-300 mr-3 transition duration-150 ease-in-out"
                       aria-label="Edit skill"
                     >
                       <Edit3 className="h-4 w-4" />
                     </button>
                     <button
                       onClick={() => openDeleteModal(skill.skillID)}
-                      className="text-red-600 hover:text-red-900 transition duration-150 ease-in-out"
+                      className="text-red-400 hover:text-red-300 transition duration-150 ease-in-out"
                       aria-label="Delete skill"
                     >
                       <Trash2 className="h-4 w-4" />
@@ -259,10 +259,10 @@ const ManageSkillsPage: React.FC = () => {
       {/* Add Skill Modal */}
       {isAddModalOpen && (
         <Dialog open={isAddModalOpen} onOpenChange={setIsAddModalOpen}>
-          <DialogContent className="sm:max-w-[425px]">
+          <DialogContent className="sm:max-w-[425px] bg-card border-border text-foreground">
             <DialogHeader>
-              <DialogTitle>Add New Skill</DialogTitle>
-              <DialogDescription>
+              <DialogTitle className="text-foreground">Add New Skill</DialogTitle>
+              <DialogDescription className="text-muted-foreground">
                 Enter the details for the new skill.
               </DialogDescription>
             </DialogHeader>
@@ -272,20 +272,20 @@ const ManageSkillsPage: React.FC = () => {
                 placeholder="Skill Name (e.g., React, Python)"
                 value={newSkillName}
                 onChange={(e) => setNewSkillName(e.target.value)}
-                className="col-span-3"
+                className="col-span-3 bg-input text-foreground border-input placeholder:text-muted-foreground"
               />
               <Textarea
                 id="newSkillDescription"
                 placeholder="Skill Description (optional)"
                 value={newSkillDescription}
                 onChange={(e) => setNewSkillDescription(e.target.value)}
-                className="col-span-3"
+                className="col-span-3 bg-input text-foreground border-input placeholder:text-muted-foreground"
               />
               <Select onValueChange={(value) => setNewSkillLevel(value as SkillLevel)} value={newSkillLevel}>
-                <SelectTrigger className="col-span-3">
+                <SelectTrigger className="col-span-3 bg-input text-foreground border-input">
                   <SelectValue placeholder="Select Skill Level" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-popover text-popover-foreground border-border">
                   <SelectItem value="Beginner">Beginner</SelectItem>
                   <SelectItem value="Elementary">Elementary</SelectItem>
                   <SelectItem value="Intermediate">Intermediate</SelectItem>
@@ -295,8 +295,8 @@ const ManageSkillsPage: React.FC = () => {
               </Select>
             </div>
             <DialogFooter>
-              <Button variant="outline" onClick={() => setIsAddModalOpen(false)}>Cancel</Button>
-              <Button onClick={handleAddSkill} className="bg-green-500 hover:bg-green-600 text-white">Add Skill</Button>
+              <Button variant="outline" onClick={() => setIsAddModalOpen(false)} className="border-border hover:bg-muted hover:text-muted-foreground">Cancel</Button>
+              <Button onClick={handleAddSkill} className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-primary-foreground">Add Skill</Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
@@ -305,10 +305,10 @@ const ManageSkillsPage: React.FC = () => {
       {/* Edit Skill Modal */}
       {editingSkill && (
         <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
-          <DialogContent className="sm:max-w-[425px]">
+          <DialogContent className="sm:max-w-[425px] bg-card border-border text-foreground">
             <DialogHeader>
-              <DialogTitle>Edit Skill</DialogTitle>
-              <DialogDescription>
+              <DialogTitle className="text-foreground">Edit Skill</DialogTitle>
+              <DialogDescription className="text-muted-foreground">
                 Update the details for the skill: {editingSkill.skillName}.
               </DialogDescription>
             </DialogHeader>
@@ -318,20 +318,20 @@ const ManageSkillsPage: React.FC = () => {
                 placeholder="Skill Name"
                 value={editingSkill.skillName}
                 onChange={(e) => setEditingSkill({ ...editingSkill, skillName: e.target.value })}
-                className="col-span-3"
+                className="col-span-3 bg-input text-foreground border-input placeholder:text-muted-foreground"
               />
               <Textarea
                 id="editSkillDescription"
                 placeholder="Skill Description (optional)"
                 value={editingSkill.description || ''}
                 onChange={(e) => setEditingSkill({ ...editingSkill, description: e.target.value })}
-                className="col-span-3"
+                className="col-span-3 bg-input text-foreground border-input placeholder:text-muted-foreground"
               />
               <Select onValueChange={(value) => setEditingSkill({ ...editingSkill, skillLevel: value as SkillLevel })} value={editingSkill.skillLevel || ''}>
-                <SelectTrigger className="col-span-3">
+                <SelectTrigger className="col-span-3 bg-input text-foreground border-input">
                   <SelectValue placeholder="Select Skill Level" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-popover text-popover-foreground border-border">
                   <SelectItem value="Beginner">Beginner</SelectItem>
                   <SelectItem value="Elementary">Elementary</SelectItem>
                   <SelectItem value="Intermediate">Intermediate</SelectItem>
@@ -341,8 +341,8 @@ const ManageSkillsPage: React.FC = () => {
               </Select>
             </div>
             <DialogFooter>
-              <Button variant="outline" onClick={() => { setIsEditModalOpen(false); setEditingSkill(null); }}>Cancel</Button>
-              <Button onClick={handleEditSkill} className="bg-blue-500 hover:bg-blue-600 text-white">Save Changes</Button>
+              <Button variant="outline" onClick={() => { setIsEditModalOpen(false); setEditingSkill(null); }} className="border-border hover:bg-muted hover:text-muted-foreground">Cancel</Button>
+              <Button onClick={handleEditSkill} className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-primary-foreground">Save Changes</Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
@@ -351,16 +351,16 @@ const ManageSkillsPage: React.FC = () => {
       {/* Delete Skill Confirmation Modal */}
       {deletingSkillId && (
         <Dialog open={isDeleteModalOpen} onOpenChange={setIsDeleteModalOpen}>
-          <DialogContent className="sm:max-w-[425px]">
+          <DialogContent className="sm:max-w-[425px] bg-card border-border text-foreground">
             <DialogHeader>
-              <DialogTitle>Confirm Deletion</DialogTitle>
-              <DialogDescription>
+              <DialogTitle className="text-foreground">Confirm Deletion</DialogTitle>
+              <DialogDescription className="text-muted-foreground">
                 Are you sure you want to delete this skill? This action cannot be undone.
               </DialogDescription>
             </DialogHeader>
             <DialogFooter>
-              <Button variant="outline" onClick={() => { setIsDeleteModalOpen(false); setDeletingSkillId(null); }}>Cancel</Button>
-              <Button onClick={handleDeleteSkill} variant="destructive">Delete Skill</Button>
+              <Button variant="outline" onClick={() => { setIsDeleteModalOpen(false); setDeletingSkillId(null); }} className="border-border hover:bg-muted hover:text-muted-foreground">Cancel</Button>
+              <Button onClick={handleDeleteSkill} variant="destructive" className="bg-destructive hover:bg-destructive/90 text-destructive-foreground">Delete Skill</Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>

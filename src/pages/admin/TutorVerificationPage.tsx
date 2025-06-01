@@ -102,27 +102,27 @@ const TutorVerificationPage: React.FC = () => {
   });
 
   if (loading) {
-    return <p>Loading tutor verifications...</p>;
+    return <p className="text-muted-foreground">Loading tutor verifications...</p>;
   }
 
   if (error) {
-    return <p className="text-red-500">{error}</p>;
+    return <p className="text-destructive">{error}</p>;
   }
 
   return (
-    <div>
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-xl font-semibold">Tutor Verification Requests</h2>
+    <div className="bg-background text-foreground p-4 min-h-screen">
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-2xl font-bold text-foreground">Tutor Verification Requests</h2>
         <div className="flex items-center space-x-2">
-          <Label htmlFor="status-filter">Filter by status:</Label>
-          <Select 
-            value={filterStatus} 
+          <Label htmlFor="status-filter" className="text-muted-foreground">Filter by status:</Label>
+          <Select
+            value={filterStatus}
             onValueChange={(value: string) => setFilterStatus(value as VerificationStatus | 'All')}
           >
-            <SelectTrigger id="status-filter" className="w-[180px]">
+            <SelectTrigger id="status-filter" className="w-[180px] bg-input border-input text-foreground">
               <SelectValue placeholder="Select status" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="bg-popover text-popover-foreground border-border">
               <SelectItem value="All">All</SelectItem>
               <SelectItem value="Pending">Pending</SelectItem>
               <SelectItem value="Approved">Approved</SelectItem>
@@ -133,28 +133,28 @@ const TutorVerificationPage: React.FC = () => {
       </div>
 
       {filteredVerifications.length === 0 ? (
-        <p>No tutor verification requests match the current filter.</p>
+        <p className="text-muted-foreground text-center py-8">No tutor verification requests match the current filter.</p>
       ) : (
-        <div className="space-y-4">
+        <div className="space-y-6">
           {filteredVerifications.map((verification) => (
-            <div key={verification.verificationID} className="p-4 border rounded-md shadow-sm">
-              <h3 className="text-lg font-medium">{verification.fullName || verification.userID} ({verification.studentID})</h3>
-              <p><strong>University:</strong> {verification.university}</p>
-              <p><strong>Major:</strong> {verification.major}</p>
-              <p><strong>Citizen ID:</strong> {verification.citizenID}</p>
-              <p><strong>Status:</strong> <span className={`font-semibold ${
-                verification.verificationStatus === 'Pending' ? 'text-yellow-500' :
-                verification.verificationStatus === 'Approved' ? 'text-green-500' : 'text-red-500'
+            <div key={verification.verificationID} className="p-6 bg-card border border-border rounded-lg shadow-md">
+              <h3 className="text-xl font-semibold text-foreground mb-2">{verification.fullName || verification.userID} ({verification.studentID})</h3>
+              <p className="text-muted-foreground"><strong>University:</strong> {verification.university}</p>
+              <p className="text-muted-foreground"><strong>Major:</strong> {verification.major}</p>
+              <p className="text-muted-foreground"><strong>Citizen ID:</strong> {verification.citizenID}</p>
+              <p className="mb-3"><strong>Status:</strong> <span className={`font-semibold ${
+                verification.verificationStatus === 'Pending' ? 'text-yellow-400' :
+                verification.verificationStatus === 'Approved' ? 'text-green-400' : 'text-red-400'
               }`}>{verification.verificationStatus}</span></p>
-              <div>
-                <strong>Documents:</strong>
+              <div className="mb-3">
+                <strong className="text-foreground">Documents:</strong>
                 {verification.documents && verification.documents.length > 0 ? (
-                  <ul>
+                  <ul className="list-disc list-inside ml-4 mt-1">
                     {verification.documents.map(doc => (
-                      <li key={doc.documentID}>
-                        <button 
+                      <li key={doc.documentID} className="text-muted-foreground">
+                        <button
                           onClick={() => handleOpenDocument(doc.documentID)}
-                          className="text-blue-500 hover:underline cursor-pointer"
+                          className="text-blue-400 hover:text-blue-300 hover:underline cursor-pointer"
                         >
                           {doc.documentType}
                         </button>
@@ -162,21 +162,21 @@ const TutorVerificationPage: React.FC = () => {
                     ))}
                   </ul>
                 ) : (
-                  <p>No documents submitted.</p>
+                  <p className="text-muted-foreground">No documents submitted.</p>
                 )}
               </div>
               {verification.verificationStatus === 'Pending' && (
-                <div className="mt-2 space-x-2">
-                  <Button 
-                    onClick={() => handleUpdateStatus(verification.verificationID, 'Approved')} 
-                    className="bg-green-500 hover:bg-green-600 text-white"
+                <div className="mt-4 flex space-x-3">
+                  <Button
+                    onClick={() => handleUpdateStatus(verification.verificationID, 'Approved')}
+                    className="bg-green-600 hover:bg-green-700 text-white"
                   >
                     Approve
                   </Button>
-                  <Button 
-                    onClick={() => handleUpdateStatus(verification.verificationID, 'Rejected')} 
-                    variant="destructive" 
-                    className="text-white" 
+                  <Button
+                    onClick={() => handleUpdateStatus(verification.verificationID, 'Rejected')}
+                    variant="destructive"
+                    className="bg-red-600 hover:bg-red-700 text-destructive-foreground"
                   >
                     Reject
                   </Button>
