@@ -6,9 +6,9 @@ import TutorRegisterPage from '../pages/TutorRegisterPage';
 import App from '../App';
 import HomePage from '../pages/HomePage';
 import AdminDashboardPage from '@/pages/admin/AdminDashboardPage';
-import TutorVerificationPage from '@/pages/admin/TutorVerificationPage';
-import ManageUsersPage from '@/pages/admin/ManageUsersPage'; 
-import ManageSkillsPage from '@/pages/admin/ManageSkillsPage'; 
+// import TutorVerificationPage from '@/pages/admin/TutorVerificationPage'; // No longer needed
+// import ManageUsersPage from '@/pages/admin/ManageUsersPage';  // No longer needed
+// import ManageSkillsPage from '@/pages/admin/ManageSkillsPage'; // No longer needed
 import ProtectedRoute from './ProtectedRoute';
 import UserProfilePage from '@/pages/UserProfilePage';
 import TutorListPage from '@/pages/TutorListPage';
@@ -85,9 +85,10 @@ const router = createBrowserRouter([
         element: <ProtectedRoute allowedRoles={['Admin']} />, 
         children: [
           { index: true, element: <AdminDashboardPage /> },
-          { path: 'tutor-verifications', element: <TutorVerificationPage /> },
-          { path: 'manage-users', element: <ManageUsersPage /> }, 
-          { path: 'manage-skills', element: <ManageSkillsPage /> }, 
+          // The following routes are now handled within AdminDashboardPage
+          // { path: 'tutor-verifications', element: <TutorVerificationPage /> },
+          // { path: 'manage-users', element: <ManageUsersPage /> },
+          // { path: 'manage-skills', element: <ManageSkillsPage /> },
         ],
       },
     ],

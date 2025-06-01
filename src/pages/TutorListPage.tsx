@@ -52,33 +52,33 @@ const TutorListPage: React.FC = () => {
   }, [searchTerm, allTutors]); 
 
   if (loading) {
-    return <div className="container mx-auto p-4">Loading tutors...</div>;
+    return <div className="w-full p-6 bg-gray-950 min-h-screen text-white">Loading tutors...</div>;
   }
 
   if (error) {
-    return <div className="container mx-auto p-4 text-red-500">Error: {error}</div>;
+    return <div className="w-full p-6 bg-gray-950 min-h-screen text-red-400">Error: {error}</div>;
   }
 
   return (
-    <div className="container mx-auto p-4">
-      <h1 className="text-3xl font-bold mb-6 text-center text-gray-700">Available Tutors</h1>
+    <div className="w-full p-6 bg-gray-950 min-h-screen">
+      <h1 className="text-4xl font-bold mb-8 text-center text-white">Available Tutors</h1>
       
-      <div className="mb-6 max-w-lg mx-auto">
+      <div className="mb-8 max-w-xl mx-auto">
         <input 
           type="text"
           placeholder="Search tutors by name or skills..." 
-          className="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+          className="w-full p-4 bg-gray-900 border border-gray-700 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-white placeholder-gray-500 transition-colors"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
         />
       </div>
 
       {filteredTutors.length === 0 ? (
-        <p className="text-center text-gray-600 py-4">
+        <p className="text-center text-gray-400 py-6 text-lg">
           {searchTerm ? `No tutors found matching "${searchTerm}".` : 'No tutors available at the moment.'}
         </p>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {filteredTutors.map((tutor) => (
             <TutorCard key={tutor.userID} tutor={tutor} />
           ))}

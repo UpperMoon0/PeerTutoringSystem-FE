@@ -3,10 +3,14 @@ import { useParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { BookingService } from '@/services/BookingService';
 import { TutorService } from '@/services/TutorService';
-import type { ProfileDto, User } from '@/types/user.types'; 
+import { ReviewService } from '@/services/ReviewService'; // Added
+import type { ProfileDto, User } from '@/types/user.types';
 import type { Skill } from '@/types/skill.types';
-import type { TutorAvailability } from '@/types/tutorAvailability.types'; 
-import type { CreateBookingDto } from '@/types/booking.types'; 
+import type { TutorAvailability } from '@/types/tutorAvailability.types';
+import type { CreateBookingDto } from '@/types/booking.types';
+import type { ReviewDto } from '@/types/review.types'; // Added
+import ReviewList from '@/components/reviews/ReviewList'; // Added
+import SubmitReviewForm from '@/components/reviews/SubmitReviewForm'; // Added
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -32,20 +36,43 @@ const TutorDetailPage: React.FC = () => {
   const [skills] = useState<Skill[]>([]);
   const [availabilities, setAvailabilities] = useState<TutorAvailability[]>([]);
   const [selectedAvailability, setSelectedAvailability] = useState<TutorAvailability | null>(null);
-  const [, setIsFetchingSlots] = useState(false);
+  const [isFetchingSlots, setIsFetchingSlots] = useState(false);
 
-  // State for date range selection
   const [dateRangeStart, setDateRangeStart] = useState<Date | undefined>(undefined);
   const [dateRangeEnd, setDateRangeEnd] = useState<Date | undefined>(undefined);
 
-  const [isLoading, setIsLoading] = useState(true); // For main profile loading
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [bookingError, setBookingError] = useState<string | null>(null);
   const [bookingSuccess, setBookingSuccess] = useState<string | null>(null);
-  // Add state for topic and description
   const [topic, setTopic] = useState<string>("");
   const [description, setDescription] = useState<string>("");
   const [selectedSkillId] = useState<string | undefined>(undefined);
+
+  // Review State
+  const [reviews, setReviews] = useState<ReviewDto[]>([]);
+  const [isLoadingReviews, setIsLoadingReviews] = useState(false);
+  const [reviewsError, setReviewsError] = useState<string | null>(null);
+  // TODO: Determine a real bookingId for the review form. For now, a placeholder.
+  // This might come from a list of past bookings for this tutor by the current user.
+  const [exampleBookingIdForReview, setExampleBookingIdForReview] = useState<string>("placeholder-booking-id-123");
+
+  const fetchTutorReviews = useCallback(async () => {
+    if (!tutorId) return;
+    setIsLoadingReviews(true);
+    setReviewsError(null);
+    const result = await ReviewService.getReviewsByTutorId(tutorId);
+    if (result.success && result.data) {
+      setReviews(result.data);
+    } else {
+      setReviewsError(result.error as string || 'Failed to fetch reviews.');
+    }
+    setIsLoadingReviews(false);
+  }, [tutorId]);
+
+  useEffect(() => {
+    fetchTutorReviews();
+  }, [fetchTutorReviews]);
 
   useEffect(() => {
     const fetchTutorDetails = async () => {
@@ -58,11 +85,9 @@ const TutorDetailPage: React.FC = () => {
       setIsLoading(true);
       setError(null);
       try {
-        // Fetches the main tutor profile
         const profileResponse = await TutorService.getTutorById(tutorId);
         if (profileResponse.success && profileResponse.data) {
           setTutor(profileResponse.data); 
-
         } else {
           setError(profileResponse.error as string || 'Failed to fetch tutor details.');
           setTutor(null);
@@ -74,9 +99,9 @@ const TutorDetailPage: React.FC = () => {
         setIsLoading(false);
       }
     };
-
     fetchTutorDetails();
-  }, [tutorId]);
+    if (tutorId) fetchTutorReviews(); // Fetch reviews when tutorId is available
+  }, [tutorId, fetchTutorReviews]); // Added fetchTutorReviews dependency
 
   const handleFetchAvailabilities = useCallback(async () => {
     if (!tutorId) {
@@ -94,38 +119,32 @@ const TutorDetailPage: React.FC = () => {
     let effectiveEndDate: Date;
     let localIsFetchAllMode = false;
 
-    if (dateRangeStart && dateRangeEnd) { // User provided a specific range
-      // Validation for end date < start date is handled by useEffect before calling this
+    if (dateRangeStart && dateRangeEnd) {
       effectiveStartDate = dateRangeStart;
       effectiveEndDate = dateRangeEnd;
-    } else if (dateRangeStart && !dateRangeEnd) { // Start date provided, end date not
+    } else if (dateRangeStart && !dateRangeEnd) {
       effectiveStartDate = dateRangeStart;
       effectiveEndDate = new Date(dateRangeStart);
       effectiveEndDate.setMonth(effectiveStartDate.getMonth() + 3);
-      effectiveEndDate.setHours(23, 59, 59, 999); // End of the day for the end date
-    } else if (!dateRangeStart && dateRangeEnd) { // End date provided, start date not
-      effectiveStartDate = new Date(); // 5 minutes from now
+      effectiveEndDate.setHours(23, 59, 59, 999);
+    } else if (!dateRangeStart && dateRangeEnd) {
+      effectiveStartDate = new Date(); 
       effectiveStartDate.setMinutes(effectiveStartDate.getMinutes() + 5);
       effectiveEndDate = dateRangeEnd;
-      // Ensure start date is not after end date
       if (effectiveStartDate > effectiveEndDate) {
         effectiveStartDate = new Date(effectiveEndDate); 
-        effectiveStartDate.setHours(0,0,0,0); // Start of that day
+        effectiveStartDate.setHours(0,0,0,0);
       }
     }
-    else { // Neither date is provided by user (dates cleared or initial load)
-      effectiveStartDate = new Date(); // 5 minutes from now
+    else { 
+      effectiveStartDate = new Date(); 
       effectiveStartDate.setMinutes(effectiveStartDate.getMinutes() + 5);
-      
-      effectiveEndDate = new Date(effectiveStartDate); // Start with the adjusted start date
-      effectiveEndDate.setMonth(effectiveStartDate.getMonth() + 3); // 3 months from the (potentially future) start date
-      // Set time to end of the day for end date for a full range
+      effectiveEndDate = new Date(effectiveStartDate); 
+      effectiveEndDate.setMonth(effectiveStartDate.getMonth() + 3); 
       effectiveEndDate.setHours(23, 59, 59, 999);
       localIsFetchAllMode = true;
     }
     
-    // Ensure start date is not after end date, adjust if necessary (e.g. if only end date was picked and it's in the past)
-    // This check is more robust here after all date manipulations
     if (effectiveEndDate < effectiveStartDate) {
         setBookingError("End date cannot be before start date. Please adjust your selection.");
         setIsFetchingSlots(false);
@@ -136,8 +155,6 @@ const TutorDetailPage: React.FC = () => {
     const endDateISO = effectiveEndDate.toISOString();
 
     try {
-      // BookingService.getTutorAvailableSlots expects string | undefined.
-      // Here, startDateISO and endDateISO will always be strings.
       const response = await BookingService.getTutorAvailableSlots(tutorId, startDateISO, endDateISO);
       if (response.success && response.data) {
         const fetchedAvailabilities = response.data.availabilities || [];
@@ -162,20 +179,15 @@ const TutorDetailPage: React.FC = () => {
     } finally {
       setIsFetchingSlots(false);
     }
-  }, [tutorId, dateRangeStart, dateRangeEnd]); // Removed handleFetchAvailabilities from its own dependencies
+  }, [tutorId, dateRangeStart, dateRangeEnd]);
 
-  // useEffect for fetching availabilities (dependent on tutorId, dateRangeStart, dateRangeEnd, and tutor)
   useEffect(() => {
-    if (!tutorId || !tutor) { // Wait for tutor profile to be loaded
+    if (!tutorId || !tutor) { 
       setAvailabilities([]);
       setSelectedAvailability(null);
-      // setBookingError(null); // Keep existing booking errors if any
-      // setBookingSuccess(null); // Keep existing booking success if any
       setIsFetchingSlots(false);
       return;
     }
-
-    // Case 1: Both dates are provided for a ranged search
     if (dateRangeStart && dateRangeEnd) {
       if (dateRangeEnd < dateRangeStart) {
         setAvailabilities([]);
@@ -188,12 +200,10 @@ const TutorDetailPage: React.FC = () => {
         handleFetchAvailabilities();
       }
     }
-    // Case 2: Neither date is provided (tutorId and tutor profile are present) -> Fetch all
     else if (!dateRangeStart && !dateRangeEnd) {
       setBookingError(null); 
       handleFetchAvailabilities(); 
     }
-    // Case 3: Only one date is provided (intermediate state) -> Clear/reset, don't fetch
     else {
       setAvailabilities([]);
       setSelectedAvailability(null);
@@ -207,7 +217,6 @@ const TutorDetailPage: React.FC = () => {
       setBookingError("Please select an availability slot and ensure you are logged in.");
       return;
     }
-    // Add validation for topic and description
     if (!topic.trim()) {
       setBookingError("Please enter a topic for the session.");
       return;
@@ -219,7 +228,7 @@ const TutorDetailPage: React.FC = () => {
 
     setBookingError(null);
     setBookingSuccess(null);
-    setIsLoading(true);
+    setIsLoading(true); // Use general loading for booking action
 
     const bookingData: CreateBookingDto = {
       tutorId: tutorId,
@@ -227,9 +236,9 @@ const TutorDetailPage: React.FC = () => {
       availabilityId: selectedAvailability.availabilityId, 
       startTime: selectedAvailability.startTime, 
       endTime: selectedAvailability.endTime, 
-      topic: topic, // Add topic
-      description: description, // Add description
-      skillId: selectedSkillId, // Add skillId (optional)
+      topic: topic, 
+      description: description, 
+      skillId: selectedSkillId, 
     };
 
     try {
@@ -237,7 +246,9 @@ const TutorDetailPage: React.FC = () => {
       if (response.success && response.data) {
         setBookingSuccess(`Booking confirmed for ${new Date(selectedAvailability.startTime).toLocaleString()}!`);
         setSelectedAvailability(null);
-        handleFetchAvailabilities();
+        setTopic("");
+        setDescription("");
+        handleFetchAvailabilities(); 
       } else {
         setBookingError(response.error as string || 'Failed to create booking.');
       }
@@ -248,68 +259,67 @@ const TutorDetailPage: React.FC = () => {
     }
   };
 
-  if (isLoading) return <p>Loading tutor profile...</p>;
-  if (error) return <Alert variant="destructive"><AlertDescription>{error}</AlertDescription></Alert>;
-  if (!tutor) return <p>Tutor not found.</p>;
+  if (isLoading && !tutor) return <div className="min-h-screen bg-gray-950 text-white flex items-center justify-center p-6"><p>Loading tutor profile...</p></div>;
+  if (error) return <div className="min-h-screen bg-gray-950 text-white p-6"><Alert variant="destructive" className="bg-red-900 border-red-700 text-red-200"><AlertDescription>{error}</AlertDescription></Alert></div>;
+  if (!tutor) return <div className="min-h-screen bg-gray-950 text-white flex items-center justify-center p-6"><p>Tutor not found.</p></div>;
 
   return (
-    <div className="container mx-auto p-4">
-      <Card className="mb-6">
-        <CardHeader className="flex flex-row items-center space-x-4">
-          <Avatar className="h-24 w-24">
+    <div className="min-h-screen bg-gray-950 text-white p-4 md:p-6 space-y-6">
+      <Card className="bg-gray-900 border-gray-800 shadow-xl">
+        <CardHeader className="flex flex-col md:flex-row items-center space-y-4 md:space-y-0 md:space-x-6 p-6">
+          <Avatar className="h-28 w-28 border-2 border-gray-700">
             <AvatarImage src={tutor.avatarUrl} alt={tutor.fullName || tutorAccount?.fullName || "Tutor avatar"} />
-            <AvatarFallback>{(tutor.fullName || tutorAccount?.fullName)?.charAt(0) || 'T'}</AvatarFallback>
+            <AvatarFallback className="bg-gray-700 text-gray-300 text-4xl">{(tutor.fullName || tutorAccount?.fullName)?.charAt(0) || 'T'}</AvatarFallback>
           </Avatar>
-          <div>
-            <CardTitle className="text-3xl">{tutor.fullName || tutorAccount?.fullName || "Tutor"}</CardTitle>
-            {tutorAccount && tutorAccount.email && <CardDescription>Email: {tutorAccount.email}</CardDescription>}
-            {tutor.school && <CardDescription>School: {tutor.school}</CardDescription>}
+          <div className="text-center md:text-left">
+            <CardTitle className="text-3xl text-white">{tutor.fullName || tutorAccount?.fullName || "Tutor"}</CardTitle>
+            {tutorAccount && tutorAccount.email && <CardDescription className="text-gray-400">Email: {tutorAccount.email}</CardDescription>}
+            {tutor.school && <CardDescription className="text-gray-400">School: {tutor.school}</CardDescription>}
           </div>
         </CardHeader>
-        <CardContent>
-          {tutor.bio && <p className="text-gray-700 mb-2"><strong>Bio:</strong> {tutor.bio}</p>}
-          {tutor.hourlyRate !== undefined && <p className="text-gray-700 mb-2"><strong>Hourly Rate:</strong> ${tutor.hourlyRate.toFixed(2)}</p>}
-          {tutor.experience && <p className="text-gray-700 mb-2"><strong>Experience:</strong> {tutor.experience}</p>}
-          {tutor.availability && <p className="text-gray-700 mb-4"><strong>Availability:</strong> {tutor.availability}</p>}
+        <CardContent className="p-6 space-y-3">
+          {tutor.bio && <p className="text-gray-300"><strong className="text-gray-100">Bio:</strong> {tutor.bio}</p>}
+          {tutor.hourlyRate !== undefined && <p className="text-gray-300"><strong className="text-gray-100">Hourly Rate:</strong> ${tutor.hourlyRate.toFixed(2)}</p>}
+          {tutor.experience && <p className="text-gray-300"><strong className="text-gray-100">Experience:</strong> {tutor.experience}</p>}
+          {tutor.availability && <p className="text-gray-300 mb-3"><strong className="text-gray-100">General Availability:</strong> {tutor.availability}</p>}
           
-          <h3 className="text-xl font-semibold mb-2">Skills</h3>
+          <h3 className="text-xl font-semibold text-white pt-3 border-t border-gray-800">Skills</h3>
           {skills.length > 0 ? (
             <div className="flex flex-wrap gap-2">
               {skills.map(skill => (
-                <Badge key={skill.skillID} variant="secondary">{skill.skillName}</Badge>
+                <Badge key={skill.skillID} variant="secondary" className="bg-gray-750 text-blue-300 hover:bg-gray-700 text-sm px-3 py-1">{skill.skillName}</Badge>
               ))}
             </div>
           ) : (
-            <p className="text-muted-foreground">No skills listed.</p>
+            <p className="text-gray-500">No skills listed for this tutor profile. (Note: Skills might be fetched separately)</p>
           )}
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Book a Session</CardTitle>
+      <Card className="bg-gray-900 border-gray-800 shadow-xl">
+        <CardHeader className="p-6">
+          <CardTitle className="text-2xl text-white">Book a Session</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
-          {/* Date Range Selection UI */}
-          <div className="flex flex-col sm:flex-row gap-4 mb-4 items-end">
+        <CardContent className="p-6 space-y-6">
+          <div className="flex flex-col sm:flex-row gap-4 items-end">
             <div className="flex-1 space-y-1">
-              <label htmlFor="startDate" className="block text-sm font-medium text-gray-700">
+              <Label htmlFor="startDate" className="block text-sm font-medium text-gray-300">
                 Start Date
-              </label>
+              </Label>
               <Popover>
                 <PopoverTrigger asChild>
                   <Button
                     variant={"outline"}
                     className={cn(
-                      "w-full justify-start text-left font-normal",
-                      !dateRangeStart && "text-muted-foreground"
+                      "w-full justify-start text-left font-normal bg-gray-800 border-gray-700 hover:bg-gray-750 text-white",
+                      !dateRangeStart && "text-gray-500"
                     )}
                   >
-                    <CalendarIcon className="mr-2 size-4 text-white" />
-                    {dateRangeStart ? format(dateRangeStart, "PPP") : <span className="text-white">Pick a date</span>}
+                    <CalendarIcon className="mr-2 size-4 text-gray-400" />
+                    {dateRangeStart ? format(dateRangeStart, "PPP") : <span>Pick a start date</span>}
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-auto p-0">
+                <PopoverContent className="w-auto p-0 bg-gray-900 border-gray-700 text-white" align="start">
                   <Calendar
                     mode="single"
                     selected={dateRangeStart}
@@ -317,87 +327,92 @@ const TutorDetailPage: React.FC = () => {
                       if (date) {
                         date.setHours(0,0,0,0);
                         setDateRangeStart(date);
-                        if (dateRangeEnd && dateRangeEnd < date) {
+                        if (dateRangeEnd && dateRangeEnd < date) { // Auto-adjust end date if it's before new start date
                           const newEndDate = new Date(date);
-                          newEndDate.setDate(newEndDate.getDate() + 7);
+                          newEndDate.setDate(newEndDate.getDate() + 7); // Default to 1 week after
                           setDateRangeEnd(newEndDate);
                         }
                       }
                     }}
                     disabled={(date) => {
-                      const tomorrow = new Date();
-                      tomorrow.setDate(tomorrow.getDate());
-                      tomorrow.setHours(0,0,0,0);
-                      return date < tomorrow;
-                    }
-                    }
+                      const today = new Date();
+                      today.setHours(0,0,0,0);
+                      return date < today;
+                    }}
                     initialFocus
+                    className="bg-gray-900 text-white [&_button]:text-white [&_button:hover]:bg-gray-800 [&_button[aria-selected]]:bg-blue-600"
                   />
                 </PopoverContent>
               </Popover>
             </div>
             <div className="flex-1 space-y-1">
-              <label htmlFor="endDate" className="block text-sm font-medium text-gray-700">
+              <Label htmlFor="endDate" className="block text-sm font-medium text-gray-300">
                 End Date
-              </label>
+              </Label>
               <Popover>
                 <PopoverTrigger asChild>
                   <Button
                     variant={"outline"}
                     className={cn(
-                      "w-full justify-start text-left font-normal",
-                      !dateRangeEnd && "text-muted-foreground"
+                      "w-full justify-start text-left font-normal bg-gray-800 border-gray-700 hover:bg-gray-750 text-white",
+                      !dateRangeEnd && "text-gray-500"
                     )}
                   >
-                    <CalendarIcon className="mr-2 size-4 text-white" />
-                    {dateRangeEnd ? format(dateRangeEnd, "PPP") : <span className="text-white">Pick a date</span>}
+                    <CalendarIcon className="mr-2 size-4 text-gray-400" />
+                    {dateRangeEnd ? format(dateRangeEnd, "PPP") : <span>Pick an end date</span>}
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-auto p-0">
+                <PopoverContent className="w-auto p-0 bg-gray-900 border-gray-700 text-white" align="start">
                   <Calendar
                     mode="single"
                     selected={dateRangeEnd}
                     onSelect={(date) => {
                        if(date) {
-                        date.setHours(0,0,0,0);
+                        date.setHours(23,59,59,999); // Ensure end date covers the whole day
                         setDateRangeEnd(date);
                        }
                     }}
                     disabled={(date) =>
-                      dateRangeStart ? date < dateRangeStart : false
+                      dateRangeStart ? date < dateRangeStart : false // Can't be before start date
                     }
                     initialFocus
+                    className="bg-gray-900 text-white [&_button]:text-white [&_button:hover]:bg-gray-800 [&_button[aria-selected]]:bg-blue-600"
                   />
                 </PopoverContent>
               </Popover>
             </div>
-            <Button onClick={handleFetchAvailabilities} disabled={isLoading || !dateRangeStart || !dateRangeEnd} className="sm:w-auto">
-              {isLoading ? 'Loading...' : 'View Slots'}
-            </Button>
+            {/* Removed the "View Slots" button as slots fetch automatically */}
           </div>
 
-          {bookingError && <Alert variant="destructive"><AlertDescription>{bookingError}</AlertDescription></Alert>}
-          {bookingSuccess && <Alert variant="default" className="bg-green-100 text-green-700"><AlertDescription>{bookingSuccess}</AlertDescription></Alert>}
+          {bookingError && <Alert variant="destructive" className="bg-red-900 border-red-700 text-red-200"><AlertDescription>{bookingError}</AlertDescription></Alert>}
+          {bookingSuccess && <Alert variant="default" className="bg-green-800 border-green-700 text-green-200"><AlertDescription>{bookingSuccess}</AlertDescription></Alert>}
+          
+          {isFetchingSlots && <p className="text-center text-gray-400 py-3">Fetching available slots...</p>}
 
-          {availabilities.length > 0 && (
-            <div className="space-y-2 pt-4">
-              <h4 className="font-semibold">Available Slots:</h4>
-              <ul className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
+          {!isFetchingSlots && availabilities.length > 0 && (
+            <div className="space-y-3 pt-4">
+              <h4 className="font-semibold text-lg text-white">Available Slots:</h4>
+              <ul className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
                 {availabilities.filter(slot => !slot.isBooked).map(avail => (
                   <li key={`${avail.availabilityId}-${avail.startTime}`}>
                     <Button
                       variant={
                         selectedAvailability?.availabilityId === avail.availabilityId &&
                         selectedAvailability?.startTime === avail.startTime
-                        ? "default"
-                        : "outline"
+                        ? "default" // Primary selected style
+                        : "outline" // Secondary unselected style
                       }
-                      className="w-full text-left justify-start h-auto py-2"
+                      className={cn(
+                        "w-full text-left justify-start h-auto py-2.5 px-3 transition-all",
+                        selectedAvailability?.availabilityId === avail.availabilityId && selectedAvailability?.startTime === avail.startTime 
+                          ? "bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white border-transparent" 
+                          : "bg-gray-800 border-gray-700 hover:bg-gray-750 text-gray-300 hover:text-white"
+                      )}
                       onClick={() => setSelectedAvailability(avail)}
                     >
                       <div className="flex flex-col">
-                        <span>{format(new Date(avail.startTime), "PPP, p")}</span>
-                        <span>to {format(new Date(avail.endTime), "p")}</span>
+                        <span className="font-medium">{format(new Date(avail.startTime), "PPP")}</span>
+                        <span className="text-sm">{format(new Date(avail.startTime), "p")} - {format(new Date(avail.endTime), "p")}</span>
                       </div>
                     </Button>
                   </li>
@@ -406,46 +421,79 @@ const TutorDetailPage: React.FC = () => {
             </div>
           )}
           
+          {!isFetchingSlots && availabilities.length === 0 && !bookingError && dateRangeStart && dateRangeEnd && (
+             <p className="text-center text-gray-500 py-3">No slots available for the selected criteria. Try adjusting the dates.</p>
+          )}
+
+
           {selectedAvailability && (
-            <div className="mt-4 space-y-4">
+            <div className="mt-6 pt-6 border-t border-gray-800 space-y-4">
+              <h4 className="text-lg font-semibold text-white">Confirm Booking Details:</h4>
               <div>
-                <Label htmlFor="topic">Topic</Label>
+                <Label htmlFor="topic" className="text-gray-300">Topic</Label>
                 <Input 
                   id="topic" 
                   value={topic} 
                   onChange={(e) => setTopic(e.target.value)} 
-                  placeholder="Enter session topic (e.g., Algebra Basics, React Hooks)"
+                  placeholder="e.g., Algebra Basics, React Hooks"
+                  className="bg-gray-800 border-gray-700 text-white placeholder-gray-500 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
               <div>
-                <Label htmlFor="description">Description</Label>
+                <Label htmlFor="description" className="text-gray-300">Description</Label>
                 <Textarea 
                   id="description" 
                   value={description} 
                   onChange={(e) => setDescription(e.target.value)} 
                   placeholder="Briefly describe what you want to learn or discuss."
+                  className="bg-gray-800 border-gray-700 text-white placeholder-gray-500 focus:ring-blue-500 focus:border-blue-500 min-h-[100px]"
                 />
               </div>
-              {/* Optional: Skill selection - assuming you have a way to get and select skills */}
-              {/* <Select onValueChange={setSelectedSkillId} value={selectedSkillId}>
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Select a skill (optional)" />
-                </SelectTrigger>
-                <SelectContent>
-                  {skills.map(skill => (
-                    <SelectItem key={skill.skillId} value={skill.skillId}>
-                      {skill.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select> */}
-              <Button onClick={handleBookSession} disabled={isLoading || !selectedAvailability} className="w-full">
-                {isLoading ? 'Booking...' : 'Book Session'}
+              <Button 
+                onClick={handleBookSession} 
+                disabled={isLoading || !selectedAvailability} 
+                className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-3 text-base"
+              >
+                {isLoading ? 'Booking...' : 'Confirm & Book Session'}
               </Button>
             </div>
           )}
         </CardContent>
       </Card>
+
+      {/* Reviews Section */}
+      <Card className="bg-gray-900 border-gray-800 shadow-xl">
+        <CardHeader className="p-6">
+          <CardTitle className="text-2xl text-white">Tutor Reviews</CardTitle>
+        </CardHeader>
+        <CardContent className="p-6 space-y-6">
+          <ReviewList reviews={reviews} isLoading={isLoadingReviews} error={reviewsError} />
+        </CardContent>
+      </Card>
+
+      {/* Submit Review Section - Conditionally render based on if user can review */}
+      {/* TODO: Add logic to determine if the currentUser has a completed booking with this tutor
+          and hasn't reviewed it yet. For now, showing if logged in and tutorId exists.
+          A more robust solution would involve checking past bookings.
+      */}
+      {currentUser && tutorId && exampleBookingIdForReview && (
+        <Card className="bg-gray-900 border-gray-800 shadow-xl">
+          <CardHeader className="p-6">
+            <CardTitle className="text-2xl text-white">Leave a Review</CardTitle>
+            <CardDescription className="text-gray-400">
+              Share your experience with {tutor?.fullName || "this tutor"}.
+              (Using placeholder booking ID: {exampleBookingIdForReview} for now)
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="p-6">
+            <SubmitReviewForm
+              tutorId={tutorId}
+              bookingId={exampleBookingIdForReview} // Replace with actual booking ID
+              onReviewSubmitted={fetchTutorReviews} // Refresh reviews after submission
+            />
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 };

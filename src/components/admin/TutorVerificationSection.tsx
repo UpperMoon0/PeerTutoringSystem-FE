@@ -15,7 +15,7 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export type VerificationStatus = 'Pending' | 'Approved' | 'Rejected';
 
-const TutorVerificationPage: React.FC = () => {
+const TutorVerificationSection: React.FC = () => {
   const [verifications, setVerifications] = useState<TutorVerification[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -110,7 +110,7 @@ const TutorVerificationPage: React.FC = () => {
   }
 
   return (
-    <div className="bg-background text-foreground p-4 min-h-screen">
+    <div className="bg-background text-foreground p-4">
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold text-foreground">Tutor Verification Requests</h2>
         <div className="flex items-center space-x-2">
@@ -190,4 +190,4 @@ const TutorVerificationPage: React.FC = () => {
   );
 };
 
-export default TutorVerificationPage;
+export default TutorVerificationSection;
