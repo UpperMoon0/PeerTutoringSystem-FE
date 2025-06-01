@@ -135,11 +135,11 @@ const TutorProfileSection: React.FC<TutorProfileSectionProps> = ({ userId, curre
   // This is ensured by the calling component (UserProfileCard), but good to keep in mind.
 
   return (
-    <Card className="mt-8">
-      <CardHeader>
-        <CardTitle>Tutor Bio</CardTitle>
+    <Card className="mt-8 bg-gray-900 border-gray-800 text-white">
+      <CardHeader className="border-b border-gray-800">
+        <CardTitle className="text-white">Tutor Bio</CardTitle>
       </CardHeader>
-      <CardContent>
+      <CardContent className="pt-6">
         {isEditingTutorProfile ? (
           <TutorProfileForm
             initialData={tutorProfile}
@@ -148,7 +148,7 @@ const TutorProfileSection: React.FC<TutorProfileSectionProps> = ({ userId, curre
             isLoading={tutorProfileLoading}
           />
         ) : tutorProfileLoading ? (
-          <p>Loading tutor bio...</p>
+          <p className="text-gray-400">Loading tutor bio...</p>
         ) : tutorProfile ? (
           <TutorProfileDisplay
             tutorProfile={tutorProfile}
@@ -158,10 +158,13 @@ const TutorProfileSection: React.FC<TutorProfileSectionProps> = ({ userId, curre
         ) : (
           // If not editing, not loading, and no tutorProfile (due to error or not existing)
           <>
-            <p className="text-muted-foreground mb-4">
+            <p className="text-gray-400 mb-4">
               You don't have a bio yet. Please create one to attract students.
             </p>
-            <Button onClick={handleCreateTutorProfile}>
+            <Button
+              onClick={handleCreateTutorProfile}
+              className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white"
+            >
               <PlusCircle className="mr-2 h-4 w-4" /> Create Bio
             </Button>
           </>

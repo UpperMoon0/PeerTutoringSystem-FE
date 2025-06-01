@@ -84,27 +84,27 @@ const TutorProfileForm: React.FC<TutorProfileFormProps> = ({ initialData, onSubm
   };
 
   return (
-    <form onSubmit={handleSubmit} className="mt-8 p-6 bg-card text-card-foreground rounded-lg shadow space-y-4">
-      <h2 className="text-2xl font-semibold mb-4">{initialData ? 'Edit Tutor Profile' : 'Create Tutor Profile'}</h2>
+    <form onSubmit={handleSubmit} className="mt-6 p-6 bg-gray-900 text-white rounded-lg shadow-lg border border-gray-800 space-y-6">
+      <h2 className="text-2xl font-semibold mb-6 pb-4 border-b border-gray-800 text-white">{initialData ? 'Edit Tutor Profile' : 'Create Tutor Profile'}</h2>
       
       <div>
-        <Label htmlFor="bio">Bio</Label>
-        <Textarea id="bio" name="bio" value={formData.bio} onChange={handleChange} required className="mt-1" />
+        <Label htmlFor="bio" className="text-gray-400">Bio</Label>
+        <Textarea id="bio" name="bio" value={formData.bio} onChange={handleChange} required className="mt-1 bg-gray-800 border-gray-700 text-white placeholder:text-gray-500" />
       </div>
 
       <div>
-        <Label htmlFor="experience">Experience</Label> 
-        <Textarea id="experience" name="experience" value={formData.experience} onChange={handleChange} required className="mt-1" />
+        <Label htmlFor="experience" className="text-gray-400">Experience</Label>
+        <Textarea id="experience" name="experience" value={formData.experience} onChange={handleChange} required className="mt-1 bg-gray-800 border-gray-700 text-white placeholder:text-gray-500" />
       </div>
 
       <div>
-        <Label htmlFor="availability">Availability (e.g., Weekends, Evenings)</Label>
-        <Input id="availability" name="availability" value={formData.availability} onChange={handleChange} required className="mt-1" />
+        <Label htmlFor="availability" className="text-gray-400">Availability (e.g., Weekends, Evenings)</Label>
+        <Input id="availability" name="availability" value={formData.availability} onChange={handleChange} required className="mt-1 bg-gray-800 border-gray-700 text-white placeholder:text-gray-500" />
       </div>
 
       <div>
-        <Label htmlFor="hourlyRate">Hourly Rate ($)</Label>
-        <Input id="hourlyRate" name="hourlyRate" type="number" step="0.01" value={formData.hourlyRate} onChange={handleChange} required className="mt-1" />
+        <Label htmlFor="hourlyRate" className="text-gray-400">Hourly Rate ($)</Label>
+        <Input id="hourlyRate" name="hourlyRate" type="number" step="0.01" value={formData.hourlyRate} onChange={handleChange} required className="mt-1 bg-gray-800 border-gray-700 text-white placeholder:text-gray-500" />
       </div>
 
       {/* Skills selection section using the new SkillSelector component */}
@@ -113,11 +113,15 @@ const TutorProfileForm: React.FC<TutorProfileFormProps> = ({ initialData, onSubm
         selectedSkillIds={selectedSkills}
         onSkillChange={handleSkillChange}
         isLoading={isLoading}
+        // Pass theme-related props if SkillSelector is also being themed, otherwise it might look out of place.
+        // For now, assuming SkillSelector handles its own theming or is generic enough.
       />
 
-      <div className="flex justify-end space-x-2 pt-4">
-        <Button type="button" variant="outline" onClick={onCancel} disabled={isLoading}>Cancel</Button>
-        <Button type="submit" disabled={isLoading}>{isLoading ? 'Saving...' : 'Save Profile'}</Button>
+      <div className="flex justify-end space-x-3 pt-6 border-t border-gray-800">
+        <Button type="button" variant="outline" onClick={onCancel} disabled={isLoading} className="bg-gray-800 border-gray-700 hover:bg-gray-700 text-white">Cancel</Button>
+        <Button type="submit" disabled={isLoading} className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white">
+          {isLoading ? 'Saving...' : 'Save Profile'}
+        </Button>
       </div>
     </form>
   );
