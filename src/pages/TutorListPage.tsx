@@ -52,15 +52,15 @@ const TutorListPage: React.FC = () => {
   }, [searchTerm, allTutors]); 
 
   if (loading) {
-    return <div className="container mx-auto p-6 bg-gray-950 min-h-screen text-white">Loading tutors...</div>;
+    return <div className="w-full p-6 bg-gray-950 min-h-screen text-white">Loading tutors...</div>;
   }
 
   if (error) {
-    return <div className="container mx-auto p-6 bg-gray-950 min-h-screen text-red-400">Error: {error}</div>;
+    return <div className="w-full p-6 bg-gray-950 min-h-screen text-red-400">Error: {error}</div>;
   }
 
   return (
-    <div className="container mx-auto p-6 bg-gray-950 min-h-screen">
+    <div className="w-full p-6 bg-gray-950 min-h-screen">
       <h1 className="text-4xl font-bold mb-8 text-center text-white">Available Tutors</h1>
       
       <div className="mb-8 max-w-xl mx-auto">
