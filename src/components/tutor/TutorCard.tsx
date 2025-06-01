@@ -67,33 +67,33 @@ const TutorCard: React.FC<TutorCardProps> = ({ tutor }) => {
   }, [tutor.userID]);
 
   return (
-    <div className="border p-4 rounded-lg shadow hover:shadow-lg transition-shadow bg-white flex flex-col h-full">
+    <div className="border border-gray-800 p-4 rounded-lg shadow-lg hover:shadow-xl transition-shadow bg-gray-900 flex flex-col h-full">
       <img
         src={tutor.avatarUrl || '/default-avatar.png'}
         alt={tutor.fullName}
-        className="w-24 h-24 rounded-full mx-auto mb-3 object-cover"
+        className="w-24 h-24 rounded-full mx-auto mb-3 object-cover border-2 border-gray-700"
       />
-      <h2 className="text-xl font-semibold text-center mb-2 text-gray-800">{tutor.fullName}</h2>
+      <h2 className="text-xl font-semibold text-center mb-2 text-white">{tutor.fullName}</h2>
 
       <div className="flex-grow">
-        {bioLoading && <p className="text-sm text-gray-500 text-center py-2">Loading bio...</p>}
-        {bioError && !tutorBio && <p className="text-sm text-red-500 text-center py-2">{bioError}</p>}
+        {bioLoading && <p className="text-sm text-gray-400 text-center py-2">Loading bio...</p>}
+        {bioError && !tutorBio && <p className="text-sm text-red-400 text-center py-2">{bioError}</p>}
         
         {tutorBio && (
-          <div className="text-sm text-gray-700 mt-2 space-y-1">
+          <div className="text-sm text-gray-400 mt-2 space-y-1">
             {tutorBio.bio && (
               <p className="truncate" title={tutorBio.bio}>
-                <strong>Bio:</strong> {tutorBio.bio.substring(0, 80)}{tutorBio.bio.length > 80 ? '...' : ''}
+                <strong className="text-gray-300">Bio:</strong> {tutorBio.bio.substring(0, 80)}{tutorBio.bio.length > 80 ? '...' : ''}
               </p>
             )}
             {tutorBio.experience && (
               <p>
-                <strong>Experience:</strong> {tutorBio.experience}
+                <strong className="text-gray-300">Experience:</strong> {tutorBio.experience}
               </p>
             )}
             {tutorBio.hourlyRate !== undefined && (
               <p>
-                <strong>Rate:</strong> ${tutorBio.hourlyRate}/hr
+                <strong className="text-gray-300">Rate:</strong> ${tutorBio.hourlyRate}/hr
               </p>
             )}
           </div>
@@ -102,17 +102,17 @@ const TutorCard: React.FC<TutorCardProps> = ({ tutor }) => {
            <p className="text-sm text-gray-500 text-center mt-2 py-2">No additional bio information available.</p>
         )}
 
-        <div className="mt-3 pt-3 border-t border-gray-100">
-          <h3 className="text-md font-semibold text-gray-700 mb-1">Skills:</h3>
-          {skillsLoading && <p className="text-xs text-gray-500">Loading skills...</p>}
-          {skillsError && <p className="text-xs text-red-500">{skillsError}</p>}
+        <div className="mt-3 pt-3 border-t border-gray-700">
+          <h3 className="text-md font-semibold text-white mb-1">Skills:</h3>
+          {skillsLoading && <p className="text-xs text-gray-400">Loading skills...</p>}
+          {skillsError && <p className="text-xs text-red-400">{skillsError}</p>}
           {!skillsLoading && !skillsError && skills.length === 0 && (
             <p className="text-xs text-gray-500">No skills listed.</p>
           )}
           {!skillsLoading && !skillsError && skills.length > 0 && (
             <div className="flex flex-wrap gap-1">
               {skills.map((userSkill) => (
-                <span key={userSkill.userSkillID} className="bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full text-xs">
+                <span key={userSkill.userSkillID} className="bg-gray-750 text-blue-300 px-2 py-0.5 rounded-full text-xs">
                   {userSkill.skill.skillName}
                 </span>
               ))}
@@ -121,8 +121,8 @@ const TutorCard: React.FC<TutorCardProps> = ({ tutor }) => {
         </div>
       </div>
 
-      <div className="text-center mt-4 pt-2 border-t border-gray-200">
-        <Link to={`/tutors/${tutor.userID}`} className="text-blue-600 hover:text-blue-800 hover:underline font-medium">
+      <div className="text-center mt-4 pt-2 border-t border-gray-700">
+        <Link to={`/tutors/${tutor.userID}`} className="text-blue-400 hover:text-blue-300 hover:underline font-medium">
           View Profile
         </Link>
       </div>
