@@ -3,7 +3,7 @@ import { useParams } from 'react-router-dom';
 import { ProfileService } from '../services/ProfileService';
 import type { ProfileDto, UpdateProfileDto } from '@/types/user.types';
 import { useAuth } from '../contexts/AuthContext';
-import UserProfileCard from '../components/profile/UserProfileCard';
+import UnifiedProfileCard from '../components/profile/UnifiedProfileCard';
 
 const UserProfilePage: React.FC = () => {
   const { userId } = useParams<{ userId: string }>();
@@ -123,30 +123,49 @@ const UserProfilePage: React.FC = () => {
     }
   };
 
-  if (loading && !profile) return <div className="flex justify-center items-center h-screen bg-gray-950 text-white"><p>Loading profile...</p></div>;
-  if (error) return <div className="container mx-auto p-6 bg-gray-950 text-red-400">Error: {error}</div>;
-  if (!profile) return <div className="container mx-auto p-6 bg-gray-950 text-gray-400">No profile data found.</div>;
+  if (loading && !profile) return (
+    <div className="flex justify-center items-center h-screen bg-gray-950">
+      <div className="flex items-center gap-3">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+        <p className="text-white">Loading profile...</p>
+      </div>
+    </div>
+  );
+  if (error) return (
+    <div className="container mx-auto p-6 bg-gray-950 min-h-screen">
+      <div className="text-center py-12">
+        <p className="text-red-400">Error: {error}</p>
+      </div>
+    </div>
+  );
+  if (!profile) return (
+    <div className="container mx-auto p-6 bg-gray-950 min-h-screen">
+      <div className="text-center py-12">
+        <p className="text-gray-400">No profile data found.</p>
+      </div>
+    </div>
+  );
 
   const canEdit = currentUser?.userId === profile.userID || currentUser?.role === 'Admin';
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-4 md:p-6">
-      <div className="container mx-auto">
-        <UserProfileCard
-        profile={profile}
-        isEditing={isEditing}
-        setIsEditing={setIsEditing}
-        formData={formData}
-        handleInputChange={handleInputChange}
-        handleDateChange={handleDateChange}
-        handleSave={handleSave}
-        avatarPreview={avatarPreview}
-        selectedAvatarFile={selectedAvatarFile}
-        loading={loading}
-        canEdit={canEdit}
-        onCancelEdit={handleCancelEdit}
-        currentUser={currentUser}
-        userId={userId || ''}
+    <div className="min-h-screen bg-background p-4 md:p-6">
+      <div className="container mx-auto max-w-7xl">
+        <UnifiedProfileCard
+          profile={profile}
+          isEditing={isEditing}
+          setIsEditing={setIsEditing}
+          formData={formData}
+          handleInputChange={handleInputChange}
+          handleDateChange={handleDateChange}
+          handleSave={handleSave}
+          avatarPreview={avatarPreview}
+          selectedAvatarFile={selectedAvatarFile}
+          loading={loading}
+          canEdit={canEdit}
+          onCancelEdit={handleCancelEdit}
+          currentUser={currentUser}
+          userId={userId || ''}
         />
       </div>
     </div>
