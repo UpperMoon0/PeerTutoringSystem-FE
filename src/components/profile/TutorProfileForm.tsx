@@ -181,7 +181,7 @@ const TutorProfileForm: React.FC<TutorProfileFormProps> = ({ initialData, onSubm
         </div>
 
         {/* Skills Section */}
-        <div className="space-y-4 p-4 bg-card rounded-lg border border-border">
+        <div className="space-y-4 p-4 bg-card-tertiary rounded-lg border border-border">
           <div>
             <h3 className="text-lg font-semibold text-foreground mb-1 flex items-center gap-2">
               <svg className="h-5 w-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">

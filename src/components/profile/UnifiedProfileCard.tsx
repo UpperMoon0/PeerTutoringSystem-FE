@@ -144,7 +144,7 @@ const UnifiedProfileCard: React.FC<UnifiedProfileCardProps> = ({
       {/* Main Profile Content */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Personal Information */}
-        <Card className="lg:col-span-2 bg-card border-border">
+        <Card className="lg:col-span-2 bg-card-secondary border-border">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-foreground">
               <UserCheck className="h-5 w-5 text-primary" />
@@ -317,7 +317,7 @@ const UnifiedProfileCard: React.FC<UnifiedProfileCardProps> = ({
         </Card>
 
         {/* Quick Stats */}
-        <Card className="bg-card border-border">
+        <Card className="bg-card-secondary border-border">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-foreground">
               <Clock className="h-5 w-5 text-primary" />

@@ -155,16 +155,6 @@ const TutorDashboardPage: React.FC = () => {
         <header className="bg-gray-900 border-b border-gray-800 px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
-              {activeSection !== 'overview' && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => handleSectionChange('overview')}
-                  className="text-gray-400 hover:text-white p-2"
-                >
-                  <ArrowLeft className="w-4 h-4" />
-                </Button>
-              )}
               <div>
                 <h1 className="text-xl lg:text-2xl font-bold text-white">
                   {activeSection === 'overview' && 'Dashboard'}
@@ -181,27 +171,7 @@ const TutorDashboardPage: React.FC = () => {
               </div>
             </div>
             <div className="flex items-center space-x-3">
-              {activeSection === 'overview' && ( // Keep these buttons only on overview
-                <div className="flex space-x-2">
-                  <Button
-                    onClick={() => handleSectionChange('availability')}
-                    className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-sm lg:text-base px-3 lg:px-4"
-                  >
-                    <CalendarDays className="w-4 h-4 mr-1 lg:mr-2" />
-                    <span className="hidden sm:inline">Manage Availability</span>
-                    <span className="sm:hidden">Availability</span>
-                  </Button>
-                  <Button
-                    onClick={() => handleSectionChange('bookings')}
-                    variant="outline"
-                    className="bg-gray-800 border-gray-700 hover:bg-gray-700 text-white text-sm lg:text-base px-3 lg:px-4"
-                  >
-                    <BookOpen className="w-4 h-4 mr-1 lg:mr-2" />
-                    <span className="hidden sm:inline">Manage Bookings</span>
-                    <span className="sm:hidden">Bookings</span>
-                  </Button>
-                </div>
-              )}
+              {/* Buttons removed as per requirement */}
             </div>
           </div>
         </header>
@@ -416,6 +386,10 @@ const TutorDashboardPage: React.FC = () => {
           ) : activeSection === 'profile' && currentUser && userProfile ? (
             /* Profile Management Section */
             <div className="space-y-6">
+              <div>
+                <h2 className="text-xl font-bold text-white mb-2">Profile Details</h2>
+                <p className="text-gray-400">Manage your public-facing tutor profile information.</p>
+              </div>
               <CollapsibleTutorSection
                 userId={currentUser.userId}
                 currentUser={currentUser}

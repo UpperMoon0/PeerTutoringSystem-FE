@@ -7,7 +7,6 @@ import {
   User,
   DollarSign,
   BarChart3,
-  Settings,
   Home,
   Menu,
   X,
@@ -37,8 +36,7 @@ const TutorSidebar: React.FC<TutorSidebarProps> = ({ className, onAvailabilityCl
     { icon: BookOpen, label: 'My Bookings', onClick: onBookingsClick || (() => {}), href: onBookingsClick ? undefined : '/tutor?section=bookings' },
     { icon: Calendar, label: 'Manage Availability', onClick: onAvailabilityClick || (() => {}), href: onAvailabilityClick ? undefined : '/tutor?section=availability' },
     { icon: Briefcase, label: 'Profile', onClick: onProfileClick || (() => {}), href: onProfileClick ? undefined : '/tutor?section=profile' }, // Changed icon and href/onClick
-    { icon: BarChart3, label: 'Analytics', href: '/tutor/analytics' }, // Assuming this will be a separate page or section
-    { icon: Settings, label: 'Settings', href: '/tutor/settings' }, // Assuming this will be a separate page or section
+    { icon: BarChart3, label: 'Analytics', href: '/tutor/analytics' }, 
   ];
 
   const handleItemClick = (item: SidebarItem) => {
