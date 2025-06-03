@@ -43,16 +43,38 @@ const SkillCard: React.FC<SkillCardProps> = ({ skill, isSelected, onSelect, disa
 
   return (
     <Card
-      className={`cursor-pointer text-white ${isSelected ? 'border-primary border-2' : 'border-transparent border-2'} ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+      className={`
+        relative cursor-pointer transition-all duration-200 hover:shadow-md text-white
+        ${isSelected
+          ? 'ring-2 ring-primary ring-offset-2 ring-offset-background scale-[1.02]'
+          : 'hover:scale-[1.01]'
+        }
+        ${disabled ? 'opacity-50 cursor-not-allowed' : 'hover:shadow-lg'}
+      `}
       style={gradientStyle}
       onClick={() => !disabled && onSelect(skill.skillID)}
     >
-      <CardHeader>
-        <CardTitle>{skill.skillName}</CardTitle>
-        <CardDescription className="text-white opacity-80">Level: {skill.skillLevel}</CardDescription>
+      {isSelected && (
+        <div className="absolute -top-2 -right-2 bg-primary text-primary-foreground rounded-full p-1 z-10">
+          <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+          </svg>
+        </div>
+      )}
+      
+      <CardHeader className="pb-2">
+        <CardTitle className="text-base font-semibold leading-tight">
+          {skill.skillName}
+        </CardTitle>
+        <CardDescription className="text-white/80 text-sm">
+          Level: {skill.skillLevel}
+        </CardDescription>
       </CardHeader>
-      <CardContent>
-        <p className="text-sm text-white opacity-90">{skill.description}</p>
+      
+      <CardContent className="pt-0">
+        <p className="text-sm text-white/90 leading-relaxed line-clamp-3">
+          {skill.description}
+        </p>
       </CardContent>
     </Card>
   );
