@@ -2,7 +2,6 @@ import type { RequestTutorPayload } from '../types/RequestTutorPayload';
 import type { RequestTutorResponse } from '../types/RequestTutorResponse';
 import type { Tutor } from '../types/Tutor';
 import type { TutorVerification } from '../types/TutorVerification';
-import { mockTutors } from '@/mocks/tutors';
 import { AuthService } from './AuthService';
 import type { ApiResult } from '@/types/api.types';
 import type { DocumentUploadDto, FileUploadResponse } from '@/types/file.types';
@@ -10,7 +9,6 @@ import type { PendingTutorVerificationStatus } from '@/types/TutorVerification';
 import type { User, ProfileDto } from '@/types/user.types';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
-const ENABLE_MOCK_API = import.meta.env.VITE_ENABLE_MOCK_API === 'true';
 
 const requestTutor = async (userId: string, payload: RequestTutorPayload): Promise<ApiResult<RequestTutorResponse>> => {
   const url = `${API_BASE_URL}/Users/${userId}/request-tutor`;
@@ -148,35 +146,21 @@ const uploadDocument = async (file: File, userId: string): Promise<ApiResult<Doc
 };
 
 const getFeaturedTutors = async (searchTerm?: string): Promise<Tutor[]> => {
-  if (ENABLE_MOCK_API) {
-    console.log(`[Mock API] Fetching featured tutors. Search term: ${searchTerm}`);
-    await new Promise(resolve => setTimeout(resolve, 300));
-    if (searchTerm) {
-      const lowerSearchTerm = searchTerm.toLowerCase();
-      return mockTutors.filter(tutor =>
-        tutor.name.toLowerCase().includes(lowerSearchTerm) ||
-        tutor.courses.toLowerCase().includes(lowerSearchTerm) ||
-        tutor.tutoringInfo.some(info => info.toLowerCase().includes(lowerSearchTerm))
-      );
-    }
-    return mockTutors.slice(0, 4);
-  } else {
-    console.log(`[Real API] Fetching featured tutors. Search term: ${searchTerm}`);
-    try {
-      const query = searchTerm ? `?search=${encodeURIComponent(searchTerm)}` : '';
-      const response = await fetch(`${API_BASE_URL}/tutors/featured${query}`);
+  console.log(`[Real API] Fetching featured tutors. Search term: ${searchTerm}`);
+  try {
+    const query = searchTerm ? `?search=${encodeURIComponent(searchTerm)}` : '';
+    const response = await fetch(`${API_BASE_URL}/tutors/featured${query}`);
 
-      if (!response.ok) {
-        const errorBody = await response.text();
-        console.error(`API Error ${response.status}: ${response.statusText}`, errorBody);
-        return [];
-      }
-      const data: Tutor[] = await response.json();
-      return data;
-    } catch (error) {
-      console.error("Error fetching tutors from real API:", error);
+    if (!response.ok) {
+      const errorBody = await response.text();
+      console.error(`API Error ${response.status}: ${response.statusText}`, errorBody);
       return [];
     }
+    const data: Tutor[] = await response.json();
+    return data;
+  } catch (error) {
+    console.error("Error fetching tutors from real API:", error);
+    return [];
   }
 };
 
