@@ -123,15 +123,16 @@ const UserProfilePage: React.FC = () => {
     }
   };
 
-  if (loading && !profile) return <div className="flex justify-center items-center h-screen"><p>Loading profile...</p></div>;
-  if (error) return <div className="container mx-auto p-4 text-red-500">Error: {error}</div>;
-  if (!profile) return <div className="container mx-auto p-4">No profile data found.</div>;
+  if (loading && !profile) return <div className="flex justify-center items-center h-screen bg-gray-950 text-white"><p>Loading profile...</p></div>;
+  if (error) return <div className="container mx-auto p-6 bg-gray-950 text-red-400">Error: {error}</div>;
+  if (!profile) return <div className="container mx-auto p-6 bg-gray-950 text-gray-400">No profile data found.</div>;
 
   const canEdit = currentUser?.userId === profile.userID || currentUser?.role === 'Admin';
 
   return (
-    <div className="container mx-auto p-4">
-      <UserProfileCard
+    <div className="min-h-screen bg-gray-950 text-white p-4 md:p-6">
+      <div className="container mx-auto">
+        <UserProfileCard
         profile={profile}
         isEditing={isEditing}
         setIsEditing={setIsEditing}
@@ -146,7 +147,8 @@ const UserProfilePage: React.FC = () => {
         onCancelEdit={handleCancelEdit}
         currentUser={currentUser}
         userId={userId || ''}
-      />
+        />
+      </div>
     </div>
   );
 };

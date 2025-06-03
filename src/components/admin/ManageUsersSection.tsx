@@ -7,8 +7,8 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Ban, CheckCircle, ShieldAlert, Loader2 } from 'lucide-react';
 
-const ManageUsersPage: React.FC = () => {
-  const [allUsers, setAllUsers] = useState<User[]>([]); 
+const ManageUsersSection: React.FC = () => {
+  const [allUsers, setAllUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedRoleFilter, setSelectedRoleFilter] = useState<string>('All');
@@ -26,7 +26,7 @@ const ManageUsersPage: React.FC = () => {
     }
     setLoading(true);
     setError(null);
-    const result = await AdminUserService.getAllUsers(); 
+    const result = await AdminUserService.getAllUsers();
     if (result.success && result.data) {
       setAllUsers(result.data);
     } else {
@@ -93,7 +93,7 @@ const ManageUsersPage: React.FC = () => {
   }
 
   return (
-    <div className="container mx-auto p-4 bg-background text-foreground min-h-screen">
+    <div className="container mx-auto p-4 bg-background text-foreground">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold text-foreground">Manage Users</h1>
         <div className="w-48">
@@ -195,4 +195,4 @@ const ManageUsersPage: React.FC = () => {
   );
 };
 
-export default ManageUsersPage;
+export default ManageUsersSection;

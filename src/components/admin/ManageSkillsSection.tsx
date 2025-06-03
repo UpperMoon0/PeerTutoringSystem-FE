@@ -4,13 +4,13 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { AdminSkillService } from '../../services/AdminSkillService';
-import type { Skill, CreateSkillDto, UpdateSkillDto, SkillLevel } from '../../types/skill.types'; 
+import type { Skill, CreateSkillDto, UpdateSkillDto, SkillLevel } from '../../types/skill.types';
 import { useAuth } from '../../contexts/AuthContext';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Loader2, ShieldAlert, CheckCircle, PlusCircle, Edit3, Trash2 } from 'lucide-react';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'; 
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
-const ManageSkillsPage: React.FC = () => {
+const ManageSkillsSection: React.FC = () => {
   const [skills, setSkills] = useState<Skill[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -23,11 +23,11 @@ const ManageSkillsPage: React.FC = () => {
 
   const [newSkillName, setNewSkillName] = useState<string>('');
   const [newSkillDescription, setNewSkillDescription] = useState<string>('');
-  const [newSkillLevel, setNewSkillLevel] = useState<SkillLevel | '' >(''); 
+  const [newSkillLevel, setNewSkillLevel] = useState<SkillLevel | ''>('');
   const [editingSkill, setEditingSkill] = useState<Skill | null>(null);
   const [deletingSkillId, setDeletingSkillId] = useState<string | null>(null);
 
-  const { accessToken } = useAuth(); 
+  const { accessToken } = useAuth();
 
   const fetchSkills = useCallback(async () => {
     if (!accessToken) {
@@ -59,7 +59,7 @@ const ManageSkillsPage: React.FC = () => {
       setActionError('Skill level cannot be empty.');
       return;
     }
-    if (!accessToken) { 
+    if (!accessToken) {
       setActionError('Authentication token not found.');
       return;
     }
@@ -69,9 +69,9 @@ const ManageSkillsPage: React.FC = () => {
     const payload: CreateSkillDto = {
       skillName: newSkillName,
       description: newSkillDescription,
-      skillLevel: newSkillLevel as SkillLevel 
+      skillLevel: newSkillLevel as SkillLevel
     };
-    
+
     const result = await AdminSkillService.addSkill(payload);
     if (result.success) {
       setActionSuccess('Skill added successfully!');
@@ -79,7 +79,7 @@ const ManageSkillsPage: React.FC = () => {
       setIsAddModalOpen(false);
       setNewSkillName('');
       setNewSkillDescription('');
-      setNewSkillLevel(''); 
+      setNewSkillLevel('');
     } else {
       setActionError(typeof result.error === 'string' ? result.error : result.error?.message || 'Failed to add skill.');
     }
@@ -100,10 +100,10 @@ const ManageSkillsPage: React.FC = () => {
     const payload: UpdateSkillDto = {
       skillID: editingSkill.skillID, // Ensure skillID is included
       skillName: editingSkill.skillName,
-      description: editingSkill.description, // Changed from editingSkill.Description
-      skillLevel: editingSkill.skillLevel as SkillLevel // Changed from editingSkill.SkillLevel
+      description: editingSkill.description,
+      skillLevel: editingSkill.skillLevel as SkillLevel
     };
-    
+
     const result = await AdminSkillService.updateSkill(editingSkill.skillID, payload);
     if (result.success) {
       setActionSuccess('Skill updated successfully!');
@@ -122,7 +122,7 @@ const ManageSkillsPage: React.FC = () => {
     }
     setActionError(null);
     setActionSuccess(null);
-  
+
     const result = await AdminSkillService.deleteSkill(deletingSkillId);
     if (result.success) {
       setActionSuccess('Skill deleted successfully!');
@@ -168,7 +168,7 @@ const ManageSkillsPage: React.FC = () => {
   }
 
   return (
-    <div className="container mx-auto p-4 bg-background text-foreground min-h-screen">
+    <div className="container mx-auto p-4 bg-background text-foreground">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold text-foreground">Manage Skills</h1>
         <Button onClick={() => {
@@ -369,5 +369,4 @@ const ManageSkillsPage: React.FC = () => {
   );
 };
 
-export default ManageSkillsPage;
-
+export default ManageSkillsSection;
