@@ -21,9 +21,14 @@ import {
   Edit,
   User,
   CalendarDays,
-  ArrowLeft
+  ArrowLeft,
+  Briefcase // Added for Profile
 } from 'lucide-react';
 import type { Booking } from '@/types/booking.types';
+import CollapsibleTutorSection from '@/components/profile/CollapsibleTutorSection'; // Added
+import { useAuth } from '@/contexts/AuthContext'; // Added
+import type { ProfileDto } from '@/types/user.types'; // Added
+import { ProfileService } from '@/services/ProfileService'; // Added
 
 interface DashboardStats {
   totalBookings: number;
@@ -32,9 +37,10 @@ interface DashboardStats {
   earnings: number;
 }
 
-type DashboardSection = 'overview' | 'availability' | 'bookings';
+type DashboardSection = 'overview' | 'availability' | 'bookings' | 'profile';
 
 const TutorDashboardPage: React.FC = () => {
+  const { currentUser } = useAuth(); // Added
   const location = useLocation();
   const navigate = useNavigate();
   const [activeSection, setActiveSection] = useState<DashboardSection>('overview');
@@ -46,15 +52,15 @@ const TutorDashboardPage: React.FC = () => {
   });
   const [recentBookings, setRecentBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
+  const [userProfile, setUserProfile] = useState<ProfileDto | null>(null); // Added
+  const [tutorSectionExpanded, setTutorSectionExpanded] = useState(true); // Added
 
   // Handle URL-based navigation
   useEffect(() => {
     const searchParams = new URLSearchParams(location.search);
-    const section = searchParams.get('section');
-    if (section === 'availability') {
-      setActiveSection('availability');
-    } else if (section === 'bookings') {
-      setActiveSection('bookings');
+    const section = searchParams.get('section') as DashboardSection | null;
+    if (section && ['availability', 'bookings', 'profile'].includes(section)) {
+      setActiveSection(section);
     } else {
       setActiveSection('overview');
     }
@@ -63,14 +69,25 @@ const TutorDashboardPage: React.FC = () => {
   // Update URL when section changes
   const handleSectionChange = (section: DashboardSection) => {
     setActiveSection(section);
-    let newUrl = '/tutor';
-    if (section === 'availability') {
-      newUrl = '/tutor?section=availability';
-    } else if (section === 'bookings') {
-      newUrl = '/tutor?section=bookings';
-    }
-    navigate(newUrl, { replace: true });
+    navigate(`/tutor?section=${section}`, { replace: true });
   };
+  
+  // Fetch user profile for the tutor section
+  useEffect(() => {
+    const fetchProfile = async () => {
+      if (currentUser?.userId) {
+        const result = await ProfileService.getProfileByUserId(currentUser.userId);
+        if (result.success && result.data) {
+          setUserProfile(result.data);
+        } else {
+          console.error("Failed to fetch tutor profile for dashboard:", result.error);
+        }
+      }
+    };
+    if (activeSection === 'profile' || activeSection === 'overview') { // Load profile if it's profile tab or for quick actions link
+        fetchProfile();
+    }
+  }, [currentUser, activeSection]);
 
   useEffect(() => {
     loadDashboardData();
@@ -129,10 +146,11 @@ const TutorDashboardPage: React.FC = () => {
       <TutorSidebar
         onAvailabilityClick={() => handleSectionChange('availability')}
         onBookingsClick={() => handleSectionChange('bookings')}
+        onProfileClick={() => handleSectionChange('profile')} // Added
       />
       
       {/* Main Content */}
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col overflow-hidden"> {/* Added overflow-hidden */}
         {/* Header */}
         <header className="bg-gray-900 border-b border-gray-800 px-6 py-4">
           <div className="flex items-center justify-between">
@@ -152,16 +170,18 @@ const TutorDashboardPage: React.FC = () => {
                   {activeSection === 'overview' && 'Dashboard'}
                   {activeSection === 'availability' && 'Manage Availability'}
                   {activeSection === 'bookings' && 'Manage Bookings'}
+                  {activeSection === 'profile' && 'Manage Tutor Profile'}
                 </h1>
                 <p className="text-gray-400 mt-1 text-sm lg:text-base">
                   {activeSection === 'overview' && "Welcome back! Here's your tutoring overview."}
                   {activeSection === 'availability' && "Set your available time slots for tutoring sessions."}
                   {activeSection === 'bookings' && "Review and manage your tutoring sessions."}
+                  {activeSection === 'profile' && "Update your tutor specific details and skills."}
                 </p>
               </div>
             </div>
             <div className="flex items-center space-x-3">
-              {activeSection === 'overview' && (
+              {activeSection === 'overview' && ( // Keep these buttons only on overview
                 <div className="flex space-x-2">
                   <Button
                     onClick={() => handleSectionChange('availability')}
@@ -303,9 +323,9 @@ const TutorDashboardPage: React.FC = () => {
                   variant="outline" 
                   className="w-full justify-start bg-gray-800 border-gray-700 hover:bg-gray-700 text-white"
                 >
-                  <Link to="/profile">
+                  <Link to="/tutor?section=profile">
                     <Edit className="w-4 h-4 mr-2" />
-                    Update Profile
+                    Update Tutor Profile
                   </Link>
                 </Button>
               </CardContent>
@@ -390,10 +410,25 @@ const TutorDashboardPage: React.FC = () => {
           ) : activeSection === 'availability' ? (
             /* Availability Management Section */
             <ManageAvailabilitySection />
-          ) : (
+          ) : activeSection === 'bookings' ? (
             /* Bookings Management Section */
             <ManageBookingsSection />
-          )}
+          ) : activeSection === 'profile' && currentUser && userProfile ? (
+            /* Profile Management Section */
+            <div className="space-y-6">
+              <CollapsibleTutorSection
+                userId={currentUser.userId}
+                currentUser={currentUser}
+                profile={userProfile}
+                isExpanded={tutorSectionExpanded}
+                onToggleExpanded={setTutorSectionExpanded}
+              />
+            </div>
+          ) : activeSection === 'profile' ? (
+            <div className="flex justify-center items-center h-full">
+                <p className="text-gray-400">Loading profile...</p>
+            </div>
+          ) : null}
         </main>
       </div>
     </div>

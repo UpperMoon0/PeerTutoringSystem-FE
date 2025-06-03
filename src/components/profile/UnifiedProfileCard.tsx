@@ -363,8 +363,8 @@ const UnifiedProfileCard: React.FC<UnifiedProfileCardProps> = ({
         </Card>
       </div>
 
-      {/* Tutor Profile Section - Only visible for tutors */}
-      {isTutorOwner && (
+      {/* Tutor Profile Section has been moved to TutorDashboardPage */}
+      {/* {isTutorOwner && (
         <CollapsibleTutorSection
           userId={userId}
           currentUser={currentUser}
@@ -372,7 +372,7 @@ const UnifiedProfileCard: React.FC<UnifiedProfileCardProps> = ({
           isExpanded={tutorSectionExpanded}
           onToggleExpanded={setTutorSectionExpanded}
         />
-      )}
+      )} */}
     </div>
   );
 };

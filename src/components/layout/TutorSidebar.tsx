@@ -10,7 +10,8 @@ import {
   Settings,
   Home,
   Menu,
-  X
+  X,
+  Briefcase // Added for Profile
 } from 'lucide-react';
 
 interface SidebarItem {
@@ -24,20 +25,28 @@ interface TutorSidebarProps {
   className?: string;
   onAvailabilityClick?: () => void;
   onBookingsClick?: () => void;
+  onProfileClick?: () => void; // Added
 }
 
-const TutorSidebar: React.FC<TutorSidebarProps> = ({ className, onAvailabilityClick, onBookingsClick }) => {
+const TutorSidebar: React.FC<TutorSidebarProps> = ({ className, onAvailabilityClick, onBookingsClick, onProfileClick }) => {
   const location = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const sidebarItems: SidebarItem[] = [
-    { icon: Home, label: 'Dashboard', href: '/tutor' },
-    { icon: BookOpen, label: 'My Bookings', onClick: onBookingsClick || (() => {}), href: onBookingsClick ? undefined : '/tutor/bookings' },
-    { icon: Calendar, label: 'Manage Availability', onClick: onAvailabilityClick || (() => {}), href: onAvailabilityClick ? undefined : '/tutor/availability' },
-    { icon: User, label: 'Profile', href: '/profile' },
-    { icon: BarChart3, label: 'Analytics', href: '/tutor/analytics' },
-    { icon: Settings, label: 'Settings', href: '/tutor/settings' },
+    { icon: Home, label: 'Dashboard', onClick: () => location.pathname !== '/tutor' || location.search !== '' ? undefined : (() => {}), href: '/tutor?section=overview' },
+    { icon: BookOpen, label: 'My Bookings', onClick: onBookingsClick || (() => {}), href: onBookingsClick ? undefined : '/tutor?section=bookings' },
+    { icon: Calendar, label: 'Manage Availability', onClick: onAvailabilityClick || (() => {}), href: onAvailabilityClick ? undefined : '/tutor?section=availability' },
+    { icon: Briefcase, label: 'Profile', onClick: onProfileClick || (() => {}), href: onProfileClick ? undefined : '/tutor?section=profile' }, // Changed icon and href/onClick
+    { icon: BarChart3, label: 'Analytics', href: '/tutor/analytics' }, // Assuming this will be a separate page or section
+    { icon: Settings, label: 'Settings', href: '/tutor/settings' }, // Assuming this will be a separate page or section
   ];
+
+  const handleItemClick = (item: SidebarItem) => {
+    if (item.onClick) {
+      item.onClick();
+    }
+    setIsMobileMenuOpen(false); // Close mobile menu on item click
+  };
 
   return (
     <>
@@ -92,49 +101,75 @@ const TutorSidebar: React.FC<TutorSidebarProps> = ({ className, onAvailabilityCl
       {/* Navigation */}
       <nav className="flex-1 p-4 space-y-2">
         {sidebarItems.map((item, index) => {
-          const isActive = location.pathname === item.href;
-          const Icon = item.icon;
-          const key = item.href || `item-${index}`;
-          
-          if (item.onClick) {
-            return (
-              <button
-                key={key}
-                onClick={item.onClick}
-                className={cn(
-                  "w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all duration-200 group",
-                  isActive
-                    ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg"
-                    : "text-gray-300 hover:text-white hover:bg-gray-800"
-                )}
-                aria-label={item.label}
-              >
-                <Icon className={cn(
-                  "w-5 h-5 transition-colors",
-                  isActive ? "text-white" : "text-gray-400 group-hover:text-white"
-                )} />
-                <span className="font-medium">{item.label}</span>
-              </button>
-            );
+          // Determine active state based on section query parameter for dashboard items
+          const searchParams = new URLSearchParams(location.search);
+          const currentSection = searchParams.get('section');
+          let isActive = false;
+          if (item.href) {
+            const itemUrl = new URL(item.href, window.location.origin);
+            const itemSection = itemUrl.searchParams.get('section');
+            if (location.pathname === itemUrl.pathname) {
+              if (itemSection) {
+                isActive = itemSection === currentSection;
+                 // Special case for overview: active if section is 'overview' or no section param
+                if (itemSection === 'overview' && (currentSection === 'overview' || currentSection === null)) {
+                    isActive = true;
+                }
+              } else { // For items without section (e.g. /tutor/analytics)
+                 isActive = location.pathname === item.href && !itemSection && !currentSection;
+              }
+            }
           }
+
+
+          const Icon = item.icon;
+          const key = item.href || `item-${index}-${item.label}`;
           
-          return (
-            <Link
-              key={key}
-              to={item.href!}
-              className={cn(
-                "flex items-center space-x-3 px-4 py-3 rounded-lg transition-all duration-200 group",
-                isActive
-                  ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg"
-                  : "text-gray-300 hover:text-white hover:bg-gray-800"
-              )}
-              aria-label={item.label}
-            >
+          const commonProps = {
+            className: cn(
+              "w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all duration-200 group",
+              isActive
+                ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg"
+                : "text-gray-300 hover:text-white hover:bg-gray-800"
+            ),
+            "aria-label": item.label,
+          };
+
+          const content = (
+            <>
               <Icon className={cn(
                 "w-5 h-5 transition-colors",
                 isActive ? "text-white" : "text-gray-400 group-hover:text-white"
               )} />
               <span className="font-medium">{item.label}</span>
+            </>
+          );
+          
+          // If item.href is not present, it means it's purely an onClick driven by parent (TutorDashboardPage)
+          // or it's a placeholder for a future link.
+          // We prioritize onClick passed from parent if available.
+          if (item.onClick && !item.href) {
+            return (
+              <button
+                key={key}
+                onClick={() => handleItemClick(item)}
+                {...commonProps}
+              >
+                {content}
+              </button>
+            );
+          }
+          
+          // If item.href is present, it's a Link.
+          // If item.onClick is also present (e.g. from parent), it will also be called.
+          return (
+            <Link
+              key={key}
+              to={item.href!}
+              onClick={() => handleItemClick(item)}
+              {...commonProps}
+            >
+              {content}
             </Link>
           );
         })}
