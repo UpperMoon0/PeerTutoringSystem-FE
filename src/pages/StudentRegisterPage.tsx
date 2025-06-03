@@ -145,16 +145,7 @@ const StudentRegisterPage: React.FC = () => {
                           selected={field.value}
                           onSelect={field.onChange}
                           initialFocus
-                          disabled={(date) =>
-                            date > new Date() || date < new Date("1900-01-01")
-                          }
-                          className="bg-gray-900 text-white"
-                          classNames={{
-                            day_selected: "bg-blue-600 text-white hover:bg-blue-700 focus:bg-blue-700",
-                            day_today: "text-blue-400",
-                            head_cell: "text-gray-400",
-                            nav_button: "hover:bg-gray-700",
-                          }}
+                          className="bg-gray-800"
                         />
                       </PopoverContent>
                     </Popover>
