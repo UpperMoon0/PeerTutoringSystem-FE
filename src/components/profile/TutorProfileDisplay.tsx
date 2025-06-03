@@ -1,5 +1,6 @@
-import React from 'react';
+import * as React from 'react';
 import type { TutorProfileDto } from '../../types/TutorProfile';
+import type { UserSkill } from '../../types/skill.types'; // Added
 import { Button } from '../ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import {
@@ -14,32 +15,11 @@ import {
 
 interface TutorProfileDisplayProps {
   tutorProfile: TutorProfileDto;
-  onEdit: () => void;
-  canEdit: boolean;
 }
 
-const TutorProfileDisplay: React.FC<TutorProfileDisplayProps> = ({ tutorProfile, onEdit, canEdit }) => {
+const TutorProfileDisplay: React.FC<TutorProfileDisplayProps> = ({ tutorProfile }: { tutorProfile: TutorProfileDto }) => {
   return (
-    <React.Fragment>
-      {/* Header Section */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div className="space-y-1">
-          <h2 className="text-2xl font-bold text-foreground">Your Tutor Profile</h2>
-          <p className="text-muted-foreground">This is how students will see your profile</p>
-        </div>
-        {canEdit && (
-          <Button
-            onClick={onEdit}
-            variant="outline"
-            size="sm"
-            className="self-start sm:self-auto"
-          >
-            <Edit3 className="mr-2 h-4 w-4" />
-            Edit Profile
-          </Button>
-        )}
-      </div>
-
+    <div className="space-y-6">
       {/* Main Content Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Bio Section */}
@@ -121,7 +101,7 @@ const TutorProfileDisplay: React.FC<TutorProfileDisplayProps> = ({ tutorProfile,
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-              {tutorProfile.skills.map((userSkill) => (
+              {tutorProfile.skills.map((userSkill: UserSkill) => (
                 <div
                   key={userSkill.userSkillID}
                   className="flex items-center justify-between p-3 bg-muted/50 rounded-lg border border-border hover:bg-muted transition-colors"
@@ -142,7 +122,7 @@ const TutorProfileDisplay: React.FC<TutorProfileDisplayProps> = ({ tutorProfile,
           </CardContent>
         </Card>
       )}
-    </React.Fragment>
+    </div>
   );
 };
 

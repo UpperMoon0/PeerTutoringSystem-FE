@@ -363,15 +363,6 @@ const ProfileCard: React.FC<ProfileCardProps> = ({
       </div>
 
       {/* Tutor Profile Section has been moved to TutorDashboardPage */}
-      {/* {isTutorOwner && (
-        <CollapsibleTutorSection
-          userId={userId}
-          currentUser={currentUser}
-          profile={profile}
-          isExpanded={tutorSectionExpanded}
-          onToggleExpanded={setTutorSectionExpanded}
-        />
-      )} */}
     </div>
   );
 };

@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import * as React from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -22,13 +23,18 @@ import {
   User,
   CalendarDays,
   ArrowLeft,
-  Briefcase // Added for Profile
+  Briefcase, // Added for Profile
+  PlusCircle // Added for Create Profile button
 } from 'lucide-react';
 import type { Booking } from '@/types/booking.types';
-import CollapsibleTutorSection from '@/components/profile/CollapsibleTutorSection'; // Added
-import { useAuth } from '@/contexts/AuthContext'; // Added
-import type { ProfileDto } from '@/types/user.types'; // Added
-import { ProfileService } from '@/services/ProfileService'; // Added
+import TutorProfileDisplay from '@/components/profile/TutorProfileDisplay';
+import TutorProfileForm from '@/components/profile/TutorProfileForm'; // Added for direct editing
+import { useAuth } from '@/contexts/AuthContext';
+import type { ProfileDto } from '@/types/user.types';
+import type { TutorProfileDto, CreateTutorProfileDto, UpdateTutorProfileDto } from '@/types/TutorProfile'; // Added more types
+import { ProfileService } from '@/services/ProfileService';
+import { TutorProfileService } from '@/services/TutorProfileService';
+import { UserSkillService } from '@/services/UserSkillService'; // Added for skill management
 
 interface DashboardStats {
   totalBookings: number;
@@ -40,7 +46,7 @@ interface DashboardStats {
 type DashboardSection = 'overview' | 'availability' | 'bookings' | 'profile';
 
 const TutorDashboardPage: React.FC = () => {
-  const { currentUser } = useAuth(); // Added
+  const { currentUser } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
   const [activeSection, setActiveSection] = useState<DashboardSection>('overview');
@@ -51,9 +57,11 @@ const TutorDashboardPage: React.FC = () => {
     earnings: 0
   });
   const [recentBookings, setRecentBookings] = useState<Booking[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [userProfile, setUserProfile] = useState<ProfileDto | null>(null); // Added
-  const [tutorSectionExpanded, setTutorSectionExpanded] = useState(true); // Added
+  const [loading, setLoading] = useState(true); // General loading for dashboard data
+  const [userProfile, setUserProfile] = useState<ProfileDto | null>(null);
+  const [tutorDisplayProfile, setTutorDisplayProfile] = useState<TutorProfileDto | null>(null);
+  const [isEditingProfile, setIsEditingProfile] = useState(false); // Added for profile edit mode
+  const [isSavingProfile, setIsSavingProfile] = useState(false); // Added for profile save loading state
 
   // Handle URL-based navigation
   useEffect(() => {
@@ -72,20 +80,49 @@ const TutorDashboardPage: React.FC = () => {
     navigate(`/tutor?section=${section}`, { replace: true });
   };
   
-  // Fetch user profile for the tutor section
+  // Fetch user profile and tutor-specific profile
   useEffect(() => {
-    const fetchProfile = async () => {
+    const fetchGeneralProfile = async () => {
       if (currentUser?.userId) {
         const result = await ProfileService.getProfileByUserId(currentUser.userId);
         if (result.success && result.data) {
           setUserProfile(result.data);
         } else {
-          console.error("Failed to fetch tutor profile for dashboard:", result.error);
+          console.error("Failed to fetch general user profile for dashboard:", result.error);
         }
       }
     };
-    if (activeSection === 'profile' || activeSection === 'overview') { // Load profile if it's profile tab or for quick actions link
-        fetchProfile();
+
+    const fetchTutorDisplayProfileData = async (showLoading = true) => {
+      if (currentUser?.userId) {
+        if (showLoading) setLoading(true);
+        const result = await TutorProfileService.getTutorProfileByUserId(currentUser.userId);
+        if (result.success && result.data) {
+          // Fetch skills separately and merge
+          const skillsResult = await UserSkillService.getUserSkills(currentUser.userId);
+          if (skillsResult.success && skillsResult.data) {
+            setTutorDisplayProfile({ ...result.data, skills: skillsResult.data });
+          } else {
+            console.warn(`Failed to fetch skills for tutor ${currentUser.userId}:`, skillsResult.error);
+            setTutorDisplayProfile({ ...result.data, skills: [] }); // Set skills to empty array on error
+          }
+        } else {
+          console.error("Failed to fetch tutor display profile for dashboard:", result.error);
+          setTutorDisplayProfile(null);
+        }
+        if (showLoading) setLoading(false);
+      }
+    };
+
+    if (activeSection === 'overview') {
+      fetchGeneralProfile();
+    }
+
+    if (activeSection === 'profile') {
+      fetchTutorDisplayProfileData();
+    } else {
+      setTutorDisplayProfile(null);
+      setIsEditingProfile(false); // Reset edit mode if navigating away from profile
     }
   }, [currentUser, activeSection]);
 
@@ -119,6 +156,107 @@ const TutorDashboardPage: React.FC = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleEditProfile = () => setIsEditingProfile(true);
+  const handleCancelEditProfile = () => {
+    setIsEditingProfile(false);
+    // Optionally re-fetch to discard any optimistic updates or ensure data consistency
+    if (currentUser?.userId && activeSection === 'profile') {
+      // Re-fetch without global loading indicator if preferred
+      const fetchTutorDisplayProfileData = async (showLoading = true) => {
+        if (currentUser?.userId) {
+          if (showLoading) setLoading(true); // Or a more specific loading state
+          const result = await TutorProfileService.getTutorProfileByUserId(currentUser.userId);
+          if (result.success && result.data) {
+            const skillsResult = await UserSkillService.getUserSkills(currentUser.userId);
+            if (skillsResult.success && skillsResult.data) {
+              setTutorDisplayProfile({ ...result.data, skills: skillsResult.data });
+            } else {
+              setTutorDisplayProfile({ ...result.data, skills: [] });
+            }
+          } else {
+            setTutorDisplayProfile(null);
+          }
+          if (showLoading) setLoading(false);
+        }
+      };
+      fetchTutorDisplayProfileData(false);
+    }
+  };
+
+  const handleSaveProfile = async (data: CreateTutorProfileDto | UpdateTutorProfileDto) => {
+    if (!currentUser?.userId) {
+      console.error("User ID is missing.");
+      return;
+    }
+    setIsSavingProfile(true);
+    const { skillIds, ...profileData } = data;
+
+    try {
+      let profileResult;
+      if (tutorDisplayProfile && tutorDisplayProfile.bioID) { // Existing profile
+        profileResult = await TutorProfileService.updateTutorProfile(tutorDisplayProfile.bioID, profileData as UpdateTutorProfileDto);
+      } else { // New profile
+        profileResult = await TutorProfileService.createTutorProfile(profileData as CreateTutorProfileDto);
+      }
+
+      if (profileResult.success && profileResult.data) {
+        // Manage skills
+        const currentSkillsResult = await UserSkillService.getUserSkills(currentUser.userId);
+        const newSkillIds = skillIds || [];
+
+        if (currentSkillsResult.success && currentSkillsResult.data) {
+          const currentSkills = currentSkillsResult.data;
+          const currentSkillIdsOnRecord = currentSkills.map(us => us.skill.skillID);
+
+          // Skills to delete
+          const skillsToDelete = currentSkills.filter(us => !newSkillIds.includes(us.skill.skillID));
+          for (const userSkillToDelete of skillsToDelete) {
+            if (userSkillToDelete.userSkillID) {
+              await UserSkillService.deleteUserSkill(userSkillToDelete.userSkillID);
+            }
+          }
+
+          // Skills to add
+          const skillsToAdd = newSkillIds.filter(id => !currentSkillIdsOnRecord.includes(id));
+          for (const skillIdToAdd of skillsToAdd) {
+            await UserSkillService.addUserSkill({ userID: currentUser.userId, skillID: skillIdToAdd, isTutor: true });
+          }
+        } else { // No existing skills, add all new ones
+          for (const skillIdToAdd of newSkillIds) {
+            await UserSkillService.addUserSkill({ userID: currentUser.userId, skillID: skillIdToAdd, isTutor: true });
+          }
+        }
+
+        // Re-fetch profile data to show updated info
+        const fetchTutorDisplayProfileData = async (showLoading = true) => {
+            if (currentUser?.userId) {
+              if (showLoading) setLoading(true);
+              const result = await TutorProfileService.getTutorProfileByUserId(currentUser.userId);
+              if (result.success && result.data) {
+                const skillsResult = await UserSkillService.getUserSkills(currentUser.userId);
+                if (skillsResult.success && skillsResult.data) {
+                  setTutorDisplayProfile({ ...result.data, skills: skillsResult.data });
+                } else {
+                  setTutorDisplayProfile({ ...result.data, skills: [] });
+                }
+              } else {
+                setTutorDisplayProfile(null);
+              }
+              if (showLoading) setLoading(false);
+            }
+          };
+        await fetchTutorDisplayProfileData(false); // Re-fetch without global loading
+        setIsEditingProfile(false);
+      } else {
+        console.error('Failed to save tutor profile:', profileResult.error);
+        // Handle error display to user if necessary
+      }
+    } catch (err) {
+      console.error('An unknown error occurred while saving tutor profile:', err);
+    }
+    setIsSavingProfile(false);
   };
 
   const getStatusBadgeVariant = (status: string) => {
@@ -383,21 +521,56 @@ const TutorDashboardPage: React.FC = () => {
           ) : activeSection === 'bookings' ? (
             /* Bookings Management Section */
             <ManageBookingsSection />
-          ) : activeSection === 'profile' && currentUser && userProfile ? (
-            /* Profile Management Section */
-            // The outer div with space-y-6 and the inner div with h2/p are removed.
-            // CollapsibleTutorSection is now the direct content for this section.
-            <CollapsibleTutorSection
-              userId={currentUser.userId}
-              currentUser={currentUser}
-              profile={userProfile}
-              isExpanded={tutorSectionExpanded}
-              onToggleExpanded={setTutorSectionExpanded}
-            />
-          ) : activeSection === 'profile' ? (
-            <div className="flex justify-center items-center h-full">
-                <p className="text-gray-400">Loading profile...</p>
-            </div>
+          ) : activeSection === 'profile' && currentUser ? (
+            <Card className="bg-gray-900 border-gray-800">
+              <CardHeader className="flex flex-row items-center justify-between">
+                <div>
+                  <CardTitle className="text-white flex items-center">
+                    <Briefcase className="w-5 h-5 mr-2 text-blue-400" />
+                    Your Tutor Profile
+                  </CardTitle>
+                  <CardDescription className="text-gray-400">
+                    {isEditingProfile ? "Update your details below." : "View and manage your public tutor information."}
+                  </CardDescription>
+                </div>
+                {!isEditingProfile && tutorDisplayProfile && (
+                  <Button onClick={handleEditProfile} variant="outline" size="sm" className="bg-gray-800 border-gray-700 hover:bg-gray-700 text-white">
+                    <Edit className="w-4 h-4 mr-2" /> Edit Profile
+                  </Button>
+                )}
+              </CardHeader>
+              <CardContent className="p-6">
+                {loading && !tutorDisplayProfile && !isEditingProfile ? (
+                  <div className="flex justify-center items-center h-40">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                    <p className="ml-3 text-gray-400">Loading profile...</p>
+                  </div>
+                ) : isEditingProfile ? (
+                  <TutorProfileForm
+                    initialData={tutorDisplayProfile}
+                    onSubmit={handleSaveProfile}
+                    onCancel={handleCancelEditProfile}
+                    isLoading={isSavingProfile}
+                  />
+                ) : tutorDisplayProfile ? (
+                  <TutorProfileDisplay tutorProfile={tutorDisplayProfile} />
+                ) : (
+                  // Not loading, not editing, and no profile data
+                  <div className="text-center py-12 space-y-4">
+                    <div className="w-16 h-16 mx-auto bg-gray-800 rounded-full flex items-center justify-center">
+                      <Briefcase className="h-8 w-8 text-gray-500" />
+                    </div>
+                    <h3 className="text-xl font-semibold text-white">Tutor Profile Not Found</h3>
+                    <p className="text-gray-400 max-w-md mx-auto">
+                      It seems you haven't set up your tutor profile yet. Create one to start attracting students.
+                    </p>
+                    <Button onClick={handleEditProfile} size="lg" className="mt-4">
+                      <PlusCircle className="mr-2 h-5 w-5" /> Create Your Profile
+                    </Button>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
           ) : null}
         </main>
       </div>
