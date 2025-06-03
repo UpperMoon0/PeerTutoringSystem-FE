@@ -4,6 +4,7 @@ export interface CreateReviewDto {
   tutorID: string;   // Guid maps to string in TS
   rating: number;    // int maps to number
   comment?: string;  // string? maps to optional string
+  Status: string;    // Added based on backend error
 }
 
 export interface ReviewDto {

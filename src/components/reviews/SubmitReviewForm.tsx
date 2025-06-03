@@ -53,6 +53,7 @@ const SubmitReviewForm: React.FC<SubmitReviewFormProps> = ({ tutorId, bookingId,
       tutorID: tutorId,
       rating: currentRating, // Use currentRating from state
       comment: values.comment,
+      Status: "Active", // Added default status
     };
 
     setSubmissionStatus(null);
