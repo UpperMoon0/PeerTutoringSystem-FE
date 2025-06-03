@@ -108,7 +108,12 @@ export const BookingService = {
       const queryParams = new URLSearchParams();
       if (params.page) queryParams.append('page', params.page.toString());
       if (params.pageSize) queryParams.append('pageSize', params.pageSize.toString());
-      if (params.status) queryParams.append('status', params.status);
+      if (params.status !== undefined) {
+        // If params.status has a specific string value (e.g., 'Pending', 'Confirmed'),
+        // it should be appended. For "All" statuses, params.status will be undefined,
+        // and the status parameter will be omitted from the request.
+        queryParams.append('status', params.status);
+      }
       if (params.skillId) queryParams.append('skillId', params.skillId);
       if (params.startDate) queryParams.append('startDate', formatDateForQuery(params.startDate));
       if (params.endDate) queryParams.append('endDate', formatDateForQuery(params.endDate));
