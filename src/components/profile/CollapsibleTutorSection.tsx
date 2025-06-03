@@ -217,46 +217,45 @@ const CollapsibleTutorSection: React.FC<CollapsibleTutorSectionProps> = ({
       <div className={`overflow-hidden transition-all duration-300 ease-in-out ${
         isExpanded ? 'max-h-none opacity-100' : 'max-h-0 opacity-0'
       }`}>
-        <CardContent className="pt-6 bg-card-secondary">
-          {isEditingTutorProfile ? (
-            <TutorProfileForm
-              initialData={tutorProfile}
-              onSubmit={handleSaveTutorProfile}
-              onCancel={handleCancelTutorProfileEdit}
-              isLoading={tutorProfileLoading}
-            />
-          ) : tutorProfileLoading ? (
-            <div className="flex items-center justify-center py-12">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-              <p className="ml-3 text-muted-foreground">Loading tutor profile...</p>
+        {/* CardContent removed, its children are now direct children of the transition div */}
+        {isEditingTutorProfile ? (
+          <TutorProfileForm
+            initialData={tutorProfile}
+            onSubmit={handleSaveTutorProfile}
+            onCancel={handleCancelTutorProfileEdit}
+            isLoading={tutorProfileLoading}
+          />
+        ) : tutorProfileLoading ? (
+          <div className="flex items-center justify-center py-12">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+            <p className="ml-3 text-muted-foreground">Loading tutor profile...</p>
+          </div>
+        ) : tutorProfile ? (
+          <TutorProfileDisplay
+            tutorProfile={tutorProfile}
+            onEdit={handleEditTutorProfile}
+            canEdit={true}
+          />
+        ) : (
+          <div className="text-center py-12 space-y-4">
+            <div className="w-16 h-16 mx-auto bg-muted rounded-full flex items-center justify-center">
+              <PlusCircle className="h-8 w-8 text-muted-foreground" />
             </div>
-          ) : tutorProfile ? (
-            <TutorProfileDisplay
-              tutorProfile={tutorProfile}
-              onEdit={handleEditTutorProfile}
-              canEdit={true}
-            />
-          ) : (
-            <div className="text-center py-12 space-y-4">
-              <div className="w-16 h-16 mx-auto bg-muted rounded-full flex items-center justify-center">
-                <PlusCircle className="h-8 w-8 text-muted-foreground" />
-              </div>
-              <div className="space-y-2">
-                <h3 className="text-lg font-semibold text-foreground">Create Your Tutor Profile</h3>
-                <p className="text-muted-foreground max-w-md mx-auto">
-                  Stand out to students by creating a compelling tutor profile that showcases your expertise and experience.
-                </p>
-              </div>
-              <Button
-                onClick={handleCreateTutorProfile}
-                size="lg"
-                className="mt-4"
-              >
-                <PlusCircle className="mr-2 h-4 w-4" /> Create Profile
-              </Button>
+            <div className="space-y-2">
+              <h3 className="text-lg font-semibold text-foreground">Create Your Tutor Profile</h3>
+              <p className="text-muted-foreground max-w-md mx-auto">
+                Stand out to students by creating a compelling tutor profile that showcases your expertise and experience.
+              </p>
             </div>
-          )}
-        </CardContent>
+            <Button
+              onClick={handleCreateTutorProfile}
+              size="lg"
+              className="mt-4"
+            >
+              <PlusCircle className="mr-2 h-4 w-4" /> Create Profile
+            </Button>
+          </div>
+        )}
       </div>
     </Card>
   );

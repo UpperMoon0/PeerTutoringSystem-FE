@@ -20,7 +20,7 @@ interface TutorProfileDisplayProps {
 
 const TutorProfileDisplay: React.FC<TutorProfileDisplayProps> = ({ tutorProfile, onEdit, canEdit }) => {
   return (
-    <div className="space-y-6">
+    <React.Fragment>
       {/* Header Section */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="space-y-1">
@@ -142,7 +142,7 @@ const TutorProfileDisplay: React.FC<TutorProfileDisplayProps> = ({ tutorProfile,
           </CardContent>
         </Card>
       )}
-    </div>
+    </React.Fragment>
   );
 };
 

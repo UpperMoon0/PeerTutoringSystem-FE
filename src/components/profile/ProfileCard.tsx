@@ -6,7 +6,6 @@ import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '../ui/card';
 import { Badge } from '../ui/badge';
-import CollapsibleTutorSection from './CollapsibleTutorSection';
 import { 
   User, 
   Calendar, 
@@ -18,7 +17,7 @@ import {
   Clock
 } from 'lucide-react';
 
-interface UnifiedProfileCardProps {
+interface ProfileCardProps {
   profile: ProfileDto;
   isEditing: boolean;
   setIsEditing: (editing: boolean) => void;
@@ -35,7 +34,7 @@ interface UnifiedProfileCardProps {
   userId: string;
 }
 
-const UnifiedProfileCard: React.FC<UnifiedProfileCardProps> = ({
+const ProfileCard: React.FC<ProfileCardProps> = ({
   profile,
   isEditing,
   setIsEditing,
@@ -52,7 +51,7 @@ const UnifiedProfileCard: React.FC<UnifiedProfileCardProps> = ({
   userId,
 }) => {
   const isTutorOwner = profile.role === 'Tutor' && currentUser?.userId === profile.userID;
-  const [tutorSectionExpanded, setTutorSectionExpanded] = useState(true);
+  const [, setTutorSectionExpanded] = useState(true);
 
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
@@ -377,4 +376,4 @@ const UnifiedProfileCard: React.FC<UnifiedProfileCardProps> = ({
   );
 };
 
-export default UnifiedProfileCard;
+export default ProfileCard;

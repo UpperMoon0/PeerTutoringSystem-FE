@@ -385,19 +385,15 @@ const TutorDashboardPage: React.FC = () => {
             <ManageBookingsSection />
           ) : activeSection === 'profile' && currentUser && userProfile ? (
             /* Profile Management Section */
-            <div className="space-y-6">
-              <div>
-                <h2 className="text-xl font-bold text-white mb-2">Profile Details</h2>
-                <p className="text-gray-400">Manage your public-facing tutor profile information.</p>
-              </div>
-              <CollapsibleTutorSection
-                userId={currentUser.userId}
-                currentUser={currentUser}
-                profile={userProfile}
-                isExpanded={tutorSectionExpanded}
-                onToggleExpanded={setTutorSectionExpanded}
-              />
-            </div>
+            // The outer div with space-y-6 and the inner div with h2/p are removed.
+            // CollapsibleTutorSection is now the direct content for this section.
+            <CollapsibleTutorSection
+              userId={currentUser.userId}
+              currentUser={currentUser}
+              profile={userProfile}
+              isExpanded={tutorSectionExpanded}
+              onToggleExpanded={setTutorSectionExpanded}
+            />
           ) : activeSection === 'profile' ? (
             <div className="flex justify-center items-center h-full">
                 <p className="text-gray-400">Loading profile...</p>

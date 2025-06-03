@@ -3,7 +3,7 @@ import { useParams } from 'react-router-dom';
 import { ProfileService } from '../services/ProfileService';
 import type { ProfileDto, UpdateProfileDto } from '@/types/user.types';
 import { useAuth } from '../contexts/AuthContext';
-import UnifiedProfileCard from '../components/profile/UnifiedProfileCard';
+import ProfileCard from '../components/profile/ProfileCard';
 
 const UserProfilePage: React.FC = () => {
   const { userId } = useParams<{ userId: string }>();
@@ -151,7 +151,7 @@ const UserProfilePage: React.FC = () => {
   return (
     <div className="min-h-screen bg-background p-4 md:p-6">
       <div className="container mx-auto max-w-7xl">
-        <UnifiedProfileCard
+        <ProfileCard
           profile={profile}
           isEditing={isEditing}
           setIsEditing={setIsEditing}
