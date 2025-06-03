@@ -14,7 +14,6 @@ import {
   BookOpen, 
   Calendar, 
   Clock, 
-  User, 
   Eye, 
   CheckCircle, 
   X, 

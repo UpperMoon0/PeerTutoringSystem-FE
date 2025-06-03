@@ -1,7 +1,7 @@
 import { AuthService } from "./AuthService";
 import type { ApiResult } from "@/types/api.types"; // Changed ApiResponse to ApiResult
 import type { TutorAvailabilitiesPayload } from "@/types/tutorAvailability.types";
-import type { Booking, CreateBookingDto } from "@/types/booking.types";
+import type { Booking, CreateBookingDto, StudentBookingHistoryParams } from "@/types/booking.types";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -101,8 +101,43 @@ export const BookingService = {
     }
   },
 
+  async getStudentBookingHistory(
+    params: StudentBookingHistoryParams = {}
+  ): Promise<ApiResult<{ bookings: Booking[], totalCount: number, page: number, pageSize: number }>> {
+    try {
+      const queryParams = new URLSearchParams();
+      if (params.page) queryParams.append('page', params.page.toString());
+      if (params.pageSize) queryParams.append('pageSize', params.pageSize.toString());
+      if (params.status) queryParams.append('status', params.status);
+      if (params.skillId) queryParams.append('skillId', params.skillId);
+      if (params.startDate) queryParams.append('startDate', formatDateForQuery(params.startDate));
+      if (params.endDate) queryParams.append('endDate', formatDateForQuery(params.endDate));
+
+      const response = await AuthService.fetchWithAuth(`${API_BASE_URL}/Bookings/student?${queryParams.toString()}`, {
+        method: 'GET',
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: "Failed to parse error response." }));
+        throw new Error(errorData.error || `Failed to fetch student booking history: ${response.statusText}`);
+      }
+      const responseData = await response.json();
+      return {
+        success: true,
+        data: {
+          bookings: responseData.data,
+          totalCount: responseData.totalCount,
+          page: responseData.page,
+          pageSize: responseData.pageSize
+        }
+      };
+    } catch (error: any) {
+      return { success: false, error: error.message || "Failed to fetch student booking history." };
+    }
+  },
+
   async getTutorBookings(
-    status: string, 
+    status: string,
     page: number = 1,
     pageSize: number = 10
   ): Promise<ApiResult<{ bookings: Booking[], totalCount: number }>> {

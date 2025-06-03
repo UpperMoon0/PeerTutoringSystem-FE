@@ -14,6 +14,7 @@ import UserProfilePage from '@/pages/UserProfilePage';
 import TutorListPage from '@/pages/TutorListPage';
 import TutorDetailPage from '@/pages/TutorDetailPage';
 import TutorDashboardPage from '@/pages/tutor/TutorDashboardPage';
+import StudentBookingHistoryPage from '@/pages/StudentBookingHistoryPage';
 
 const router = createBrowserRouter([
   {
@@ -46,6 +47,16 @@ const router = createBrowserRouter([
       {
         path: '/tutors/:tutorId',
         element: <TutorDetailPage />,
+      },
+      {
+        path: 'student',
+        element: <ProtectedRoute allowedRoles={['Student']} />,
+        children: [
+          {
+            path: 'booking-history',
+            element: <StudentBookingHistoryPage />,
+          },
+        ],
       },
       {
         path: 'tutor',

@@ -69,6 +69,18 @@ const Header: React.FC = () => {
                   Become a Tutor
                 </Link>
               )}
+              {currentUser && currentUser.role === 'Student' && (
+                <Link
+                  to="/student/booking-history"
+                  className={`px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                    location.pathname === '/student/booking-history'
+                      ? 'bg-primary text-primary-foreground shadow-lg'
+                      : 'text-muted-foreground hover:text-foreground hover:bg-muted'
+                  }`}
+                >
+                  My Bookings
+                </Link>
+              )}
             </div>
           </div>
           <nav className="flex items-center space-x-3">

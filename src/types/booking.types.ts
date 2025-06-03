@@ -4,7 +4,8 @@ export interface Booking {
   bookingId: string;
   studentId: string;
   tutorId: string;
-  availabilityId: string; 
+  availabilityId: string;
+  sessionDate: string;
   startTime: string;
   endTime: string;
   status: 'Pending' | 'Confirmed' | 'Cancelled' | 'Completed' | 'Rejected';
@@ -44,4 +45,13 @@ export interface BookingListResponse {
 export interface BookingResponse {
     data: Booking;
     message?: string;
+}
+
+export interface StudentBookingHistoryParams {
+  page?: number;
+  pageSize?: number;
+  status?: 'Pending' | 'Confirmed' | 'Cancelled' | 'Completed' | 'Rejected';
+  skillId?: string;
+  startDate?: string; // ISO string for query
+  endDate?: string;   // ISO string for query
 }
