@@ -1,78 +1,84 @@
 import React from 'react';
+import { XIcon, CheckCircleIcon } from 'lucide-react';
 import type { Skill } from '../../types/skill.types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
-
-const PREDEFINED_GRADIENTS = [
-  { color1: '#6DD5FA', color2: '#2980B9' }, // Blue
-  { color1: '#A8E063', color2: '#56AB2F' }, // Green
-  { color1: '#F7971E', color2: '#FFD200' }, // Orange/Yellow
-  { color1: '#FF512F', color2: '#DD2476' }, // Red/Pink
-  { color1: '#DA22FF', color2: '#9733EE' }, // Purple
-  { color1: '#4E54C8', color2: '#8F94FB' }, // Indigo
-  { color1: '#00C9FF', color2: '#92FE9D' }, // Light Blue/Green
-  { color1: '#f2709c', color2: '#ff9472' }, // Pink/Orange
-  { color1: '#43e97b', color2: '#38f9d7' }, // Bright Green/Turquoise
-  { color1: '#c471f5', color2: '#fa71cd' }, // Light Purple/Pink
-];
-
-// Helper function to get gradient style object
-const getGradientStyle = (skill: Skill) => {
-  const baseString = `${skill.skillName}-${skill.skillLevel}-${skill.description}`;
-  let hash = 0;
-  for (let i = 0; i < baseString.length; i++) {
-    hash = baseString.charCodeAt(i) + ((hash << 5) - hash);
-    hash = hash & hash; // Convert to 32bit integer
-  }
-  const index = Math.abs(hash) % PREDEFINED_GRADIENTS.length;
-  const selectedGradient = PREDEFINED_GRADIENTS[index];
-
-  return {
-    background: `linear-gradient(to right, ${selectedGradient.color1}, ${selectedGradient.color2})`,
-  };
-};
+import { Badge } from '../ui/badge';
+import { Button } from '../ui/button';
+import { cn } from '@/lib/utils';
 
 interface SkillCardProps {
   skill: Skill;
-  isSelected: boolean;
-  onSelect: (skillId: string) => void;
+  isSelected?: boolean; // Make optional, default to false
+  onSelect?: (skillId: string) => void; // Make optional
+  onRemove?: (skillId: string) => void; // For edit mode
   disabled?: boolean;
+  isDisplayMode?: boolean; // To differentiate between select and display
 }
 
-const SkillCard: React.FC<SkillCardProps> = ({ skill, isSelected, onSelect, disabled }) => {
-  const gradientStyle = getGradientStyle(skill);
+const SkillCard: React.FC<SkillCardProps> = ({
+  skill,
+  isSelected = false,
+  onSelect,
+  onRemove,
+  disabled = false,
+  isDisplayMode = false,
+}) => {
+  const canSelect = !!onSelect && !isDisplayMode;
+  const canRemove = !!onRemove && !isDisplayMode;
 
   return (
     <Card
-      className={`
-        relative cursor-pointer transition-all duration-200 hover:shadow-md text-white
-        ${isSelected
-          ? 'ring-2 ring-primary ring-offset-2 ring-offset-background scale-[1.02]'
-          : 'hover:scale-[1.01]'
-        }
-        ${disabled ? 'opacity-50 cursor-not-allowed' : 'hover:shadow-lg'}
-      `}
-      style={gradientStyle}
-      onClick={() => !disabled && onSelect(skill.skillID)}
+      className={cn(
+        'relative transition-all duration-200 group',
+        canSelect && 'cursor-pointer hover:shadow-md',
+        isSelected && !isDisplayMode && 'ring-2 ring-primary ring-offset-2 ring-offset-background scale-[1.02]',
+        !isSelected && canSelect && 'hover:scale-[1.01]',
+        disabled && 'opacity-60 cursor-not-allowed',
+        isDisplayMode && 'bg-accent shadow-lg border rounded-lg p-4', // Enhanced style for display mode
+      )}
+      onClick={() => !disabled && canSelect && onSelect(skill.skillID)}
     >
-      {isSelected && (
-        <div className="absolute -top-2 -right-2 bg-primary text-primary-foreground rounded-full p-1 z-10">
-          <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-          </svg>
+      {!isDisplayMode && isSelected && (
+        <div className="absolute -top-2.5 -right-2.5 bg-primary text-primary-foreground rounded-full p-0.5 z-10 shadow-md">
+          <CheckCircleIcon className="h-5 w-5" />
         </div>
       )}
+
+      {canRemove && (
+        <Button
+          variant="ghost"
+          size="icon"
+          className="absolute top-1 right-1 h-7 w-7 z-10 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+          onClick={(e) => {
+            e.stopPropagation(); // Prevent card click
+            if (!disabled) onRemove(skill.skillID);
+          }}
+          disabled={disabled}
+          aria-label={`Remove ${skill.skillName}`}
+        >
+          <XIcon className="h-4 w-4" />
+        </Button>
+      )}
       
-      <CardHeader className="pb-2">
-        <CardTitle className="text-base font-semibold leading-tight">
+      <CardHeader className={cn("pb-2", isDisplayMode && "mb-1")}>
+        <CardTitle className={cn("text-md font-semibold leading-tight", isDisplayMode && "text-lg")}>
           {skill.skillName}
         </CardTitle>
-        <CardDescription className="text-white/80 text-sm">
-          Level: {skill.skillLevel}
-        </CardDescription>
+        {!isDisplayMode && (
+          <CardDescription className="text-sm pt-1">
+            Level: <Badge variant="secondary" className="ml-1">{skill.skillLevel}</Badge>
+          </CardDescription>
+        )}
       </CardHeader>
       
-      <CardContent className="pt-0">
-        <p className="text-sm text-white/90 leading-relaxed line-clamp-3">
+      <CardContent className={cn("pt-0", isDisplayMode && "")}>
+        {isDisplayMode && (
+           <Badge variant="outline" className="text-xs mb-1">Level: {skill.skillLevel}</Badge>
+        )}
+        <p className={cn(
+            "text-sm text-muted-foreground leading-relaxed",
+            isDisplayMode ? "line-clamp-none" : "line-clamp-3 h-[3.75rem]" // 3 lines * 1.25rem line-height
+        )}>
           {skill.description}
         </p>
       </CardContent>

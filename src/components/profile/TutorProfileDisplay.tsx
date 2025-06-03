@@ -1,15 +1,13 @@
 import * as React from 'react';
 import type { TutorProfileDto } from '../../types/TutorProfile';
 import type { UserSkill } from '../../types/skill.types'; // Added
-import { Button } from '../ui/button';
+import SkillCard from '../common/SkillCard'; // Added
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import {
   Clock,
   DollarSign,
   User,
   Calendar,
-  Star,
-  Edit3,
   BookOpen
 } from 'lucide-react';
 
@@ -102,21 +100,13 @@ const TutorProfileDisplay: React.FC<TutorProfileDisplayProps> = ({ tutorProfile 
           <CardContent>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
               {tutorProfile.skills.map((userSkill: UserSkill) => (
-                <div
+                <SkillCard
                   key={userSkill.userSkillID}
-                  className="flex items-center justify-between p-3 bg-muted/50 rounded-lg border border-border hover:bg-muted transition-colors"
-                >
-                  <div>
-                    <p className="font-medium text-foreground">{userSkill.skill.skillName}</p>
-                    <p className="text-sm text-muted-foreground">Level: {userSkill.skill.skillLevel}</p>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <Star className="h-4 w-4 text-yellow-500 fill-current" />
-                    <span className="text-sm font-medium text-foreground">
-                      {userSkill.skill.skillLevel}
-                    </span>
-                  </div>
-                </div>
+                  skill={userSkill.skill}
+                  isSelected={false}
+                  onSelect={() => {}} // No-op for display mode
+                  disabled={true}      // Non-interactive in display mode
+                />
               ))}
             </div>
           </CardContent>
