@@ -37,7 +37,7 @@ const Header: React.FC = () => {
                 <Link
                   to="/tutor"
                   className={`px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-                    location.pathname.startsWith('/tutor')
+                    (location.pathname === '/tutor' || location.pathname.startsWith('/tutor/'))
                       ? 'bg-primary text-primary-foreground shadow-lg'
                       : 'text-muted-foreground hover:text-foreground hover:bg-muted'
                   }`}

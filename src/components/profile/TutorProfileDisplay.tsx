@@ -103,9 +103,7 @@ const TutorProfileDisplay: React.FC<TutorProfileDisplayProps> = ({ tutorProfile 
                 <SkillCard
                   key={userSkill.userSkillID}
                   skill={userSkill.skill}
-                  isSelected={false}
-                  onSelect={() => {}} // No-op for display mode
-                  disabled={true}      // Non-interactive in display mode
+                  isDisplayMode={true} // Use display mode instead of disabled
                 />
               ))}
             </div>
