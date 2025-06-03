@@ -81,7 +81,7 @@ const UnifiedProfileCard: React.FC<UnifiedProfileCardProps> = ({
   return (
     <div className="space-y-6">
       {/* Profile Header */}
-      <Card className="bg-gray-900 border-gray-800">
+      <Card className="bg-card border-border">
         <CardContent className="pt-6">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Avatar Section */}
@@ -100,7 +100,7 @@ const UnifiedProfileCard: React.FC<UnifiedProfileCardProps> = ({
                 )}
                 {/* Status indicator */}
                 <div className={`absolute -bottom-1 -right-1 w-6 h-6 rounded-full border-4 border-card ${
-                  profile.status === 'Active' ? 'bg-green-500' : 'bg-gray-400'
+                  profile.status === 'Active' ? 'bg-green-500' : 'bg-muted'
                 }`} />
               </div>
             </div>
@@ -109,8 +109,8 @@ const UnifiedProfileCard: React.FC<UnifiedProfileCardProps> = ({
             <div className="lg:col-span-2 space-y-4">
               <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
                 <div className="space-y-2">
-                  <h1 className="text-3xl font-bold text-white">{profile.fullName}</h1>
-                  <div className="flex flex-wrap items-center gap-3 text-gray-400">
+                  <h1 className="text-3xl font-bold text-foreground">{profile.fullName}</h1>
+                  <div className="flex flex-wrap items-center gap-3 text-muted-foreground">
                     <div className="flex items-center gap-1">
                       <Mail className="h-4 w-4" />
                       <span className="text-sm">{profile.email}</span>
@@ -144,10 +144,10 @@ const UnifiedProfileCard: React.FC<UnifiedProfileCardProps> = ({
       {/* Main Profile Content */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Personal Information */}
-        <Card className="lg:col-span-2 bg-gray-900 border-gray-800">
+        <Card className="lg:col-span-2 bg-card border-border">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-white">
-              <UserCheck className="h-5 w-5 text-blue-400" />
+            <CardTitle className="flex items-center gap-2 text-foreground">
+              <UserCheck className="h-5 w-5 text-primary" />
               Personal Information
             </CardTitle>
           </CardHeader>
@@ -155,12 +155,12 @@ const UnifiedProfileCard: React.FC<UnifiedProfileCardProps> = ({
             {!isEditing ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 bg-gray-800 rounded-lg">
-                    <Calendar className="h-4 w-4 text-gray-400" />
+                  <div className="p-2 bg-muted rounded-lg">
+                    <Calendar className="h-4 w-4 text-muted-foreground" />
                   </div>
                   <div>
-                    <p className="text-sm text-gray-400">Date of Birth</p>
-                    <p className="font-medium text-white">
+                    <p className="text-sm text-muted-foreground">Date of Birth</p>
+                    <p className="font-medium text-foreground">
                       {new Date(profile.dateOfBirth).toLocaleDateString('en-US', {
                         year: 'numeric',
                         month: 'long',
@@ -171,32 +171,32 @@ const UnifiedProfileCard: React.FC<UnifiedProfileCardProps> = ({
                 </div>
 
                 <div className="flex items-center gap-3">
-                  <div className="p-2 bg-gray-800 rounded-lg">
-                    <Phone className="h-4 w-4 text-gray-400" />
+                  <div className="p-2 bg-muted rounded-lg">
+                    <Phone className="h-4 w-4 text-muted-foreground" />
                   </div>
                   <div>
-                    <p className="text-sm text-gray-400">Phone Number</p>
-                    <p className="font-medium text-white">{profile.phoneNumber}</p>
+                    <p className="text-sm text-muted-foreground">Phone Number</p>
+                    <p className="font-medium text-foreground">{profile.phoneNumber}</p>
                   </div>
                 </div>
 
                 <div className="flex items-center gap-3">
-                  <div className="p-2 bg-gray-800 rounded-lg">
-                    <User className="h-4 w-4 text-gray-400" />
+                  <div className="p-2 bg-muted rounded-lg">
+                    <User className="h-4 w-4 text-muted-foreground" />
                   </div>
                   <div>
-                    <p className="text-sm text-gray-400">Gender</p>
-                    <p className="font-medium text-white">{profile.gender}</p>
+                    <p className="text-sm text-muted-foreground">Gender</p>
+                    <p className="font-medium text-foreground">{profile.gender}</p>
                   </div>
                 </div>
 
                 <div className="flex items-center gap-3">
-                  <div className="p-2 bg-gray-800 rounded-lg">
-                    <MapPin className="h-4 w-4 text-gray-400" />
+                  <div className="p-2 bg-muted rounded-lg">
+                    <MapPin className="h-4 w-4 text-muted-foreground" />
                   </div>
                   <div>
-                    <p className="text-sm text-gray-400">Hometown</p>
-                    <p className="font-medium text-white">{profile.hometown}</p>
+                    <p className="text-sm text-muted-foreground">Hometown</p>
+                    <p className="font-medium text-foreground">{profile.hometown}</p>
                   </div>
                 </div>
               </div>
@@ -204,97 +204,97 @@ const UnifiedProfileCard: React.FC<UnifiedProfileCardProps> = ({
               <div className="space-y-4">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="fullName" className="text-sm font-medium text-gray-400">Full Name</Label>
+                    <Label htmlFor="fullName" className="text-sm font-medium text-muted-foreground">Full Name</Label>
                     <Input
                       id="fullName"
                       name="fullName"
                       value={formData?.fullName || ''}
                       onChange={handleInputChange}
-                      className="mt-1 bg-gray-800 border-gray-700 text-white placeholder:text-gray-500"
+                      className="mt-1 bg-input border-border text-foreground placeholder:text-muted-foreground"
                     />
                   </div>
                   <div>
-                    <Label htmlFor="email" className="text-sm font-medium text-gray-400">Email</Label>
+                    <Label htmlFor="email" className="text-sm font-medium text-muted-foreground">Email</Label>
                     <Input
                       id="email"
                       name="email"
                       type="email"
                       value={formData?.email || ''}
                       onChange={handleInputChange}
-                      className="mt-1 bg-gray-800 border-gray-700 text-white placeholder:text-gray-500"
+                      className="mt-1 bg-input border-border text-foreground placeholder:text-muted-foreground"
                     />
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="dateOfBirth" className="text-sm font-medium text-gray-400">Date of Birth</Label>
+                    <Label htmlFor="dateOfBirth" className="text-sm font-medium text-muted-foreground">Date of Birth</Label>
                     <Input
                       id="dateOfBirth"
                       name="dateOfBirth"
                       type="date"
                       value={formData?.dateOfBirth ? new Date(formData.dateOfBirth).toISOString().split('T')[0] : ''}
                       onChange={(e) => handleDateChange(e.target.value ? new Date(e.target.value) : undefined)}
-                      className="mt-1 bg-gray-800 border-gray-700 text-white placeholder:text-gray-500"
+                      className="mt-1 bg-input border-border text-foreground placeholder:text-muted-foreground"
                     />
                   </div>
                   <div>
-                    <Label htmlFor="phoneNumber" className="text-sm font-medium text-gray-400">Phone Number</Label>
+                    <Label htmlFor="phoneNumber" className="text-sm font-medium text-muted-foreground">Phone Number</Label>
                     <Input
                       id="phoneNumber"
                       name="phoneNumber"
                       value={formData?.phoneNumber || ''}
                       onChange={handleInputChange}
-                      className="mt-1 bg-gray-800 border-gray-700 text-white placeholder:text-gray-500"
+                      className="mt-1 bg-input border-border text-foreground placeholder:text-muted-foreground"
                     />
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="gender" className="text-sm font-medium text-gray-400">Gender</Label>
+                    <Label htmlFor="gender" className="text-sm font-medium text-muted-foreground">Gender</Label>
                     <Input
                       id="gender"
                       name="gender"
                       value={formData?.gender || ''}
                       onChange={handleInputChange}
-                      className="mt-1 bg-gray-800 border-gray-700 text-white placeholder:text-gray-500"
+                      className="mt-1 bg-input border-border text-foreground placeholder:text-muted-foreground"
                     />
                   </div>
                   <div>
-                    <Label htmlFor="hometown" className="text-sm font-medium text-gray-400">Hometown</Label>
+                    <Label htmlFor="hometown" className="text-sm font-medium text-muted-foreground">Hometown</Label>
                     <Input
                       id="hometown"
                       name="hometown"
                       value={formData?.hometown || ''}
                       onChange={handleInputChange}
-                      className="mt-1 bg-gray-800 border-gray-700 text-white placeholder:text-gray-500"
+                      className="mt-1 bg-input border-border text-foreground placeholder:text-muted-foreground"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <Label htmlFor="avatar" className="text-sm font-medium text-gray-400">Avatar</Label>
+                  <Label htmlFor="avatar" className="text-sm font-medium text-muted-foreground">Avatar</Label>
                   <Input
                     id="avatar"
                     name="avatar"
                     type="file"
                     onChange={handleInputChange}
-                    className="mt-1 bg-gray-800 border-gray-700 text-white file:text-gray-400 file:bg-gray-700 file:border-none file:mr-2 file:px-2 file:py-1 file:rounded-md"
+                    className="mt-1 bg-input border-border text-foreground file:text-muted-foreground file:bg-muted file:border-none file:mr-2 file:px-2 file:py-1 file:rounded-md"
                     accept="image/*"
                   />
                   {avatarPreview && !selectedAvatarFile && (
                     <img
                       src={avatarPreview}
                       alt="Current Avatar"
-                      className="mt-2 w-20 h-20 rounded-full object-cover border-2 border-gray-700"
+                      className="mt-2 w-20 h-20 rounded-full object-cover border-2 border-border"
                     />
                   )}
                   {selectedAvatarFile && avatarPreview && (
                     <img
                       src={avatarPreview}
                       alt="New Avatar Preview"
-                      className="mt-2 w-20 h-20 rounded-full object-cover border-2 border-gray-700"
+                      className="mt-2 w-20 h-20 rounded-full object-cover border-2 border-border"
                     />
                   )}
                 </div>
@@ -317,17 +317,17 @@ const UnifiedProfileCard: React.FC<UnifiedProfileCardProps> = ({
         </Card>
 
         {/* Quick Stats */}
-        <Card>
+        <Card className="bg-card border-border">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 text-foreground">
               <Clock className="h-5 w-5 text-primary" />
               Quick Stats
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-blue-100 dark:bg-blue-900/20 rounded-lg">
-                <Calendar className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+              <div className="p-2 bg-primary/10 rounded-lg">
+                <Calendar className="h-4 w-4 text-primary" />
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Member Since</p>
@@ -341,8 +341,8 @@ const UnifiedProfileCard: React.FC<UnifiedProfileCardProps> = ({
             </div>
 
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-green-100 dark:bg-green-900/20 rounded-lg">
-                <UserCheck className="h-4 w-4 text-green-600 dark:text-green-400" />
+              <div className="p-2 bg-green-500/10 rounded-lg">
+                <UserCheck className="h-4 w-4 text-green-500" />
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Profile Status</p>
@@ -351,8 +351,8 @@ const UnifiedProfileCard: React.FC<UnifiedProfileCardProps> = ({
             </div>
 
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-purple-100 dark:bg-purple-900/20 rounded-lg">
-                <User className="h-4 w-4 text-purple-600 dark:text-purple-400" />
+              <div className="p-2 bg-purple-500/10 rounded-lg">
+                <User className="h-4 w-4 text-purple-500" />
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Role</p>

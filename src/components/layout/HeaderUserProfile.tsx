@@ -16,7 +16,7 @@ const HeaderUserProfile: React.FC = () => {
         <AvatarImage src={currentUser.avatarUrl} alt={currentUser.fullName} />
         <AvatarFallback>{currentUser.fullName.charAt(0)}</AvatarFallback>
       </Avatar>
-      <span className="text-white hover:text-gray-200 transition-colors">{currentUser.fullName}</span>
+      <span className="text-foreground hover:text-muted-foreground transition-colors">{currentUser.fullName}</span>
     </Link>
   );
 };

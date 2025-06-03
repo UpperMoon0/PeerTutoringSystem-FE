@@ -15,11 +15,11 @@ const Header: React.FC = () => {
   };
 
   return (
-    <header className="bg-gray-900 border-b border-gray-800 text-white shadow-lg">
+    <header className="bg-background border-b border-border text-foreground shadow-lg">
       <div className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-6">
-            <Link to="/" className="text-xl font-bold text-white hover:text-gray-200 transition-colors">
+            <Link to="/" className="text-xl font-bold text-foreground hover:text-muted-foreground transition-colors">
               TheTutorGroup
             </Link>
             <div className="hidden md:flex items-center space-x-4">
@@ -27,8 +27,8 @@ const Header: React.FC = () => {
                 to="/tutors"
                 className={`px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
                   location.pathname === '/tutors'
-                    ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg'
-                    : 'text-gray-300 hover:text-white hover:bg-gray-800'
+                    ? 'bg-primary text-primary-foreground shadow-lg'
+                    : 'text-muted-foreground hover:text-foreground hover:bg-muted'
                 }`}
               >
                 Tutors
@@ -38,8 +38,8 @@ const Header: React.FC = () => {
                   to="/tutor"
                   className={`px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
                     location.pathname.startsWith('/tutor')
-                      ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg'
-                      : 'text-gray-300 hover:text-white hover:bg-gray-800'
+                      ? 'bg-primary text-primary-foreground shadow-lg'
+                      : 'text-muted-foreground hover:text-foreground hover:bg-muted'
                   }`}
                 >
                   Tutor Dashboard
@@ -50,8 +50,8 @@ const Header: React.FC = () => {
                   to="/admin"
                   className={`px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
                     location.pathname.startsWith('/admin')
-                      ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg'
-                      : 'text-gray-300 hover:text-white hover:bg-gray-800'
+                      ? 'bg-primary text-primary-foreground shadow-lg'
+                      : 'text-muted-foreground hover:text-foreground hover:bg-muted'
                   }`}
                 >
                   Admin Dashboard
@@ -62,8 +62,8 @@ const Header: React.FC = () => {
                   to="/register-tutor"
                   className={`px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
                     location.pathname === '/register-tutor'
-                      ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg'
-                      : 'text-gray-300 hover:text-white hover:bg-gray-800'
+                      ? 'bg-primary text-primary-foreground shadow-lg'
+                      : 'text-muted-foreground hover:text-foreground hover:bg-muted'
                   }`}
                 >
                   Become a Tutor
@@ -73,12 +73,13 @@ const Header: React.FC = () => {
           </div>
           <nav className="flex items-center space-x-3">
             {loading ? (
-              <div className="text-gray-400">Loading...</div>
+              <div className="text-muted-foreground">Loading...</div>
             ) : currentUser ? (
               <>
                 <HeaderUserProfile />
                 <Button
-                  className="bg-red-600 hover:bg-red-700 text-white text-sm px-4 py-2 rounded-lg transition-colors duration-200 shadow-lg"
+                  variant="destructive"
+                  className="text-sm px-4 py-2 rounded-lg transition-colors duration-200 shadow-lg"
                   onClick={handleLogout}
                 >
                   Logout
@@ -88,14 +89,14 @@ const Header: React.FC = () => {
               <>
                 <Button
                   variant="default"
-                  className="bg-blue-600 hover:bg-blue-700 text-white text-sm px-4 py-2 rounded-lg transition-colors duration-200 shadow-lg"
+                  className="text-sm px-4 py-2 rounded-lg transition-colors duration-200 shadow-lg"
                   asChild
                 >
                   <Link to="/login">Sign In</Link>
                 </Button>
                 <Button
                   variant="default"
-                  className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white text-sm px-4 py-2 rounded-lg transition-all duration-200 shadow-lg"
+                  className="bg-gradient-to-r from-primary to-purple-600 hover:from-primary/90 hover:to-purple-600/90 text-primary-foreground text-sm px-4 py-2 rounded-lg transition-all duration-200 shadow-lg"
                   asChild
                 >
                   <Link to="/register/student">Sign Up</Link>

@@ -124,24 +124,24 @@ const UserProfilePage: React.FC = () => {
   };
 
   if (loading && !profile) return (
-    <div className="flex justify-center items-center h-screen bg-gray-950">
+    <div className="flex justify-center items-center h-screen bg-background">
       <div className="flex items-center gap-3">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
-        <p className="text-white">Loading profile...</p>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        <p className="text-foreground">Loading profile...</p>
       </div>
     </div>
   );
   if (error) return (
-    <div className="container mx-auto p-6 bg-gray-950 min-h-screen">
+    <div className="container mx-auto p-6 bg-background min-h-screen">
       <div className="text-center py-12">
-        <p className="text-red-400">Error: {error}</p>
+        <p className="text-destructive">Error: {error}</p>
       </div>
     </div>
   );
   if (!profile) return (
-    <div className="container mx-auto p-6 bg-gray-950 min-h-screen">
+    <div className="container mx-auto p-6 bg-background min-h-screen">
       <div className="text-center py-12">
-        <p className="text-gray-400">No profile data found.</p>
+        <p className="text-muted-foreground">No profile data found.</p>
       </div>
     </div>
   );

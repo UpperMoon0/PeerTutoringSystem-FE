@@ -160,31 +160,31 @@ const CollapsibleTutorSection: React.FC<CollapsibleTutorSectionProps> = ({
   } : null;
 
   return (
-    <Card className="bg-gray-900 border-gray-800">
+    <Card className="bg-card border-border">
       <CardHeader
-        className="cursor-pointer hover:bg-gray-800 transition-colors border-b border-gray-800"
+        className="cursor-pointer hover:bg-muted/50 transition-colors border-b border-border"
         onClick={() => onToggleExpanded(!isExpanded)}
       >
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-blue-600 bg-opacity-20 rounded-lg">
-              <GraduationCap className="h-5 w-5 text-blue-400" />
+            <div className="p-2 bg-primary/10 rounded-lg">
+              <GraduationCap className="h-5 w-5 text-primary" />
             </div>
             <div>
-              <CardTitle className="text-xl font-bold text-white">
+              <CardTitle className="text-xl font-bold text-foreground">
                 Tutor Profile
               </CardTitle>
               {!isExpanded && tutorSummary && (
                 <div className="flex items-center gap-4 mt-1">
-                  <Badge variant="secondary" className="text-xs">
+                  <Badge variant="secondary" className="text-xs bg-card text-card-foreground border-border">
                     <DollarSign className="h-3 w-3 mr-1" />
                     ${tutorSummary.rate}/hr
                   </Badge>
-                  <Badge variant="secondary" className="text-xs">
+                  <Badge variant="secondary" className="text-xs bg-card text-card-foreground border-border">
                     <Star className="h-3 w-3 mr-1" />
                     {tutorSummary.skillCount} skills
                   </Badge>
-                  <Badge variant="secondary" className="text-xs">
+                  <Badge variant="secondary" className="text-xs bg-card text-card-foreground border-border">
                     <Clock className="h-3 w-3 mr-1" />
                     {tutorSummary.availability}
                   </Badge>

@@ -43,9 +43,9 @@ const TutorProfileDisplay: React.FC<TutorProfileDisplayProps> = ({ tutorProfile,
       {/* Main Content Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Bio Section */}
-        <Card className="lg:col-span-2">
+        <Card className="lg:col-span-2 bg-card border-border">
           <CardHeader className="pb-3">
-            <CardTitle className="flex items-center gap-2 text-lg">
+            <CardTitle className="flex items-center gap-2 text-lg text-foreground">
               <User className="h-5 w-5 text-primary" />
               About Me
             </CardTitle>
@@ -63,14 +63,14 @@ const TutorProfileDisplay: React.FC<TutorProfileDisplayProps> = ({ tutorProfile,
         </Card>
 
         {/* Quick Info Card */}
-        <Card>
+        <Card className="bg-card border-border">
           <CardHeader className="pb-3">
-            <CardTitle className="text-lg">Quick Info</CardTitle>
+            <CardTitle className="text-lg text-foreground">Quick Info</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-green-100 dark:bg-green-900/20 rounded-lg">
-                <DollarSign className="h-4 w-4 text-green-600 dark:text-green-400" />
+              <div className="p-2 bg-green-500/10 rounded-lg">
+                <DollarSign className="h-4 w-4 text-green-500" />
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Hourly Rate</p>
@@ -83,8 +83,8 @@ const TutorProfileDisplay: React.FC<TutorProfileDisplayProps> = ({ tutorProfile,
             </div>
 
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-blue-100 dark:bg-blue-900/20 rounded-lg">
-                <Clock className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+              <div className="p-2 bg-primary/10 rounded-lg">
+                <Clock className="h-4 w-4 text-primary" />
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Availability</p>
@@ -93,8 +93,8 @@ const TutorProfileDisplay: React.FC<TutorProfileDisplayProps> = ({ tutorProfile,
             </div>
 
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-purple-100 dark:bg-purple-900/20 rounded-lg">
-                <Calendar className="h-4 w-4 text-purple-600 dark:text-purple-400" />
+              <div className="p-2 bg-purple-500/10 rounded-lg">
+                <Calendar className="h-4 w-4 text-purple-500" />
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Member Since</p>
@@ -112,9 +112,9 @@ const TutorProfileDisplay: React.FC<TutorProfileDisplayProps> = ({ tutorProfile,
 
       {/* Skills Section */}
       {tutorProfile.skills && tutorProfile.skills.length > 0 && (
-        <Card>
+        <Card className="bg-card border-border">
           <CardHeader className="pb-3">
-            <CardTitle className="flex items-center gap-2 text-lg">
+            <CardTitle className="flex items-center gap-2 text-lg text-foreground">
               <BookOpen className="h-5 w-5 text-primary" />
               Skills & Expertise
             </CardTitle>
@@ -124,7 +124,7 @@ const TutorProfileDisplay: React.FC<TutorProfileDisplayProps> = ({ tutorProfile,
               {tutorProfile.skills.map((userSkill) => (
                 <div
                   key={userSkill.userSkillID}
-                  className="flex items-center justify-between p-3 bg-muted/30 rounded-lg border border-border hover:bg-muted/50 transition-colors"
+                  className="flex items-center justify-between p-3 bg-muted/50 rounded-lg border border-border hover:bg-muted transition-colors"
                 >
                   <div>
                     <p className="font-medium text-foreground">{userSkill.skill.skillName}</p>
