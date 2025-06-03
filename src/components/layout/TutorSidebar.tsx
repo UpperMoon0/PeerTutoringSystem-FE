@@ -11,7 +11,7 @@ import {
   Home,
   Menu,
   X,
-  Briefcase // Added for Profile
+  Briefcase 
 } from 'lucide-react';
 
 interface SidebarItem {
