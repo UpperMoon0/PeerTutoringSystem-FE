@@ -7,7 +7,7 @@ export interface Booking {
   availabilityId: string; 
   startTime: string;
   endTime: string;
-  status: 'Pending' | 'Confirmed' | 'Cancelled' | 'Completed'; 
+  status: 'Pending' | 'Confirmed' | 'Cancelled' | 'Completed' | 'Rejected';
   createdAt: string;
   updatedAt?: string; 
   studentName?: string; 
@@ -31,7 +31,7 @@ export interface CreateBookingDto {
 }
 
 export interface UpdateBookingStatusDto {
-  status: 'Pending' | 'Confirmed' | 'Cancelled' | 'Completed';
+  status: 'Pending' | 'Confirmed' | 'Cancelled' | 'Completed' | 'Rejected';
 }
 
 export interface BookingListResponse {

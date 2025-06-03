@@ -25,7 +25,7 @@ import {
 import { format } from 'date-fns';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
-type BookingStatus = 'All' | 'Pending' | 'Confirmed' | 'Cancelled' | 'Completed';
+type BookingStatus = 'All' | 'Pending' | 'Confirmed' | 'Cancelled' | 'Completed' | 'Rejected';
 
 const ManageBookingsSection: React.FC = () => {
   const { currentUser } = useAuth();
@@ -129,6 +129,7 @@ const ManageBookingsSection: React.FC = () => {
       case 'Confirmed':
         return 'default';
       case 'Cancelled':
+      case 'Rejected':
         return 'destructive';
       case 'Completed':
         return 'outline';
@@ -249,6 +250,7 @@ const ManageBookingsSection: React.FC = () => {
                   <SelectItem value="Confirmed" className="text-white hover:bg-gray-700">Confirmed</SelectItem>
                   <SelectItem value="Completed" className="text-white hover:bg-gray-700">Completed</SelectItem>
                   <SelectItem value="Cancelled" className="text-white hover:bg-gray-700">Cancelled</SelectItem>
+                  <SelectItem value="Rejected" className="text-white hover:bg-gray-700">Rejected</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -437,7 +439,7 @@ const ManageBookingsSection: React.FC = () => {
                       {isUpdating ? 'Accepting...' : 'Accept Booking'}
                     </Button>
                     <Button 
-                      onClick={() => handleUpdateStatus(selectedBooking.bookingId, 'Cancelled')} 
+                      onClick={() => handleUpdateStatus(selectedBooking.bookingId, 'Rejected')}
                       disabled={isUpdating}
                       variant="destructive"
                     >

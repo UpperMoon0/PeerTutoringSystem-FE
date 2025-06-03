@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import { useParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { BookingService } from '@/services/BookingService';
@@ -53,9 +53,130 @@ const TutorDetailPage: React.FC = () => {
   const [reviews, setReviews] = useState<ReviewDto[]>([]);
   const [isLoadingReviews, setIsLoadingReviews] = useState(false);
   const [reviewsError, setReviewsError] = useState<string | null>(null);
-  // TODO: Determine a real bookingId for the review form. For now, a placeholder.
-  // This might come from a list of past bookings for this tutor by the current user.
-  const [exampleBookingIdForReview, setExampleBookingIdForReview] = useState<string>("placeholder-booking-id-123");
+  const [exampleBookingIdForReview] = useState<string>("placeholder-booking-id-123");
+
+  const getProcessedAvailabilities = useCallback((slotsToProcess: TutorAvailability[]): TutorAvailability[] => {
+    interface RecurringGroup {
+      slots: TutorAvailability[];
+      minDate: Date;
+      maxDate: Date; // Tracks the start date of the latest slot in the group
+      originalRecurrenceEndDate?: Date | null; // From backend, if consistent for the group
+    }
+
+    const recurringGroups: Record<string, RecurringGroup> = {};
+    const nonRecurringSlots: TutorAvailability[] = [];
+
+    for (const slot of slotsToProcess) {
+      if (slot.isRecurring) {
+        try {
+          const startTimeDate = new Date(slot.startTime);
+          const endTimeDate = new Date(slot.endTime);
+
+          if (isNaN(startTimeDate.getTime()) || isNaN(endTimeDate.getTime())) {
+            nonRecurringSlots.push(slot); // Treat as non-recurring if dates are invalid
+            continue;
+          }
+
+          // Group by day (or 'UNKNOWN_DAY' for daily) and time
+          const timeKey = `${slot.recurringDay || 'UNKNOWN_DAY'}-${format(startTimeDate, "HH:mm")}-${format(endTimeDate, "HH:mm")}`;
+
+          if (!recurringGroups[timeKey]) {
+            recurringGroups[timeKey] = {
+              slots: [],
+              minDate: startTimeDate,
+              maxDate: startTimeDate,
+              originalRecurrenceEndDate: slot.recurrenceEndDate ? new Date(slot.recurrenceEndDate) : null,
+            };
+          }
+          
+          recurringGroups[timeKey].slots.push(slot);
+          if (startTimeDate < recurringGroups[timeKey].minDate) {
+            recurringGroups[timeKey].minDate = startTimeDate;
+          }
+          if (startTimeDate > recurringGroups[timeKey].maxDate) {
+            recurringGroups[timeKey].maxDate = startTimeDate;
+          }
+          // If an originalRecurrenceEndDate is set, assume it's consistent for the group.
+          // The first one encountered for the group is used.
+          if (slot.recurrenceEndDate && !recurringGroups[timeKey].originalRecurrenceEndDate) {
+              recurringGroups[timeKey].originalRecurrenceEndDate = new Date(slot.recurrenceEndDate);
+          } else if (slot.recurrenceEndDate && recurringGroups[timeKey].originalRecurrenceEndDate && new Date(slot.recurrenceEndDate).getTime() !== recurringGroups[timeKey].originalRecurrenceEndDate!.getTime()) {
+            // If differing original recurrenceEndDates are found within a group, it implies an issue or complex scenario.
+            // For simplicity, we might prioritize the one from the earliest slot or clear it to use maxDate.
+            // Current logic: first one wins. Or, if we want to be safer:
+            // recurringGroups[timeKey].originalRecurrenceEndDate = null; // Force use of maxDate if inconsistent
+          }
+
+        } catch (e) {
+          // console.error("Error processing recurring slot for grouping:", slot, e);
+          nonRecurringSlots.push(slot); // Fallback
+        }
+      } else {
+        nonRecurringSlots.push(slot);
+      }
+    }
+
+    const finalProcessedSlots: TutorAvailability[] = [...nonRecurringSlots];
+
+    for (const key in recurringGroups) {
+      const group = recurringGroups[key];
+      if (group.slots.length > 0) {
+        // Sort slots in the group by start time to reliably get the first one
+        const sortedSlotsInGroup = group.slots.sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
+        const firstSlotInGroup = sortedSlotsInGroup[0];
+
+        let displayUntilDate: Date | null = null;
+        if (group.originalRecurrenceEndDate) {
+          displayUntilDate = group.originalRecurrenceEndDate;
+        } else {
+          // Use the start date of the latest slot in the fetched series as the "until" date
+          displayUntilDate = group.maxDate;
+        }
+        
+        // Create a summary slot based on the first actual slot in the series.
+        // Its startTime, endTime, and availabilityId will be from this first slot.
+        // The recurrenceEndDate will be overridden for display.
+        const summaryDisplaySlot: TutorAvailability = {
+          ...firstSlotInGroup,
+          // Ensure startTime is the earliest date of this specific recurring event, with its original time.
+          startTime: new Date(group.minDate).toISOString(),
+          // The endTime should correspond to the minDate as well.
+          // Calculate endTime based on minDate and original duration.
+          // This is tricky if original startTime/endTime spans midnight.
+          // For simplicity, keep firstSlotInGroup.endTime, assuming display logic handles time part correctly.
+          // The date part of startTime is already set to group.minDate.
+          // The date part of endTime of firstSlotInGroup might not match group.minDate if it's a multi-day event.
+          // Let's ensure the summary slot's start and end times are consistent with the first occurrence.
+          // The firstSlotInGroup already has the correct startTime and endTime for *an* instance.
+          // We just need to ensure its date part is the earliest.
+          // The `...firstSlotInGroup` spread already sets startTime and endTime.
+          // We then override startTime to be the earliest date.
+          // We should also adjust endTime to correspond to that earliest date.
+          
+          // Let's use the properties of the actual earliest slot.
+          // The `startTime` of `firstSlotInGroup` is already the earliest for *that specific instance*.
+          // The `group.minDate` is the date of the earliest instance.
+          // So, `firstSlotInGroup.startTime` should already be `group.minDate` with the correct time.
+          // No, `firstSlotInGroup` is the slot object that has the earliest start time.
+          // So `firstSlotInGroup.startTime` IS `group.minDate` (as a string).
+          // The `...firstSlotInGroup` is correct.
+
+          recurrenceEndDate: displayUntilDate ? format(displayUntilDate, "yyyy-MM-dd") : null,
+        };
+        finalProcessedSlots.push(summaryDisplaySlot);
+      }
+    }
+
+    // Sort the final list by start time for consistent display
+    finalProcessedSlots.sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
+    
+    return finalProcessedSlots;
+  }, [format]); // Added format to dependency array, though it's stable.
+
+  const displaySlots = useMemo(() => {
+    const unbookedSlots = availabilities.filter(slot => !slot.isBooked);
+    return getProcessedAvailabilities(unbookedSlots);
+  }, [availabilities, getProcessedAvailabilities]);
 
   const fetchTutorReviews = useCallback(async () => {
     if (!tutorId) return;
@@ -393,7 +514,7 @@ const TutorDetailPage: React.FC = () => {
             <div className="space-y-3 pt-4">
               <h4 className="font-semibold text-lg text-white">Available Slots:</h4>
               <ul className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-                {availabilities.filter(slot => !slot.isBooked).map(avail => (
+                {displaySlots.map(avail => (
                   <li key={`${avail.availabilityId}-${avail.startTime}`}>
                     <Button
                       variant={
@@ -404,15 +525,25 @@ const TutorDetailPage: React.FC = () => {
                       }
                       className={cn(
                         "w-full text-left justify-start h-auto py-2.5 px-3 transition-all",
-                        selectedAvailability?.availabilityId === avail.availabilityId && selectedAvailability?.startTime === avail.startTime 
-                          ? "bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white border-transparent" 
+                        selectedAvailability?.availabilityId === avail.availabilityId && selectedAvailability?.startTime === avail.startTime
+                          ? "bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white border-transparent"
                           : "bg-gray-800 border-gray-700 hover:bg-gray-750 text-gray-300 hover:text-white"
                       )}
                       onClick={() => setSelectedAvailability(avail)}
                     >
                       <div className="flex flex-col">
-                        <span className="font-medium">{format(new Date(avail.startTime), "PPP")}</span>
-                        <span className="text-sm">{format(new Date(avail.startTime), "p")} - {format(new Date(avail.endTime), "p")}</span>
+                        {avail.isRecurring ? (
+                          <>
+                            <span className="font-medium">
+                              {`Recurring on ${avail.recurringDay ? avail.recurringDay.charAt(0).toUpperCase() + avail.recurringDay.slice(1).toLowerCase() : 'Daily'}, ${format(new Date(avail.startTime), "HH:mm")} - ${format(new Date(avail.endTime), "HH:mm")}${avail.recurrenceEndDate ? `, until ${format(new Date(avail.recurrenceEndDate), "yyyy-MM-dd")}` : ''}`}
+                            </span>
+                          </>
+                        ) : (
+                          <>
+                            <span className="font-medium">{format(new Date(avail.startTime), "PPP")}</span>
+                            <span className="text-sm">{`${format(new Date(avail.startTime), "p")} - ${format(new Date(avail.endTime), "p")}`}</span>
+                          </>
+                        )}
                       </div>
                     </Button>
                   </li>
