@@ -36,4 +36,16 @@ export const createSessionWithConstraintsSchema = (
   path: ['startTime', 'endTime']
 });
 
+export const updateSessionSchema = z.object({
+  videoCallLink: z
+    .string()
+    .min(1, 'Video call link is required')
+    .url('Please enter a valid URL'),
+  sessionNotes: z
+    .string()
+    .min(10, 'Session notes must be at least 10 characters')
+    .max(1000, 'Session notes must not exceed 1000 characters'),
+});
+
 export type CreateSessionFormData = z.infer<typeof createSessionSchema>;
+export type UpdateSessionFormData = z.infer<typeof updateSessionSchema>;

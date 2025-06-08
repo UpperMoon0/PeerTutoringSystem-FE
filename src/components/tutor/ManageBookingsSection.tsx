@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { BookingService } from '@/services/BookingService';
 import { SessionService } from '@/services/SessionService';
 import type { Booking } from '@/types/booking.types';
-import type { CreateSessionDto } from '@/types/session.types';
+import type { CreateSessionDto, Session } from '@/types/session.types';
 import type { ApiResult } from '@/types/api.types';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -166,6 +166,18 @@ const ManageBookingsSection: React.FC = () => {
     } finally {
       setIsUpdating(false);
     }
+  };
+
+  const handleSessionUpdated = (updatedSession: Session) => {
+    // Update the selected booking with the new session information
+    if (selectedBooking) {
+      setSelectedBooking({
+        ...selectedBooking,
+        session: updatedSession
+      });
+    }
+    // Optionally refresh the bookings list to reflect changes
+    fetchBookings();
   };
 
   const getStatusBadgeVariant = (status: string) => {
@@ -445,6 +457,7 @@ const ManageBookingsSection: React.FC = () => {
                 booking={selectedBooking}
                 userRole="tutor"
                 onUpdateStatus={(status) => handleUpdateStatus(selectedBooking.bookingId, status)}
+                onSessionUpdated={handleSessionUpdated}
                 isUpdating={isUpdating}
                 showActions={true}
               />

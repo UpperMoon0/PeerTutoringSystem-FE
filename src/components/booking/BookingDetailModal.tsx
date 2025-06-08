@@ -18,13 +18,30 @@ interface BookingDetailModalProps {
   isOpen: boolean;
   onClose: () => void;
   onBookingCancelled: () => void;
+  userRole?: 'student' | 'tutor';
 }
 
-export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({ booking, isOpen, onClose, onBookingCancelled }) => {
+export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
+  booking,
+  isOpen,
+  onClose,
+  onBookingCancelled,
+  userRole = 'student'
+}) => {
   const [isCancelling, setIsCancelling] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [currentBooking, setCurrentBooking] = useState<BookingWithSession | null>(booking);
 
   if (!booking) return null;
+
+  const handleSessionUpdated = (updatedSession: Session) => {
+    if (currentBooking) {
+      setCurrentBooking({
+        ...currentBooking,
+        session: updatedSession
+      });
+    }
+  };
 
   const handleCancelBooking = async () => {
     if (!booking) return;
@@ -72,8 +89,9 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({ booking,
           )}
 
           <BookingDetailView
-            booking={booking}
-            userRole="student"
+            booking={currentBooking || booking}
+            userRole={userRole}
+            onSessionUpdated={handleSessionUpdated}
             onCancelBooking={handleCancelBooking}
             isUpdating={isCancelling}
             showActions={false} // We'll handle actions in the dialog footer
@@ -82,10 +100,14 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({ booking,
         
         <DialogFooter className="mt-2 pt-4 border-t border-gray-800 gap-2">
           <BookingDetailView
-            booking={booking}
-            userRole="student"
-            onContactUser={() => toast.info(`Contact feature for ${booking.tutorName} would open here.`)}
+            booking={currentBooking || booking}
+            userRole={userRole}
+            onContactUser={() => {
+              const contactName = userRole === 'student' ? booking.tutorName : booking.studentName;
+              toast.info(`Contact feature for ${contactName} would open here.`);
+            }}
             onJoinSession={() => {}}
+            onSessionUpdated={handleSessionUpdated}
             onCancelBooking={handleCancelBooking}
             isUpdating={isCancelling}
             showActions={true}

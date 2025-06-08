@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import type { Booking } from '@/types/booking.types';
 import type { Session } from '@/types/session.types';
 import { Badge } from '@/components/ui/badge';
@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { CalendarDays, Clock, User, Tag, FileText, CheckCircle2, Video, MessageCircle, Timer, ExternalLink } from 'lucide-react';
 import { format, isAfter, differenceInHours, differenceInMinutes } from 'date-fns';
 import { toast } from 'sonner';
+import { EditSessionForm } from '@/components/session/EditSessionForm';
 
 interface BookingWithSession extends Booking {
   session?: Session;
@@ -18,6 +19,7 @@ interface BookingDetailViewProps {
   onJoinSession?: () => void;
   onCancelBooking?: () => void;
   onUpdateStatus?: (status: Booking['status']) => void;
+  onSessionUpdated?: (updatedSession: Session) => void;
   isUpdating?: boolean;
   showActions?: boolean;
 }
@@ -29,9 +31,17 @@ export const BookingDetailView: React.FC<BookingDetailViewProps> = ({
   onJoinSession,
   onCancelBooking,
   onUpdateStatus,
+  onSessionUpdated,
   isUpdating = false,
   showActions = true
 }) => {
+  const [currentSession, setCurrentSession] = useState<Session | undefined>(booking.session);
+
+  const handleSessionUpdated = (updatedSession: Session) => {
+    setCurrentSession(updatedSession);
+    onSessionUpdated?.(updatedSession);
+    toast.success('Session details updated successfully');
+  };
   const getStatusBadgeVariant = (status: Booking['status']) => {
     switch (status) {
       case 'Pending': return 'secondary';
@@ -63,8 +73,8 @@ export const BookingDetailView: React.FC<BookingDetailViewProps> = ({
   };
 
   const handleJoinSession = () => {
-    if (booking.session?.videoCallLink) {
-      window.open(booking.session.videoCallLink, '_blank');
+    if (currentSession?.videoCallLink) {
+      window.open(currentSession.videoCallLink, '_blank');
       toast.success(`Opening session for ${booking.topic}`);
     } else {
       toast.info(`Session link for ${booking.topic} is not yet available. Please contact your ${userRole === 'student' ? 'tutor' : 'student'}.`);
@@ -80,7 +90,8 @@ export const BookingDetailView: React.FC<BookingDetailViewProps> = ({
 
   const isSessionUpcoming = booking.status === 'Confirmed' && isAfter(new Date(booking.startTime), new Date());
   const isSessionCompleted = booking.status === 'Completed';
-  const hasSessionInfo = booking.status === 'Confirmed' || booking.status === 'Completed';
+  const hasSessionInfo = (booking.status === 'Confirmed' || booking.status === 'Completed') && currentSession;
+  const canEditSession = userRole === 'tutor' && hasSessionInfo && currentSession;
   const canCancel = booking.status === 'Pending' || booking.status === 'Confirmed';
   const canAcceptReject = userRole === 'tutor' && booking.status === 'Pending';
   const canComplete = userRole === 'tutor' && booking.status === 'Confirmed' && new Date(booking.endTime) < new Date();
@@ -156,10 +167,18 @@ export const BookingDetailView: React.FC<BookingDetailViewProps> = ({
 
       {hasSessionInfo && (
         <div className="border-t border-gray-700 pt-4">
-          <h3 className="font-semibold text-gray-300 mb-3 flex items-center">
-            <Video className="w-4 h-4 mr-1.5 text-blue-400" />
-            Session Information
-          </h3>
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="font-semibold text-gray-300 flex items-center">
+              <Video className="w-4 h-4 mr-1.5 text-blue-400" />
+              Session Information
+            </h3>
+            {canEditSession && (
+              <EditSessionForm
+                session={currentSession}
+                onSessionUpdated={handleSessionUpdated}
+              />
+            )}
+          </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <h4 className="text-sm font-medium text-gray-400 mb-1">Duration</h4>
@@ -183,34 +202,34 @@ export const BookingDetailView: React.FC<BookingDetailViewProps> = ({
               <div>
                 <h4 className="text-sm font-medium text-gray-400 mb-1">Session Access</h4>
                 <p className="text-sm text-blue-400">
-                  {booking.session?.videoCallLink 
-                    ? 'Ready to join' 
+                  {currentSession?.videoCallLink
+                    ? 'Ready to join'
                     : 'Link pending from tutor'}
                 </p>
               </div>
             )}
           </div>
           
-          {booking.session?.sessionNotes && (
+          {currentSession?.sessionNotes && (
             <div className="mt-4">
               <h4 className="text-sm font-medium text-gray-400 mb-2">Session Preparation Notes</h4>
               <p className="text-gray-300 bg-gray-800 p-3 rounded-md whitespace-pre-wrap">
-                {booking.session.sessionNotes}
+                {currentSession.sessionNotes}
               </p>
             </div>
           )}
           
-          {booking.session?.videoCallLink && (
+          {currentSession?.videoCallLink && (
             <div className="mt-4">
               <h4 className="text-sm font-medium text-gray-400 mb-2">Meeting Link</h4>
               <div className="flex items-center space-x-2">
                 <p className="text-blue-400 text-sm break-all">
-                  {booking.session.videoCallLink}
+                  {currentSession.videoCallLink}
                 </p>
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => window.open(booking.session?.videoCallLink, '_blank')}
+                  onClick={() => window.open(currentSession?.videoCallLink, '_blank')}
                   className="text-blue-400 hover:text-blue-300"
                 >
                   <ExternalLink className="w-4 h-4" />
@@ -241,13 +260,13 @@ export const BookingDetailView: React.FC<BookingDetailViewProps> = ({
                 <Button
                   variant="default"
                   onClick={handleJoinSession}
-                  className={`${booking.session?.videoCallLink 
-                    ? 'bg-blue-600 hover:bg-blue-700' 
+                  className={`${currentSession?.videoCallLink
+                    ? 'bg-blue-600 hover:bg-blue-700'
                     : 'bg-gray-600 hover:bg-gray-700'} text-white`}
-                  disabled={!booking.session?.videoCallLink}
+                  disabled={!currentSession?.videoCallLink}
                 >
                   <Video className="w-4 h-4 mr-2" />
-                  {booking.session?.videoCallLink ? 'Join Session' : 'Link Pending'}
+                  {currentSession?.videoCallLink ? 'Join Session' : 'Link Pending'}
                 </Button>
                 <Button
                   variant="outline"
