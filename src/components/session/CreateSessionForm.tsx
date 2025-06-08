@@ -8,7 +8,9 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { VideoIcon, FileText, Calendar, Clock, AlertCircle } from 'lucide-react';
 import type { Booking } from '@/types/booking.types';
 import type { CreateSessionDto } from '@/types/session.types';
+import { createSessionWithConstraintsSchema, type CreateSessionFormData } from '@/schemas/session.schemas';
 import { format } from 'date-fns';
+import { z } from 'zod';
 
 interface CreateSessionFormProps {
   booking: Booking;
@@ -23,7 +25,7 @@ const CreateSessionForm: React.FC<CreateSessionFormProps> = ({
   isSubmitting,
   error
 }) => {
-  const [formData, setFormData] = useState<CreateSessionDto>({
+  const [formData, setFormData] = useState<CreateSessionFormData>({
     bookingId: booking.bookingId,
     videoCallLink: '',
     sessionNotes: '',
@@ -34,39 +36,48 @@ const CreateSessionForm: React.FC<CreateSessionFormProps> = ({
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
 
   const validateForm = (): boolean => {
-    const errors: Record<string, string> = {};
-
-    if (!formData.videoCallLink.trim()) {
-      errors.videoCallLink = 'Video call link is required';
-    } else if (!isValidUrl(formData.videoCallLink)) {
-      errors.videoCallLink = 'Please enter a valid URL';
-    }
-
-    if (!formData.sessionNotes.trim()) {
-      errors.sessionNotes = 'Session notes are required';
-    } else if (formData.sessionNotes.trim().length < 10) {
-      errors.sessionNotes = 'Session notes must be at least 10 characters';
-    }
-
-    setFormErrors(errors);
-    return Object.keys(errors).length === 0;
-  };
-
-  const isValidUrl = (string: string): boolean => {
     try {
-      new URL(string);
+      const schema = createSessionWithConstraintsSchema(booking.startTime, booking.endTime);
+      schema.parse(formData);
+      setFormErrors({});
       return true;
-    } catch (_) {
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        const errors: Record<string, string> = {};
+        error.errors.forEach((err) => {
+          if (err.path.length > 0) {
+            const field = err.path[0] as string;
+            errors[field] = err.message;
+          }
+        });
+        setFormErrors(errors);
+      }
       return false;
     }
   };
 
-  const handleInputChange = (field: keyof CreateSessionDto, value: string) => {
+  // Helper function to format datetime-local input value
+  const formatDateTimeLocal = (dateString: string): string => {
+    const date = new Date(dateString);
+    return date.toISOString().slice(0, 16);
+  };
+
+  // Helper function to convert datetime-local to ISO string
+  const convertToISOString = (dateTimeLocal: string): string => {
+    return new Date(dateTimeLocal).toISOString();
+  };
+
+  const handleInputChange = (field: keyof CreateSessionFormData, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
     // Clear field error when user starts typing
     if (formErrors[field]) {
       setFormErrors(prev => ({ ...prev, [field]: '' }));
     }
+  };
+
+  const handleTimeChange = (field: 'startTime' | 'endTime', value: string) => {
+    const isoString = convertToISOString(value);
+    handleInputChange(field, isoString);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -76,7 +87,16 @@ const CreateSessionForm: React.FC<CreateSessionFormProps> = ({
       return;
     }
 
-    await onSubmit(formData);
+    // Convert to CreateSessionDto format expected by the API
+    const sessionDto: CreateSessionDto = {
+      bookingId: formData.bookingId,
+      videoCallLink: formData.videoCallLink,
+      sessionNotes: formData.sessionNotes,
+      startTime: formData.startTime,
+      endTime: formData.endTime
+    };
+
+    await onSubmit(sessionDto);
   };
 
   return (
@@ -150,28 +170,48 @@ const CreateSessionForm: React.FC<CreateSessionFormProps> = ({
             </p>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="startTime" className="text-gray-300">Start Time</Label>
-              <Input
-                id="startTime"
-                type="datetime-local"
-                value={formData.startTime.slice(0, 16)}
-                onChange={(e) => handleInputChange('startTime', e.target.value + ':00.000Z')}
-                className="bg-gray-800 border-gray-700 text-white"
-                disabled={isSubmitting}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="endTime" className="text-gray-300">End Time</Label>
-              <Input
-                id="endTime"
-                type="datetime-local"
-                value={formData.endTime.slice(0, 16)}
-                onChange={(e) => handleInputChange('endTime', e.target.value + ':00.000Z')}
-                className="bg-gray-800 border-gray-700 text-white"
-                disabled={isSubmitting}
-              />
+          <div className="bg-gray-800 border border-gray-700 rounded-lg p-4">
+            <h4 className="text-gray-300 font-medium mb-3 flex items-center">
+              <Clock className="w-4 h-4 mr-1" />
+              Session Time (within booking window)
+            </h4>
+            <p className="text-sm text-gray-400 mb-4">
+              Booking window: {format(new Date(booking.startTime), 'HH:mm')} - {format(new Date(booking.endTime), 'HH:mm')} on {format(new Date(booking.startTime), 'MMM dd, yyyy')}
+            </p>
+            
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="startTime" className="text-gray-300">Session Start Time *</Label>
+                <Input
+                  id="startTime"
+                  type="datetime-local"
+                  value={formatDateTimeLocal(formData.startTime)}
+                  onChange={(e) => handleTimeChange('startTime', e.target.value)}
+                  min={formatDateTimeLocal(booking.startTime)}
+                  max={formatDateTimeLocal(booking.endTime)}
+                  className="bg-gray-800 border-gray-700 text-white"
+                  disabled={isSubmitting}
+                />
+                {formErrors.startTime && (
+                  <p className="text-red-400 text-sm">{formErrors.startTime}</p>
+                )}
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="endTime" className="text-gray-300">Session End Time *</Label>
+                <Input
+                  id="endTime"
+                  type="datetime-local"
+                  value={formatDateTimeLocal(formData.endTime)}
+                  onChange={(e) => handleTimeChange('endTime', e.target.value)}
+                  min={formatDateTimeLocal(booking.startTime)}
+                  max={formatDateTimeLocal(booking.endTime)}
+                  className="bg-gray-800 border-gray-700 text-white"
+                  disabled={isSubmitting}
+                />
+                {formErrors.endTime && (
+                  <p className="text-red-400 text-sm">{formErrors.endTime}</p>
+                )}
+              </div>
             </div>
           </div>
 
