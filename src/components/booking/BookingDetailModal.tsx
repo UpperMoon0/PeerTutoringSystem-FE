@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import type { Booking } from '@/types/booking.types';
+import type { Session } from '@/types/session.types';
 import { BookingService } from '@/services/BookingService';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -9,11 +10,15 @@ import { CalendarDays, Clock, User, Tag, FileText, AlertCircle, XCircle, CheckCi
 import { format, isAfter, differenceInHours, differenceInMinutes } from 'date-fns';
 import { toast } from 'sonner';
 
+interface BookingWithSession extends Booking {
+  session?: Session;
+}
+
 interface BookingDetailModalProps {
-  booking: Booking | null;
+  booking: BookingWithSession | null;
   isOpen: boolean;
   onClose: () => void;
-  onBookingCancelled: () => void; 
+  onBookingCancelled: () => void;
 }
 
 export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({ booking, isOpen, onClose, onBookingCancelled }) => {
@@ -61,7 +66,13 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({ booking,
   };
 
   const handleJoinSession = () => {
-    toast.info(`Session link for ${booking.topic} would open here.`);
+    const bookingWithSession = booking as BookingWithSession;
+    if (bookingWithSession.session?.videoCallLink) {
+      window.open(bookingWithSession.session.videoCallLink, '_blank');
+      toast.success(`Opening session for ${booking.topic}`);
+    } else {
+      toast.info(`Session link for ${booking.topic} is not yet available. Please contact your tutor.`);
+    }
   };
 
   const getTimeUntilSession = (sessionStartTime: string): string => {
@@ -189,10 +200,34 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({ booking,
                 {isSessionUpcoming && (
                   <div>
                     <h4 className="text-sm font-medium text-gray-400 mb-1">Session Access</h4>
-                    <p className="text-sm text-blue-400">Available 15 minutes before start time</p>
+                    <p className="text-sm text-blue-400">
+                      {(booking as BookingWithSession).session?.videoCallLink
+                        ? 'Ready to join'
+                        : 'Link pending from tutor'}
+                    </p>
                   </div>
                 )}
               </div>
+              
+              {(booking as BookingWithSession).session?.sessionNotes && (
+                <div className="mt-4">
+                  <h4 className="text-sm font-medium text-gray-400 mb-2">Session Preparation Notes</h4>
+                  <p className="text-gray-300 bg-gray-800 p-3 rounded-md whitespace-pre-wrap">
+                    {(booking as BookingWithSession).session?.sessionNotes}
+                  </p>
+                </div>
+              )}
+              
+              {(booking as BookingWithSession).session?.videoCallLink && (
+                <div className="mt-4">
+                  <h4 className="text-sm font-medium text-gray-400 mb-2">Meeting Link</h4>
+                  <div className="flex items-center space-x-2">
+                    <p className="text-blue-400 text-sm break-all">
+                      {(booking as BookingWithSession).session?.videoCallLink}
+                    </p>
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
@@ -223,10 +258,13 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({ booking,
                 <Button
                   variant="default"
                   onClick={handleJoinSession}
-                  className="bg-blue-600 hover:bg-blue-700"
+                  className={`${(booking as BookingWithSession).session?.videoCallLink
+                    ? 'bg-blue-600 hover:bg-blue-700'
+                    : 'bg-gray-600 hover:bg-gray-700'} text-white`}
+                  disabled={!(booking as BookingWithSession).session?.videoCallLink}
                 >
                   <Video className="w-4 h-4 mr-2" />
-                  Join Session
+                  {(booking as BookingWithSession).session?.videoCallLink ? 'Join Session' : 'Link Pending'}
                 </Button>
                 <Button
                   variant="outline"

@@ -1,6 +1,8 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { BookingService } from '@/services/BookingService';
+import { SessionService } from '@/services/SessionService';
 import type { Booking } from '@/types/booking.types';
+import type { Session } from '@/types/session.types';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -22,13 +24,17 @@ import {
 import { format, isAfter, differenceInDays, differenceInHours, differenceInMinutes } from 'date-fns';
 import { toast } from 'sonner';
 
+interface BookingWithSession extends Booking {
+  session?: Session;
+}
+
 const StudentUpcomingSessionsPage: React.FC = () => {
   const { currentUser } = useAuth();
-  const [upcomingSessions, setUpcomingSessions] = useState<Booking[]>([]);
+  const [upcomingSessions, setUpcomingSessions] = useState<BookingWithSession[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
-  const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
+  const [selectedBooking, setSelectedBooking] = useState<BookingWithSession | null>(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
 
   const fetchUpcomingSessions = useCallback(async () => {
@@ -62,7 +68,30 @@ const StudentUpcomingSessionsPage: React.FC = () => {
           return new Date(a.startTime).getTime() - new Date(b.startTime).getTime();
         });
 
-        setUpcomingSessions(futureConfirmedBookings);
+        // Try to fetch session details for each booking
+        const sessionsWithDetails: BookingWithSession[] = await Promise.all(
+          futureConfirmedBookings.map(async (booking) => {
+            try {
+              // For now, we'll use the session API to get user sessions and match by booking ID
+              // In a real implementation, there might be a more direct way to get session by booking ID
+              const sessionResponse = await SessionService.getUserSessions(1, 100);
+              if (sessionResponse.success && sessionResponse.data) {
+                const matchingSession = sessionResponse.data.sessions.find(
+                  session => session.bookingId === booking.bookingId
+                );
+                return {
+                  ...booking,
+                  session: matchingSession
+                };
+              }
+            } catch (sessionError) {
+              console.warn(`Failed to fetch session for booking ${booking.bookingId}:`, sessionError);
+            }
+            return booking;
+          })
+        );
+
+        setUpcomingSessions(sessionsWithDetails);
       } else {
         const errorMessage = typeof response.error === 'string' ? response.error : (response.error as any)?.message || 'Failed to fetch upcoming sessions.';
         setError(errorMessage);
@@ -107,7 +136,7 @@ const StudentUpcomingSessionsPage: React.FC = () => {
     return 'secondary'; // Secondary for sessions further away
   };
 
-  const handleViewDetails = (booking: Booking) => {
+  const handleViewDetails = (booking: BookingWithSession) => {
     setSelectedBooking(booking);
     setIsDetailModalOpen(true);
   };
@@ -123,14 +152,19 @@ const StudentUpcomingSessionsPage: React.FC = () => {
     handleModalClose();
   };
 
-  const handleContactTutor = (booking: Booking) => {
+  const handleContactTutor = (booking: BookingWithSession) => {
     // This could open a chat/messaging interface in a real app
     toast.info(`Contact feature for ${booking.tutorName} would open here.`);
   };
 
-  const handleJoinSession = (booking: Booking) => {
-    // This could open a video call interface or redirect to meeting link
-    toast.info(`Session link for ${booking.topic} would open here.`);
+  const handleJoinSession = (booking: BookingWithSession) => {
+    if (booking.session?.videoCallLink) {
+      // Open the video call link in a new tab
+      window.open(booking.session.videoCallLink, '_blank');
+      toast.success(`Opening session for ${booking.topic}`);
+    } else {
+      toast.info(`Session link for ${booking.topic} is not yet available. Please contact your tutor.`);
+    }
   };
 
   if (!currentUser) {
@@ -235,8 +269,15 @@ const StudentUpcomingSessionsPage: React.FC = () => {
 
                         {session.description && (
                           <div className="text-sm">
-                            <span className="font-medium text-gray-300">Notes:</span>
+                            <span className="font-medium text-gray-300">Booking Notes:</span>
                             <p className="text-gray-400 mt-1 line-clamp-2">{session.description}</p>
+                          </div>
+                        )}
+
+                        {session.session?.sessionNotes && (
+                          <div className="text-sm">
+                            <span className="font-medium text-gray-300">Session Preparation:</span>
+                            <p className="text-gray-400 mt-1 line-clamp-2">{session.session.sessionNotes}</p>
                           </div>
                         )}
                       </div>
@@ -245,11 +286,14 @@ const StudentUpcomingSessionsPage: React.FC = () => {
                         <Button
                           variant="default"
                           size="sm"
-                          className="bg-blue-600 hover:bg-blue-700 text-white"
+                          className={`${session.session?.videoCallLink
+                            ? 'bg-blue-600 hover:bg-blue-700'
+                            : 'bg-gray-600 hover:bg-gray-700'} text-white`}
                           onClick={() => handleJoinSession(session)}
+                          disabled={!session.session?.videoCallLink}
                         >
                           <Video className="w-4 h-4 mr-1" />
-                          Join Session
+                          {session.session?.videoCallLink ? 'Join Session' : 'Link Pending'}
                         </Button>
                         
                         <Button

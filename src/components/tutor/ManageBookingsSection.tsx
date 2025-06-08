@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { BookingService } from '@/services/BookingService';
+import { SessionService } from '@/services/SessionService';
 import type { Booking } from '@/types/booking.types';
+import type { CreateSessionDto } from '@/types/session.types';
 import type { ApiResult } from '@/types/api.types';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -10,13 +12,14 @@ import { Button } from '@/components/ui/button';
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { 
-  BookOpen, 
-  Calendar, 
-  Clock, 
-  Eye, 
-  CheckCircle, 
-  X, 
+import CreateSessionForm from '@/components/session/CreateSessionForm';
+import {
+  BookOpen,
+  Calendar,
+  Clock,
+  Eye,
+  CheckCircle,
+  X,
   AlertCircle,
   TrendingUp,
   Filter
@@ -36,7 +39,9 @@ const ManageBookingsSection: React.FC = () => {
   const [selectedStatus, setSelectedStatus] = useState<BookingStatus>('All');
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+  const [isSessionFormOpen, setIsSessionFormOpen] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
+  const [sessionError, setSessionError] = useState<string | null>(null);
   const pageSize = 10;
 
   const fetchBookings = async () => {
@@ -103,6 +108,12 @@ const ManageBookingsSection: React.FC = () => {
   const handleUpdateStatus = async (bookingId: string, newStatus: Booking['status']) => {
     if (!bookingId || isUpdating) return;
 
+    // For accepting bookings, show the session creation form instead of directly updating status
+    if (newStatus === 'Confirmed') {
+      setIsSessionFormOpen(true);
+      return;
+    }
+
     setIsUpdating(true);
     setError(null);
     try {
@@ -115,6 +126,41 @@ const ManageBookingsSection: React.FC = () => {
       }
     } catch (err: any) {
       setError(err.message || 'An unexpected error occurred while updating status.');
+      console.error(err);
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+  const handleSessionCreation = async (sessionData: CreateSessionDto) => {
+    if (!selectedBooking) return;
+
+    setIsUpdating(true);
+    setSessionError(null);
+    try {
+      // First, update booking status to Confirmed
+      const bookingResult = await BookingService.updateBookingStatus(selectedBooking.bookingId, 'Confirmed');
+      if (!bookingResult.success) {
+        throw new Error(typeof bookingResult.error === 'string' ? bookingResult.error : bookingResult.error?.message || 'Failed to confirm booking');
+      }
+
+      // Then create the session
+      const sessionResult = await SessionService.createSession(sessionData);
+      if (!sessionResult.success) {
+        // If session creation fails, we might want to revert the booking status
+        // For now, we'll just show the error
+        throw new Error(typeof sessionResult.error === 'string' ? sessionResult.error : sessionResult.error?.message || 'Failed to create session');
+      }
+
+      // Success - update UI
+      if (bookingResult.data) {
+        setSelectedBooking(bookingResult.data);
+      }
+      setIsSessionFormOpen(false);
+      setIsDetailModalOpen(false);
+      fetchBookings(); // Refresh the list
+    } catch (err: any) {
+      setSessionError(err.message || 'An unexpected error occurred while creating session.');
       console.error(err);
     } finally {
       setIsUpdating(false);
@@ -429,15 +475,15 @@ const ManageBookingsSection: React.FC = () => {
                 <div className="pt-4 border-t border-gray-800">
                   <h3 className="font-semibold text-gray-300 mb-3">Actions:</h3>
                   <div className="flex space-x-3">
-                    <Button 
-                      onClick={() => handleUpdateStatus(selectedBooking.bookingId, 'Confirmed')} 
+                    <Button
+                      onClick={() => handleUpdateStatus(selectedBooking.bookingId, 'Confirmed')}
                       disabled={isUpdating}
                       className="bg-green-600 hover:bg-green-700"
                     >
                       <CheckCircle className="w-4 h-4 mr-2" />
-                      {isUpdating ? 'Accepting...' : 'Accept Booking'}
+                      {isUpdating ? 'Processing...' : 'Accept & Create Session'}
                     </Button>
-                    <Button 
+                    <Button
                       onClick={() => handleUpdateStatus(selectedBooking.bookingId, 'Rejected')}
                       disabled={isUpdating}
                       variant="destructive"
@@ -472,6 +518,41 @@ const ManageBookingsSection: React.FC = () => {
               className="bg-gray-800 border-gray-700 text-white hover:bg-gray-700"
             >
               Close
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Session Creation Modal */}
+      <Dialog open={isSessionFormOpen} onOpenChange={setIsSessionFormOpen}>
+        <DialogContent className="bg-gray-900 border-gray-800 text-white max-w-3xl">
+          <DialogHeader>
+            <DialogTitle className="text-white">Accept Booking & Create Session</DialogTitle>
+            <DialogDescription className="text-gray-400">
+              Provide session details to complete the booking acceptance.
+            </DialogDescription>
+          </DialogHeader>
+          
+          {selectedBooking && (
+            <CreateSessionForm
+              booking={selectedBooking}
+              onSubmit={handleSessionCreation}
+              isSubmitting={isUpdating}
+              error={sessionError || undefined}
+            />
+          )}
+          
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setIsSessionFormOpen(false);
+                setSessionError(null);
+              }}
+              disabled={isUpdating}
+              className="bg-gray-800 border-gray-700 text-white hover:bg-gray-700"
+            >
+              Cancel
             </Button>
           </DialogFooter>
         </DialogContent>
