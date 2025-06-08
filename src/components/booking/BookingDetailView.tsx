@@ -8,12 +8,8 @@ import { format, isAfter, differenceInHours, differenceInMinutes } from 'date-fn
 import { toast } from 'sonner';
 import { EditSessionForm } from '@/components/session/EditSessionForm';
 
-interface BookingWithSession extends Booking {
-  session?: Session;
-}
-
 interface BookingDetailViewProps {
-  booking: BookingWithSession;
+  booking: Booking;
   userRole: 'student' | 'tutor';
   onContactUser?: () => void;
   onJoinSession?: () => void;

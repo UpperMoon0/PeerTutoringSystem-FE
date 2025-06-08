@@ -95,7 +95,26 @@ const ManageBookingsSection: React.FC = () => {
           setError('You are not authorized to view this booking.');
           return;
         }
-        setSelectedBooking(result.data);
+
+        let bookingWithSession = result.data;
+
+        // Fetch session data for confirmed or completed bookings
+        if (result.data.status === 'Confirmed' || result.data.status === 'Completed') {
+          try {
+            const sessionResult = await SessionService.getSessionByBookingId(bookingId);
+            if (sessionResult.success && sessionResult.data) {
+              bookingWithSession = {
+                ...result.data,
+                session: sessionResult.data
+              };
+            }
+          } catch (sessionErr: any) {
+            // Log the error but don't prevent showing the booking details
+            console.warn('Failed to fetch session data for booking:', sessionErr);
+          }
+        }
+
+        setSelectedBooking(bookingWithSession);
         setIsDetailModalOpen(true);
       } else {
         setError(typeof result.error === 'string' ? result.error : result.error?.message || 'Failed to fetch booking details.');

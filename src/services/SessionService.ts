@@ -67,6 +67,29 @@ export const SessionService = {
     }
   },
 
+  async getSessionByBookingId(bookingId: string): Promise<ApiResult<Session>> {
+    try {
+      const response = await AuthService.fetchWithAuth(`${API_BASE_URL}/Sessions/booking/${bookingId}`, {
+        method: 'GET',
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: "Failed to parse error response." }));
+        throw new Error(errorData.error || `Failed to fetch session by booking ID: ${response.statusText}`);
+      }
+
+      const responseData = await response.json();
+      
+      // Convert backend session to frontend format
+      const convertedSession = convertSessionFromBackend(responseData.data);
+      
+      return { success: true, data: convertedSession };
+    } catch (error: any) {
+      console.error('Error fetching session by booking ID:', error);
+      return { success: false, error: error.message || "Failed to fetch session by booking ID." };
+    }
+  },
+
   async getUserSessions(
     page: number = 1,
     pageSize: number = 10,

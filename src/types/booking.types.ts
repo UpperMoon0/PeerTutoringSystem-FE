@@ -1,4 +1,5 @@
 import type { AuthResponse } from './auth.types';
+import type { Session } from './session.types';
 
 export interface Booking {
   bookingId: string;
@@ -18,6 +19,7 @@ export interface Booking {
   skillId?: string;
   student?: AuthResponse;
   tutor?: AuthResponse;
+  session?: Session;
 }
 
 export interface CreateBookingDto {
