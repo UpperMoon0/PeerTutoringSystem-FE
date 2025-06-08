@@ -10,7 +10,6 @@ import type { TutorAvailability } from '@/types/tutorAvailability.types';
 import type { CreateBookingDto } from '@/types/booking.types';
 import type { ReviewDto } from '@/types/review.types';
 import ReviewList from '@/components/reviews/ReviewList';
-import SubmitReviewForm from '@/components/reviews/SubmitReviewForm';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -53,7 +52,6 @@ const TutorDetailPage: React.FC = () => {
   const [reviews, setReviews] = useState<ReviewDto[]>([]);
   const [isLoadingReviews, setIsLoadingReviews] = useState(false);
   const [reviewsError, setReviewsError] = useState<string | null>(null);
-  const [exampleBookingIdForReview] = useState<string>("placeholder-booking-id-123");
 
   const getProcessedAvailabilities = useCallback((slotsToProcess: TutorAvailability[]): TutorAvailability[] => {
     interface RecurringGroup {
@@ -578,29 +576,6 @@ const TutorDetailPage: React.FC = () => {
         </CardContent>
       </Card>
 
-      {/* Submit Review Section - Conditionally render based on if user can review */}
-      {/* TODO: Add logic to determine if the currentUser has a completed booking with this tutor
-          and hasn't reviewed it yet. For now, showing if logged in and tutorId exists.
-          A more robust solution would involve checking past bookings.
-      */}
-      {currentUser && tutorId && exampleBookingIdForReview && (
-        <Card className="bg-gray-900 border-gray-800 shadow-xl">
-          <CardHeader className="p-6">
-            <CardTitle className="text-2xl text-white">Leave a Review</CardTitle>
-            <CardDescription className="text-gray-400">
-              Share your experience with {tutor?.fullName || "this tutor"}.
-              (Using placeholder booking ID: {exampleBookingIdForReview} for now)
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="p-6">
-            <SubmitReviewForm
-              tutorId={tutorId}
-              bookingId={exampleBookingIdForReview} // Replace with actual booking ID
-              onReviewSubmitted={fetchTutorReviews} // Refresh reviews after submission
-            />
-          </CardContent>
-        </Card>
-      )}
     </div>
   );
 };

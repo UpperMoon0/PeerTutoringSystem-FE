@@ -15,6 +15,7 @@ import TutorListPage from '@/pages/TutorListPage';
 import TutorDetailPage from '@/pages/TutorDetailPage';
 import TutorDashboardPage from '@/pages/tutor/TutorDashboardPage';
 import StudentBookingHistoryPage from '@/pages/StudentBookingHistoryPage';
+import StudentUpcomingSessionsPage from '@/pages/StudentUpcomingSessionsPage';
 
 const router = createBrowserRouter([
   {
@@ -52,6 +53,10 @@ const router = createBrowserRouter([
         path: 'student',
         element: <ProtectedRoute allowedRoles={['Student']} />,
         children: [
+          {
+            path: 'upcoming-sessions',
+            element: <StudentUpcomingSessionsPage />,
+          },
           {
             path: 'booking-history',
             element: <StudentBookingHistoryPage />,

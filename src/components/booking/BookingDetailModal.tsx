@@ -5,8 +5,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { CalendarDays, Clock, User, Tag, FileText, AlertCircle, XCircle, CheckCircle2, ListChecks } from 'lucide-react';
-import { format } from 'date-fns';
+import { CalendarDays, Clock, User, Tag, FileText, AlertCircle, XCircle, CheckCircle2, ListChecks, Video, MessageCircle, Timer } from 'lucide-react';
+import { format, isAfter, differenceInHours, differenceInMinutes } from 'date-fns';
 import { toast } from 'sonner';
 
 interface BookingDetailModalProps {
@@ -55,6 +55,37 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({ booking,
       setIsCancelling(false);
     }
   };
+
+  const handleContactTutor = () => {
+    toast.info(`Contact feature for ${booking.tutorName} would open here.`);
+  };
+
+  const handleJoinSession = () => {
+    toast.info(`Session link for ${booking.topic} would open here.`);
+  };
+
+  const getTimeUntilSession = (sessionStartTime: string): string => {
+    const now = new Date();
+    const sessionDate = new Date(sessionStartTime);
+    
+    const hours = differenceInHours(sessionDate, now);
+    const minutes = differenceInMinutes(sessionDate, now) % 60;
+
+    if (hours > 24) {
+      const days = Math.floor(hours / 24);
+      return `${days} day${days > 1 ? 's' : ''}, ${hours % 24} hour${(hours % 24) !== 1 ? 's' : ''}`;
+    } else if (hours > 0) {
+      return `${hours} hour${hours > 1 ? 's' : ''}, ${minutes} minute${minutes !== 1 ? 's' : ''}`;
+    } else if (minutes > 0) {
+      return `${minutes} minute${minutes !== 1 ? 's' : ''}`;
+    } else {
+      return 'Starting now';
+    }
+  };
+
+  const isSessionUpcoming = booking.status === 'Confirmed' && isAfter(new Date(booking.startTime), new Date());
+  const isSessionCompleted = booking.status === 'Completed';
+  const hasSessionInfo = booking.status === 'Confirmed' || booking.status === 'Completed';
   
   const canCancel = booking.status === 'Pending' || booking.status === 'Confirmed'; // Assuming Confirmed can also be cancelled by student
 
@@ -105,9 +136,22 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({ booking,
           
           <div>
             <h3 className="font-semibold text-gray-300 mb-1 flex items-center"><CheckCircle2 className="w-4 h-4 mr-1.5 text-gray-500" /> Status:</h3>
-            <Badge variant={getStatusBadgeVariant(booking.status)} className="text-sm capitalize">
-              {booking.status}
-            </Badge>
+            <div className="space-y-2">
+              <Badge variant={getStatusBadgeVariant(booking.status)} className="text-sm capitalize">
+                {booking.status}
+              </Badge>
+              {isSessionUpcoming && (
+                <div className="text-sm text-blue-400">
+                  <Timer className="w-4 h-4 inline mr-1" />
+                  Starts in: {getTimeUntilSession(booking.startTime)}
+                </div>
+              )}
+              {isSessionCompleted && (
+                <div className="text-sm text-green-400">
+                  Session completed on {format(new Date(booking.endTime), 'MMM dd, yyyy')}
+                </div>
+              )}
+            </div>
           </div>
 
           {booking.description && (
@@ -119,7 +163,40 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({ booking,
             </div>
           )}
 
-          {booking.skillId && ( // Example of another field
+          {hasSessionInfo && (
+            <div className="border-t border-gray-700 pt-4">
+              <h3 className="font-semibold text-gray-300 mb-3 flex items-center">
+                <Video className="w-4 h-4 mr-1.5 text-blue-400" />
+                Session Information
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <h4 className="text-sm font-medium text-gray-400 mb-1">Duration</h4>
+                  <p className="text-white">
+                    {Math.round((new Date(booking.endTime).getTime() - new Date(booking.startTime).getTime()) / (1000 * 60))} minutes
+                  </p>
+                </div>
+                <div>
+                  <h4 className="text-sm font-medium text-gray-400 mb-1">Session Type</h4>
+                  <p className="text-white">Online Tutoring</p>
+                </div>
+                {booking.tutorName && (
+                  <div>
+                    <h4 className="text-sm font-medium text-gray-400 mb-1">Tutor Contact</h4>
+                    <p className="text-white">{booking.tutorName}</p>
+                  </div>
+                )}
+                {isSessionUpcoming && (
+                  <div>
+                    <h4 className="text-sm font-medium text-gray-400 mb-1">Session Access</h4>
+                    <p className="text-sm text-blue-400">Available 15 minutes before start time</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {booking.skillId && (
              <div>
                 <h3 className="font-semibold text-gray-300 mb-1">Skill ID:</h3>
                 <p className="text-white">{booking.skillId}</p>
@@ -132,24 +209,48 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({ booking,
         </div>
         
         <DialogFooter className="mt-2 pt-4 border-t border-gray-800 gap-2">
-          <Button 
-            variant="outline" 
-            onClick={onClose}
-            className="bg-gray-700 hover:bg-gray-600 border-gray-600"
-          >
-            Close
-          </Button>
-          {canCancel && (
-            <Button 
-              variant="destructive" 
-              onClick={handleCancelBooking}
-              disabled={isCancelling}
-              className="bg-red-600 hover:bg-red-700"
+          <div className="flex flex-col sm:flex-row gap-2 w-full">
+            <Button
+              variant="outline"
+              onClick={onClose}
+              className="bg-gray-700 hover:bg-gray-600 border-gray-600"
             >
-              <XCircle className="w-4 h-4 mr-2" />
-              {isCancelling ? 'Cancelling...' : 'Cancel Booking'}
+              Close
             </Button>
-          )}
+            
+            {isSessionUpcoming && (
+              <>
+                <Button
+                  variant="default"
+                  onClick={handleJoinSession}
+                  className="bg-blue-600 hover:bg-blue-700"
+                >
+                  <Video className="w-4 h-4 mr-2" />
+                  Join Session
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={handleContactTutor}
+                  className="border-gray-600 text-gray-300 hover:bg-gray-700"
+                >
+                  <MessageCircle className="w-4 h-4 mr-2" />
+                  Contact Tutor
+                </Button>
+              </>
+            )}
+            
+            {canCancel && (
+              <Button
+                variant="destructive"
+                onClick={handleCancelBooking}
+                disabled={isCancelling}
+                className="bg-red-600 hover:bg-red-700"
+              >
+                <XCircle className="w-4 h-4 mr-2" />
+                {isCancelling ? 'Cancelling...' : 'Cancel Booking'}
+              </Button>
+            )}
+          </div>
         </DialogFooter>
       </DialogContent>
     </Dialog>

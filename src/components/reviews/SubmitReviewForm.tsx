@@ -18,12 +18,13 @@ const reviewFormSchema = z.object({
 });
 
 interface SubmitReviewFormProps {
-  tutorId: string;
-  bookingId: string; // Assuming bookingId is available where this form is used
+  bookingId: string; // The booking ID for which the review is being submitted
+  tutorId: string; // Tutor ID for the review
+  studentId?: string; // Optional - if not provided, will use current user's ID
   onReviewSubmitted?: () => void; // Optional callback after successful submission
 }
 
-const SubmitReviewForm: React.FC<SubmitReviewFormProps> = ({ tutorId, bookingId, onReviewSubmitted }) => {
+const SubmitReviewForm: React.FC<SubmitReviewFormProps> = ({ bookingId, tutorId, studentId, onReviewSubmitted }) => {
   const { currentUser } = useAuth(); // Changed 'user' to 'currentUser'
   const [submissionStatus, setSubmissionStatus] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
   const [currentRating, setCurrentRating] = useState(0);
@@ -48,11 +49,10 @@ const SubmitReviewForm: React.FC<SubmitReviewFormProps> = ({ tutorId, bookingId,
 
     const payload: CreateReviewDto = {
       bookingID: bookingId,
-      studentID: currentUser.userId, // Changed 'user' to 'currentUser'
+      studentID: studentId || currentUser.userId, // Use provided studentId or current user's ID
       tutorID: tutorId,
       rating: currentRating, // Use currentRating from state
       comment: values.comment,
-      Status: "Active", // Added default status
     };
 
     setSubmissionStatus(null);

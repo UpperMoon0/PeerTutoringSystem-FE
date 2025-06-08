@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { BookingService } from '@/services/BookingService';
+import { ReviewService } from '@/services/ReviewService';
 import type { Booking, StudentBookingHistoryParams } from '@/types/booking.types';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -10,16 +11,19 @@ import { Pagination, PaginationContent, PaginationItem, PaginationLink, Paginati
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { DatePickerWithRange } from '@/components/ui/date-range-picker';
-import { BookingDetailModal } from '@/components/booking/BookingDetailModal'; 
-import { 
-  BookOpen, 
-  CalendarDays, 
-  Clock, 
-  User, 
-  Eye, 
+import { BookingDetailModal } from '@/components/booking/BookingDetailModal';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import SubmitReviewForm from '@/components/reviews/SubmitReviewForm';
+import {
+  BookOpen,
+  CalendarDays,
+  Clock,
+  User,
+  Eye,
   Filter,
   AlertCircle,
-  ListChecks
+  ListChecks,
+  Star
 } from 'lucide-react';
 import { format } from 'date-fns';
 import type { DateRange } from 'react-day-picker';
@@ -41,6 +45,11 @@ const StudentBookingHistoryPage: React.FC = () => {
 
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+  
+  // Review-related state
+  const [selectedBookingForReview, setSelectedBookingForReview] = useState<Booking | null>(null);
+  const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
+  const [reviewedBookings, setReviewedBookings] = useState<Set<string>>(new Set());
 
   const pageSize = 10;
 
@@ -80,10 +89,27 @@ const StudentBookingHistoryPage: React.FC = () => {
     try {
       const response = await BookingService.getStudentBookingHistory(params);
       if (response.success && response.data) {
-        setBookings(response.data.bookings);
+        const fetchedBookings = response.data.bookings;
+        setBookings(fetchedBookings);
         setTotalPages(Math.ceil(response.data.totalCount / response.data.pageSize));
         setTotalBookings(response.data.totalCount);
         setCurrentPage(response.data.page);
+
+        // Check which completed bookings already have reviews
+        const completedBookings = fetchedBookings.filter(booking => booking.status === 'Completed');
+        const reviewChecks = await Promise.allSettled(
+          completedBookings.map(booking =>
+            ReviewService.checkReviewExistsForBooking(booking.bookingId)
+          )
+        );
+
+        const newReviewedBookings = new Set<string>();
+        reviewChecks.forEach((result, index) => {
+          if (result.status === 'fulfilled' && result.value.success && result.value.data) {
+            newReviewedBookings.add(completedBookings[index].bookingId);
+          }
+        });
+        setReviewedBookings(newReviewedBookings);
       } else {
         const errorMessage = typeof response.error === 'string' ? response.error : (response.error as any)?.message || 'Failed to fetch booking history.';
         setError(errorMessage);
@@ -129,6 +155,29 @@ const StudentBookingHistoryPage: React.FC = () => {
     toast.success("Booking cancelled successfully.");
     fetchBookingHistory(); // Refresh the list
     handleModalClose();
+  };
+
+  const handleLeaveReview = (booking: Booking) => {
+    setSelectedBookingForReview(booking);
+    setIsReviewModalOpen(true);
+  };
+
+  const handleReviewModalClose = () => {
+    setIsReviewModalOpen(false);
+    setSelectedBookingForReview(null);
+  };
+
+  const handleReviewSubmitted = () => {
+    if (selectedBookingForReview) {
+      // Add the booking to the reviewed set
+      setReviewedBookings(prev => new Set(prev).add(selectedBookingForReview.bookingId));
+      toast.success("Review submitted successfully!");
+    }
+    handleReviewModalClose();
+  };
+
+  const canLeaveReview = (booking: Booking): boolean => {
+    return booking.status === 'Completed' && !reviewedBookings.has(booking.bookingId);
   };
 
   if (!currentUser) {
@@ -227,43 +276,94 @@ const StudentBookingHistoryPage: React.FC = () => {
                 </TableHeader>
                 <TableBody>
                   {bookings.map((booking) => (
-                    <TableRow 
-                      key={booking.bookingId} 
+                    <TableRow
+                      key={booking.bookingId}
                       className="border-gray-800 hover:bg-gray-800/50 cursor-pointer"
                       onClick={() => handleViewDetails(booking)}
                     >
-                      <TableCell className="text-white font-medium flex items-center">
-                        <User className="w-4 h-4 mr-2 text-gray-400" />
-                        {booking.tutorName || 'N/A'}
+                      <TableCell className="text-white font-medium">
+                        <div className="flex items-center">
+                          <User className="w-4 h-4 mr-2 text-gray-400" />
+                          <div>
+                            <div>{booking.tutorName || 'N/A'}</div>
+                            {(booking.status === 'Confirmed' || booking.status === 'Completed') && (
+                              <div className="text-xs text-gray-400 mt-1">
+                                Session with {booking.tutorName}
+                              </div>
+                            )}
+                          </div>
+                        </div>
                       </TableCell>
-                      <TableCell className="text-white">{booking.topic}</TableCell>
+                      <TableCell className="text-white">
+                        <div>
+                          <div>{booking.topic}</div>
+                          {(booking.status === 'Confirmed' || booking.status === 'Completed') && booking.description && (
+                            <div className="text-xs text-gray-400 mt-1 line-clamp-1">
+                              {booking.description}
+                            </div>
+                          )}
+                        </div>
+                      </TableCell>
                       <TableCell className="text-gray-300">
                         <div className="flex items-center">
                           <CalendarDays className="w-4 h-4 mr-1.5 text-gray-400" />
                           {format(new Date(booking.sessionDate || booking.startTime), 'MMM dd, yyyy')}
                         </div>
+                        {(booking.status === 'Confirmed' || booking.status === 'Completed') && (
+                          <div className="text-xs text-gray-400 mt-1">
+                            Session Date
+                          </div>
+                        )}
                       </TableCell>
                       <TableCell className="text-gray-300">
                         <div className="flex items-center">
                           <Clock className="w-4 h-4 mr-1.5 text-gray-400" />
                           {format(new Date(booking.startTime), 'HH:mm')} - {format(new Date(booking.endTime), 'HH:mm')}
                         </div>
+                        {(booking.status === 'Confirmed' || booking.status === 'Completed') && (
+                          <div className="text-xs text-gray-400 mt-1">
+                            Duration: {Math.round((new Date(booking.endTime).getTime() - new Date(booking.startTime).getTime()) / (1000 * 60))} min
+                          </div>
+                        )}
                       </TableCell>
                       <TableCell>
-                        <Badge variant={getStatusBadgeVariant(booking.status)} className="capitalize">
-                          {booking.status}
-                        </Badge>
+                        <div className="space-y-1">
+                          <Badge variant={getStatusBadgeVariant(booking.status)} className="capitalize">
+                            {booking.status}
+                          </Badge>
+                          {(booking.status === 'Confirmed' || booking.status === 'Completed') && (
+                            <div className="text-xs text-gray-400">
+                              {booking.status === 'Confirmed' ? 'Ready to start' : 'Session ended'}
+                            </div>
+                          )}
+                        </div>
                       </TableCell>
                       <TableCell className="text-right">
-                        <Button 
-                          variant="ghost" 
-                          size="sm"
-                          className="text-blue-400 hover:text-blue-300 hover:bg-gray-700/50"
-                          onClick={(e) => { e.stopPropagation(); handleViewDetails(booking); }}
-                        >
-                          <Eye className="w-4 h-4 mr-1" />
-                          View
-                        </Button>
+                        <div className="flex items-center justify-end gap-2">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="text-blue-400 hover:text-blue-300 hover:bg-gray-700/50"
+                            onClick={(e) => { e.stopPropagation(); handleViewDetails(booking); }}
+                          >
+                            <Eye className="w-4 h-4 mr-1" />
+                            View
+                          </Button>
+                          {canLeaveReview(booking) && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="text-yellow-400 hover:text-yellow-300 hover:bg-gray-700/50"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleLeaveReview(booking);
+                              }}
+                            >
+                              <Star className="w-4 h-4 mr-1" />
+                              Review
+                            </Button>
+                          )}
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))}
@@ -314,6 +414,28 @@ const StudentBookingHistoryPage: React.FC = () => {
           onClose={handleModalClose}
           onBookingCancelled={handleBookingCancelled}
         />
+      )}
+
+      {/* Review Modal */}
+      {selectedBookingForReview && (
+        <Dialog open={isReviewModalOpen} onOpenChange={setIsReviewModalOpen}>
+          <DialogContent className="bg-gray-900 border-gray-800 text-white max-w-md">
+            <DialogHeader>
+              <DialogTitle className="text-white">Leave a Review</DialogTitle>
+              <DialogDescription className="text-gray-400">
+                Share your experience with {selectedBookingForReview.tutorName} for the session on {format(new Date(selectedBookingForReview.sessionDate || selectedBookingForReview.startTime), 'MMM dd, yyyy')}.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="mt-4">
+              <SubmitReviewForm
+                bookingId={selectedBookingForReview.bookingId}
+                tutorId={selectedBookingForReview.tutorId}
+                studentId={selectedBookingForReview.studentId}
+                onReviewSubmitted={handleReviewSubmitted}
+              />
+            </div>
+          </DialogContent>
+        </Dialog>
       )}
     </div>
   );

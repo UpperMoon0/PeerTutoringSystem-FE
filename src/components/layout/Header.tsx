@@ -70,16 +70,28 @@ const Header: React.FC = () => {
                 </Link>
               )}
               {currentUser && currentUser.role === 'Student' && (
-                <Link
-                  to="/student/booking-history"
-                  className={`px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-                    location.pathname === '/student/booking-history'
-                      ? 'bg-primary text-primary-foreground shadow-lg'
-                      : 'text-muted-foreground hover:text-foreground hover:bg-muted'
-                  }`}
-                >
-                  My Bookings
-                </Link>
+                <>
+                  <Link
+                    to="/student/upcoming-sessions"
+                    className={`px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                      location.pathname === '/student/upcoming-sessions'
+                        ? 'bg-primary text-primary-foreground shadow-lg'
+                        : 'text-muted-foreground hover:text-foreground hover:bg-muted'
+                    }`}
+                  >
+                    Upcoming Sessions
+                  </Link>
+                  <Link
+                    to="/student/booking-history"
+                    className={`px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                      location.pathname === '/student/booking-history'
+                        ? 'bg-primary text-primary-foreground shadow-lg'
+                        : 'text-muted-foreground hover:text-foreground hover:bg-muted'
+                    }`}
+                  >
+                    My Bookings
+                  </Link>
+                </>
               )}
             </div>
           </div>
