@@ -3,13 +3,10 @@ import { useParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { BookingService } from '@/services/BookingService';
 import { TutorService } from '@/services/TutorService';
-import { ReviewService } from '@/services/ReviewService';
 import type { ProfileDto, User } from '@/types/user.types';
 import type { Skill } from '@/types/skill.types';
 import type { TutorAvailability } from '@/types/tutorAvailability.types';
 import type { CreateBookingDto } from '@/types/booking.types';
-import type { ReviewDto } from '@/types/review.types';
-import ReviewList from '@/components/reviews/ReviewList';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -48,10 +45,6 @@ const TutorDetailPage: React.FC = () => {
   const [description, setDescription] = useState<string>("");
   const [selectedSkillId] = useState<string | undefined>(undefined);
 
-  // Review State
-  const [reviews, setReviews] = useState<ReviewDto[]>([]);
-  const [isLoadingReviews, setIsLoadingReviews] = useState(false);
-  const [reviewsError, setReviewsError] = useState<string | null>(null);
 
   const getProcessedAvailabilities = useCallback((slotsToProcess: TutorAvailability[]): TutorAvailability[] => {
     interface RecurringGroup {
@@ -139,22 +132,6 @@ const TutorDetailPage: React.FC = () => {
     return getProcessedAvailabilities(unbookedSlots);
   }, [availabilities, getProcessedAvailabilities]);
 
-  const fetchTutorReviews = useCallback(async () => {
-    if (!tutorId) return;
-    setIsLoadingReviews(true);
-    setReviewsError(null);
-    const result = await ReviewService.getReviewsByTutorId(tutorId);
-    if (result.success && result.data) {
-      setReviews(result.data);
-    } else {
-      setReviewsError(result.error as string || 'Failed to fetch reviews.');
-    }
-    setIsLoadingReviews(false);
-  }, [tutorId]);
-
-  useEffect(() => {
-    fetchTutorReviews();
-  }, [fetchTutorReviews]);
 
   useEffect(() => {
     const fetchTutorDetails = async () => {
@@ -182,8 +159,7 @@ const TutorDetailPage: React.FC = () => {
       }
     };
     fetchTutorDetails();
-    if (tutorId) fetchTutorReviews();
-  }, [tutorId, fetchTutorReviews]);
+  }, [tutorId]);
 
   const handleFetchAvailabilities = useCallback(async () => {
     if (!tutorId) {
@@ -566,15 +542,6 @@ const TutorDetailPage: React.FC = () => {
         </CardContent>
       </Card>
 
-      {/* Reviews Section */}
-      <Card className="bg-gray-900 border-gray-800 shadow-xl">
-        <CardHeader className="p-6">
-          <CardTitle className="text-2xl text-white">Tutor Reviews</CardTitle>
-        </CardHeader>
-        <CardContent className="p-6 space-y-6">
-          <ReviewList reviews={reviews} isLoading={isLoadingReviews} error={reviewsError} />
-        </CardContent>
-      </Card>
 
     </div>
   );

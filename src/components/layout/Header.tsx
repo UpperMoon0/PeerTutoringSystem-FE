@@ -31,45 +31,11 @@ const Header: React.FC = () => {
                     : 'text-muted-foreground hover:text-foreground hover:bg-muted'
                 }`}
               >
-                Tutors
+                Find Tutors
               </Link>
-              {currentUser && currentUser.role === 'Tutor' && (
-                <Link
-                  to="/tutor"
-                  className={`px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-                    (location.pathname === '/tutor' || location.pathname.startsWith('/tutor/'))
-                      ? 'bg-primary text-primary-foreground shadow-lg'
-                      : 'text-muted-foreground hover:text-foreground hover:bg-muted'
-                  }`}
-                >
-                  Tutor Dashboard
-                </Link>
-              )}
-              {currentUser && currentUser.role === 'Admin' && (
-                <Link
-                  to="/admin"
-                  className={`px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-                    location.pathname.startsWith('/admin')
-                      ? 'bg-primary text-primary-foreground shadow-lg'
-                      : 'text-muted-foreground hover:text-foreground hover:bg-muted'
-                  }`}
-                >
-                  Admin Dashboard
-                </Link>
-              )}
-              {currentUser && currentUser.role === 'Student' && (
-                <Link
-                  to="/register-tutor"
-                  className={`px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-                    location.pathname === '/register-tutor'
-                      ? 'bg-primary text-primary-foreground shadow-lg'
-                      : 'text-muted-foreground hover:text-foreground hover:bg-muted'
-                  }`}
-                >
-                  Become a Tutor
-                </Link>
-              )}
-              {currentUser && currentUser.role === 'Student' && (
+              
+              {/* Student Navigation - Available to both Students and Tutors */}
+              {currentUser && (currentUser.role === 'Student' || currentUser.role === 'Tutor') && (
                 <>
                   <Link
                     to="/student/upcoming-sessions"
@@ -92,6 +58,48 @@ const Header: React.FC = () => {
                     My Bookings
                   </Link>
                 </>
+              )}
+
+              {/* Tutor-specific Navigation */}
+              {currentUser && currentUser.role === 'Tutor' && (
+                <Link
+                  to="/tutor"
+                  className={`px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                    (location.pathname === '/tutor' || location.pathname.startsWith('/tutor/'))
+                      ? 'bg-primary text-primary-foreground shadow-lg'
+                      : 'text-muted-foreground hover:text-foreground hover:bg-muted'
+                  }`}
+                >
+                  Tutor Dashboard
+                </Link>
+              )}
+
+              {/* Admin Navigation */}
+              {currentUser && currentUser.role === 'Admin' && (
+                <Link
+                  to="/admin"
+                  className={`px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                    location.pathname.startsWith('/admin')
+                      ? 'bg-primary text-primary-foreground shadow-lg'
+                      : 'text-muted-foreground hover:text-foreground hover:bg-muted'
+                  }`}
+                >
+                  Admin Dashboard
+                </Link>
+              )}
+
+              {/* Become a Tutor - Only for Students who aren't tutors yet */}
+              {currentUser && currentUser.role === 'Student' && (
+                <Link
+                  to="/register-tutor"
+                  className={`px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                    location.pathname === '/register-tutor'
+                      ? 'bg-primary text-primary-foreground shadow-lg'
+                      : 'text-muted-foreground hover:text-foreground hover:bg-muted'
+                  }`}
+                >
+                  Become a Tutor
+                </Link>
               )}
             </div>
           </div>

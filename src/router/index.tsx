@@ -6,9 +6,6 @@ import TutorRegisterPage from '../pages/TutorRegisterPage';
 import App from '../App';
 import HomePage from '../pages/HomePage';
 import AdminDashboardPage from '@/pages/admin/AdminDashboardPage';
-// import TutorVerificationPage from '@/pages/admin/TutorVerificationPage'; // No longer needed
-// import ManageUsersPage from '@/pages/admin/ManageUsersPage';  // No longer needed
-// import ManageSkillsPage from '@/pages/admin/ManageSkillsPage'; // No longer needed
 import ProtectedRoute from './ProtectedRoute';
 import UserProfilePage from '@/pages/UserProfilePage';
 import TutorListPage from '@/pages/TutorListPage';
@@ -51,7 +48,7 @@ const router = createBrowserRouter([
       },
       {
         path: 'student',
-        element: <ProtectedRoute allowedRoles={['Student']} />,
+        element: <ProtectedRoute allowedRoles={['Student', 'Tutor']} />,
         children: [
           {
             path: 'upcoming-sessions',
@@ -82,16 +79,6 @@ const router = createBrowserRouter([
           },
         ],
       },
-      // Backward compatibility routes
-      {
-        path: '/manage-availability',
-        element: <Navigate to="/tutor?section=availability" replace />
-      },
-      // Backward compatibility for bookings routes
-      {
-        path: '/tutor/bookings',
-        element: <Navigate to="/tutor?section=bookings" replace />
-      },
       {
         path: '/tutor/bookings/:bookingId',
         element: <Navigate to="/tutor?section=bookings" replace />
@@ -101,10 +88,6 @@ const router = createBrowserRouter([
         element: <ProtectedRoute allowedRoles={['Admin']} />, 
         children: [
           { index: true, element: <AdminDashboardPage /> },
-          // The following routes are now handled within AdminDashboardPage
-          // { path: 'tutor-verifications', element: <TutorVerificationPage /> },
-          // { path: 'manage-users', element: <ManageUsersPage /> },
-          // { path: 'manage-skills', element: <ManageSkillsPage /> },
         ],
       },
     ],
