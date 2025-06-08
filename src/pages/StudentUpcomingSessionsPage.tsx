@@ -68,20 +68,16 @@ const StudentUpcomingSessionsPage: React.FC = () => {
           return new Date(a.startTime).getTime() - new Date(b.startTime).getTime();
         });
 
-        // Try to fetch session details for each booking
+        // Fetch session details for each booking using the direct endpoint
         const sessionsWithDetails: BookingWithSession[] = await Promise.all(
           futureConfirmedBookings.map(async (booking) => {
             try {
-              // For now, we'll use the session API to get user sessions and match by booking ID
-              // In a real implementation, there might be a more direct way to get session by booking ID
-              const sessionResponse = await SessionService.getUserSessions(1, 100);
+              // Use the direct getSessionByBookingId endpoint
+              const sessionResponse = await SessionService.getSessionByBookingId(booking.bookingId);
               if (sessionResponse.success && sessionResponse.data) {
-                const matchingSession = sessionResponse.data.sessions.find(
-                  session => session.bookingId === booking.bookingId
-                );
                 return {
                   ...booking,
-                  session: matchingSession
+                  session: sessionResponse.data
                 };
               }
             } catch (sessionError) {
