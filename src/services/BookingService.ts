@@ -160,11 +160,12 @@ export const BookingService = {
       queryParams.append('page', page.toString());
       queryParams.append('pageSize', pageSize.toString());
       
-      if (params.status !== undefined) {
-        // If params.status has a specific string value (e.g., 'Pending', 'Confirmed'),
-        // it should be appended. For "All" statuses, params.status will be undefined,
-        // and the status parameter will be omitted from the request.
+      // Always include status parameter - send null for "All" bookings, specific status otherwise
+      if (params.status !== undefined && params.status !== null) {
         queryParams.append('status', params.status);
+      } else {
+        // When status is undefined or null (for "All" filter), send null instead of omitting the parameter
+        queryParams.append('status', 'null');
       }
       
       // Convert skillId to GUID format if provided

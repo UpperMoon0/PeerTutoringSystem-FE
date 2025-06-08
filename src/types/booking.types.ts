@@ -50,7 +50,7 @@ export interface BookingResponse {
 export interface StudentBookingHistoryParams {
   page?: number;
   pageSize?: number;
-  status?: 'Pending' | 'Confirmed' | 'Cancelled' | 'Completed' | 'Rejected';
+  status?: 'Pending' | 'Confirmed' | 'Cancelled' | 'Completed' | 'Rejected' | null;
   skillId?: string;
   startDate?: string; // ISO string for query
   endDate?: string;   // ISO string for query

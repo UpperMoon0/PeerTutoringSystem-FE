@@ -3,14 +3,14 @@ import { useParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { BookingService } from '@/services/BookingService';
 import { TutorService } from '@/services/TutorService';
-import { ReviewService } from '@/services/ReviewService'; // Added
+import { ReviewService } from '@/services/ReviewService';
 import type { ProfileDto, User } from '@/types/user.types';
 import type { Skill } from '@/types/skill.types';
 import type { TutorAvailability } from '@/types/tutorAvailability.types';
 import type { CreateBookingDto } from '@/types/booking.types';
-import type { ReviewDto } from '@/types/review.types'; // Added
-import ReviewList from '@/components/reviews/ReviewList'; // Added
-import SubmitReviewForm from '@/components/reviews/SubmitReviewForm'; // Added
+import type { ReviewDto } from '@/types/review.types';
+import ReviewList from '@/components/reviews/ReviewList';
+import SubmitReviewForm from '@/components/reviews/SubmitReviewForm';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -73,11 +73,10 @@ const TutorDetailPage: React.FC = () => {
           const endTimeDate = new Date(slot.endTime);
 
           if (isNaN(startTimeDate.getTime()) || isNaN(endTimeDate.getTime())) {
-            nonRecurringSlots.push(slot); // Treat as non-recurring if dates are invalid
+            nonRecurringSlots.push(slot);
             continue;
           }
 
-          // Group by day (or 'UNKNOWN_DAY' for daily) and time
           const timeKey = `${slot.recurringDay || 'UNKNOWN_DAY'}-${format(startTimeDate, "HH:mm")}-${format(endTimeDate, "HH:mm")}`;
 
           if (!recurringGroups[timeKey]) {
@@ -96,20 +95,12 @@ const TutorDetailPage: React.FC = () => {
           if (startTimeDate > recurringGroups[timeKey].maxDate) {
             recurringGroups[timeKey].maxDate = startTimeDate;
           }
-          // If an originalRecurrenceEndDate is set, assume it's consistent for the group.
-          // The first one encountered for the group is used.
           if (slot.recurrenceEndDate && !recurringGroups[timeKey].originalRecurrenceEndDate) {
               recurringGroups[timeKey].originalRecurrenceEndDate = new Date(slot.recurrenceEndDate);
-          } else if (slot.recurrenceEndDate && recurringGroups[timeKey].originalRecurrenceEndDate && new Date(slot.recurrenceEndDate).getTime() !== recurringGroups[timeKey].originalRecurrenceEndDate!.getTime()) {
-            // If differing original recurrenceEndDates are found within a group, it implies an issue or complex scenario.
-            // For simplicity, we might prioritize the one from the earliest slot or clear it to use maxDate.
-            // Current logic: first one wins. Or, if we want to be safer:
-            // recurringGroups[timeKey].originalRecurrenceEndDate = null; // Force use of maxDate if inconsistent
           }
 
         } catch (e) {
-          // console.error("Error processing recurring slot for grouping:", slot, e);
-          nonRecurringSlots.push(slot); // Fallback
+          nonRecurringSlots.push(slot);
         }
       } else {
         nonRecurringSlots.push(slot);
@@ -121,7 +112,6 @@ const TutorDetailPage: React.FC = () => {
     for (const key in recurringGroups) {
       const group = recurringGroups[key];
       if (group.slots.length > 0) {
-        // Sort slots in the group by start time to reliably get the first one
         const sortedSlotsInGroup = group.slots.sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
         const firstSlotInGroup = sortedSlotsInGroup[0];
 
@@ -129,49 +119,22 @@ const TutorDetailPage: React.FC = () => {
         if (group.originalRecurrenceEndDate) {
           displayUntilDate = group.originalRecurrenceEndDate;
         } else {
-          // Use the start date of the latest slot in the fetched series as the "until" date
           displayUntilDate = group.maxDate;
         }
         
-        // Create a summary slot based on the first actual slot in the series.
-        // Its startTime, endTime, and availabilityId will be from this first slot.
-        // The recurrenceEndDate will be overridden for display.
         const summaryDisplaySlot: TutorAvailability = {
           ...firstSlotInGroup,
-          // Ensure startTime is the earliest date of this specific recurring event, with its original time.
           startTime: new Date(group.minDate).toISOString(),
-          // The endTime should correspond to the minDate as well.
-          // Calculate endTime based on minDate and original duration.
-          // This is tricky if original startTime/endTime spans midnight.
-          // For simplicity, keep firstSlotInGroup.endTime, assuming display logic handles time part correctly.
-          // The date part of startTime is already set to group.minDate.
-          // The date part of endTime of firstSlotInGroup might not match group.minDate if it's a multi-day event.
-          // Let's ensure the summary slot's start and end times are consistent with the first occurrence.
-          // The firstSlotInGroup already has the correct startTime and endTime for *an* instance.
-          // We just need to ensure its date part is the earliest.
-          // The `...firstSlotInGroup` spread already sets startTime and endTime.
-          // We then override startTime to be the earliest date.
-          // We should also adjust endTime to correspond to that earliest date.
-          
-          // Let's use the properties of the actual earliest slot.
-          // The `startTime` of `firstSlotInGroup` is already the earliest for *that specific instance*.
-          // The `group.minDate` is the date of the earliest instance.
-          // So, `firstSlotInGroup.startTime` should already be `group.minDate` with the correct time.
-          // No, `firstSlotInGroup` is the slot object that has the earliest start time.
-          // So `firstSlotInGroup.startTime` IS `group.minDate` (as a string).
-          // The `...firstSlotInGroup` is correct.
-
           recurrenceEndDate: displayUntilDate ? format(displayUntilDate, "yyyy-MM-dd") : null,
         };
         finalProcessedSlots.push(summaryDisplaySlot);
       }
     }
 
-    // Sort the final list by start time for consistent display
     finalProcessedSlots.sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
     
     return finalProcessedSlots;
-  }, [format]); // Added format to dependency array, though it's stable.
+  }, [format]);
 
   const displaySlots = useMemo(() => {
     const unbookedSlots = availabilities.filter(slot => !slot.isBooked);
@@ -221,8 +184,8 @@ const TutorDetailPage: React.FC = () => {
       }
     };
     fetchTutorDetails();
-    if (tutorId) fetchTutorReviews(); // Fetch reviews when tutorId is available
-  }, [tutorId, fetchTutorReviews]); // Added fetchTutorReviews dependency
+    if (tutorId) fetchTutorReviews();
+  }, [tutorId, fetchTutorReviews]);
 
   const handleFetchAvailabilities = useCallback(async () => {
     if (!tutorId) {
@@ -349,7 +312,7 @@ const TutorDetailPage: React.FC = () => {
 
     setBookingError(null);
     setBookingSuccess(null);
-    setIsLoading(true); // Use general loading for booking action
+    setIsLoading(true);
 
     const bookingData: CreateBookingDto = {
       tutorId: tutorId,
