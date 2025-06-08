@@ -524,7 +524,7 @@ const TutorDetailPage: React.FC = () => {
                         : "outline" // Secondary unselected style
                       }
                       className={cn(
-                        "w-full text-left justify-start h-auto py-2.5 px-3 transition-all",
+                        "w-full text-left justify-start h-auto py-3 px-3 transition-all min-h-[4rem]",
                         selectedAvailability?.availabilityId === avail.availabilityId && selectedAvailability?.startTime === avail.startTime
                           ? "bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white border-transparent"
                           : "bg-gray-800 border-gray-700 hover:bg-gray-750 text-gray-300 hover:text-white"
@@ -534,9 +534,22 @@ const TutorDetailPage: React.FC = () => {
                       <div className="flex flex-col">
                         {avail.isRecurring ? (
                           <>
-                            <span className="font-medium">
-                              {`Recurring on ${avail.recurringDay ? avail.recurringDay.charAt(0).toUpperCase() + avail.recurringDay.slice(1).toLowerCase() : 'Daily'}, ${format(new Date(avail.startTime), "HH:mm")} - ${format(new Date(avail.endTime), "HH:mm")}${avail.recurrenceEndDate ? `, until ${format(new Date(avail.recurrenceEndDate), "yyyy-MM-dd")}` : ''}`}
+                            <div className="flex items-center gap-2">
+                              <span className="font-medium">
+                                {avail.recurringDay ? avail.recurringDay.charAt(0).toUpperCase() + avail.recurringDay.slice(1).toLowerCase() : 'Daily'}
+                              </span>
+                              <span className="text-xs bg-blue-600/20 text-blue-300 px-2 py-0.5 rounded-full">
+                                Recurring
+                              </span>
+                            </div>
+                            <span className="text-sm">
+                              {`${format(new Date(avail.startTime), "p")} - ${format(new Date(avail.endTime), "p")}`}
                             </span>
+                            {avail.recurrenceEndDate && (
+                              <span className="text-xs text-gray-400">
+                                Until {format(new Date(avail.recurrenceEndDate), "PPP")}
+                              </span>
+                            )}
                           </>
                         ) : (
                           <>

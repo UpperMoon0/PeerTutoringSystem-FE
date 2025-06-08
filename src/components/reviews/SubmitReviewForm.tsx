@@ -4,11 +4,10 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Input } from '@/components/ui/input'; // For rating, or use a star component
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { ReviewService } from '@/services/ReviewService';
 import type { CreateReviewDto } from '@/types/review.types';
-import { useAuth } from '@/contexts/AuthContext'; // To get studentID
+import { useAuth } from '@/contexts/AuthContext'; 
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Terminal, Star } from 'lucide-react';
 

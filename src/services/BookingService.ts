@@ -6,8 +6,38 @@ import type { Booking, CreateBookingDto, StudentBookingHistoryParams } from "@/t
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 const formatDateForQuery = (date: Date | string): string => {
-  if (typeof date === 'string') return date;
-  return date.toISOString().split('.')[0];
+  if (typeof date === 'string') {
+    // If it's already a string, try to parse it as Date and format it properly
+    const parsedDate = new Date(date);
+    if (!isNaN(parsedDate.getTime())) {
+      return parsedDate.toISOString();
+    }
+    return date;
+  }
+  return date.toISOString();
+};
+
+// Helper function to convert backend DTOs to frontend types
+const convertBookingFromBackend = (backendBooking: any): Booking => {
+  return {
+    bookingId: backendBooking.bookingId,
+    studentId: backendBooking.studentId,
+    tutorId: backendBooking.tutorId,
+    availabilityId: backendBooking.availabilityId,
+    sessionDate: backendBooking.sessionDate,
+    startTime: backendBooking.startTime,
+    endTime: backendBooking.endTime,
+    status: backendBooking.status,
+    createdAt: backendBooking.createdAt,
+    updatedAt: backendBooking.updatedAt,
+    studentName: backendBooking.studentName,
+    tutorName: backendBooking.tutorName,
+    topic: backendBooking.topic,
+    description: backendBooking.description,
+    skillId: backendBooking.skillId,
+    student: backendBooking.student,
+    tutor: backendBooking.tutor
+  };
 };
 
 export const BookingService = {
@@ -62,8 +92,8 @@ export const BookingService = {
 
   async createBooking(bookingData: CreateBookingDto): Promise<ApiResult<Booking>> {
     try {
-      const response = await AuthService.fetchWithAuth(`${API_BASE_URL}/Bookings`, { 
-        method: 'POST', 
+      const response = await AuthService.fetchWithAuth(`${API_BASE_URL}/Bookings`, {
+        method: 'POST',
         body: JSON.stringify(bookingData),
         headers: { 'Content-Type': 'application/json' },
       });
@@ -72,8 +102,13 @@ export const BookingService = {
         throw new Error(errorData.error || `Failed to create booking: ${response.statusText}`);
       }
       const responseData = await response.json();
-      return { success: true, data: responseData.data };
+      
+      // Convert backend booking to frontend format
+      const convertedBooking = convertBookingFromBackend(responseData.data);
+      
+      return { success: true, data: convertedBooking };
     } catch (error: any) {
+      console.error('Error creating booking:', error);
       return { success: false, error: error.message || "Failed to create booking." };
     }
   },
@@ -95,8 +130,19 @@ export const BookingService = {
         throw new Error(errorData.error || `Failed to fetch student bookings: ${response.statusText}`);
       }
       const responseData = await response.json();
-      return { success: true, data: { bookings: responseData.data, totalCount: responseData.totalCount } };
+      
+      // Convert backend bookings to frontend format
+      const convertedBookings = responseData.data?.map((booking: any) => convertBookingFromBackend(booking)) || [];
+      
+      return {
+        success: true,
+        data: {
+          bookings: convertedBookings,
+          totalCount: responseData.totalCount || 0
+        }
+      };
     } catch (error: any) {
+      console.error('Error fetching student bookings:', error);
       return { success: false, error: error.message || "Failed to fetch student bookings." };
     }
   },
@@ -106,17 +152,33 @@ export const BookingService = {
   ): Promise<ApiResult<{ bookings: Booking[], totalCount: number, page: number, pageSize: number }>> {
     try {
       const queryParams = new URLSearchParams();
-      if (params.page) queryParams.append('page', params.page.toString());
-      if (params.pageSize) queryParams.append('pageSize', params.pageSize.toString());
+      
+      // Set default pagination if not provided
+      const page = params.page || 1;
+      const pageSize = params.pageSize || 10;
+      
+      queryParams.append('page', page.toString());
+      queryParams.append('pageSize', pageSize.toString());
+      
       if (params.status !== undefined) {
         // If params.status has a specific string value (e.g., 'Pending', 'Confirmed'),
         // it should be appended. For "All" statuses, params.status will be undefined,
         // and the status parameter will be omitted from the request.
         queryParams.append('status', params.status);
       }
-      if (params.skillId) queryParams.append('skillId', params.skillId);
-      if (params.startDate) queryParams.append('startDate', formatDateForQuery(params.startDate));
-      if (params.endDate) queryParams.append('endDate', formatDateForQuery(params.endDate));
+      
+      // Convert skillId to GUID format if provided
+      if (params.skillId) {
+        queryParams.append('skillId', params.skillId);
+      }
+      
+      // Ensure proper date formatting for backend
+      if (params.startDate) {
+        queryParams.append('startDate', formatDateForQuery(params.startDate));
+      }
+      if (params.endDate) {
+        queryParams.append('endDate', formatDateForQuery(params.endDate));
+      }
 
       const response = await AuthService.fetchWithAuth(`${API_BASE_URL}/Bookings/student?${queryParams.toString()}`, {
         method: 'GET',
@@ -126,17 +188,23 @@ export const BookingService = {
         const errorData = await response.json().catch(() => ({ error: "Failed to parse error response." }));
         throw new Error(errorData.error || `Failed to fetch student booking history: ${response.statusText}`);
       }
+      
       const responseData = await response.json();
+      
+      // Convert backend bookings to frontend format
+      const convertedBookings = responseData.data?.map((booking: any) => convertBookingFromBackend(booking)) || [];
+      
       return {
         success: true,
         data: {
-          bookings: responseData.data,
-          totalCount: responseData.totalCount,
-          page: responseData.page,
-          pageSize: responseData.pageSize
+          bookings: convertedBookings,
+          totalCount: responseData.totalCount || 0,
+          page: responseData.page || page,
+          pageSize: responseData.pageSize || pageSize
         }
       };
     } catch (error: any) {
+      console.error('Error fetching student booking history:', error);
       return { success: false, error: error.message || "Failed to fetch student booking history." };
     }
   },
@@ -148,7 +216,7 @@ export const BookingService = {
   ): Promise<ApiResult<{ bookings: Booking[], totalCount: number }>> {
     try {
       const queryParams = new URLSearchParams({
-        Status: status, 
+        Status: status,
         page: page.toString(),
         pageSize: pageSize.toString(),
       }).toString();
@@ -160,8 +228,19 @@ export const BookingService = {
         throw new Error(errorData.error || `Failed to fetch tutor bookings: ${response.statusText}`);
       }
       const responseData = await response.json();
-      return { success: true, data: { bookings: responseData.data, totalCount: responseData.totalCount } };
+      
+      // Convert backend bookings to frontend format
+      const convertedBookings = responseData.data?.map((booking: any) => convertBookingFromBackend(booking)) || [];
+      
+      return {
+        success: true,
+        data: {
+          bookings: convertedBookings,
+          totalCount: responseData.totalCount || 0
+        }
+      };
     } catch (error: any) {
+      console.error('Error fetching tutor bookings:', error);
       return { success: false, error: error.message || "Failed to fetch tutor bookings." };
     }
   },
@@ -174,8 +253,13 @@ export const BookingService = {
         throw new Error(errorData.error || `Failed to fetch booking details: ${response.statusText}`);
       }
       const responseData = await response.json();
-      return { success: true, data: responseData.data };
+      
+      // Convert backend booking to frontend format
+      const convertedBooking = convertBookingFromBackend(responseData.data);
+      
+      return { success: true, data: convertedBooking };
     } catch (error: any) {
+      console.error('Error fetching booking details:', error);
       return { success: false, error: error.message || "Failed to fetch booking details." };
     }
   },
@@ -192,8 +276,13 @@ export const BookingService = {
         throw new Error(errorData.error || `Failed to update booking status: ${response.statusText}`);
       }
       const responseData = await response.json();
-      return { success: true, data: responseData.data };
+      
+      // Convert backend booking to frontend format
+      const convertedBooking = convertBookingFromBackend(responseData.data);
+      
+      return { success: true, data: convertedBooking };
     } catch (error: any) {
+      console.error('Error updating booking status:', error);
       return { success: false, error: error.message || "Failed to update booking status." };
     }
   }
