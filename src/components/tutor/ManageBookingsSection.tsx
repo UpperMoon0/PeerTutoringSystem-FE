@@ -13,6 +13,7 @@ import { Pagination, PaginationContent, PaginationItem, PaginationLink, Paginati
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import CreateSessionForm from '@/components/session/CreateSessionForm';
+import { BookingDetailView } from '@/components/booking/BookingDetailView';
 import {
   BookOpen,
   Calendar,
@@ -431,83 +432,22 @@ const ManageBookingsSection: React.FC = () => {
           </DialogHeader>
           
           {selectedBooking && (
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <h3 className="font-semibold text-gray-300 mb-1">Student:</h3>
-                  <p className="text-white">{selectedBooking.studentName || 'N/A'}</p>
-                </div>
-                <div>
-                  <h3 className="font-semibold text-gray-300 mb-1">Status:</h3>
-                  <Badge variant={getStatusBadgeVariant(selectedBooking.status)}>
-                    {selectedBooking.status}
-                  </Badge>
-                </div>
-              </div>
-              
-              <div>
-                <h3 className="font-semibold text-gray-300 mb-1">Date & Time:</h3>
-                <div className="flex items-center space-x-4 text-white">
-                  <div className="flex items-center">
-                    <Calendar className="w-4 h-4 mr-1 text-blue-400" />
-                    {format(new Date(selectedBooking.startTime), 'PPP')}
-                  </div>
-                  <div className="flex items-center">
-                    <Clock className="w-4 h-4 mr-1 text-blue-400" />
-                    {format(new Date(selectedBooking.startTime), 'p')} - {format(new Date(selectedBooking.endTime), 'p')}
-                  </div>
-                </div>
-              </div>
-              
-              <div>
-                <h3 className="font-semibold text-gray-300 mb-1">Topic:</h3>
-                <p className="text-white">{selectedBooking.topic}</p>
-              </div>
-              
-              <div>
-                <h3 className="font-semibold text-gray-300 mb-1">Description:</h3>
-                <p className="text-gray-300 bg-gray-800 p-3 rounded-lg">
-                  {selectedBooking.description || 'No description provided.'}
-                </p>
-              </div>
-
-              {selectedBooking.status === 'Pending' && (
-                <div className="pt-4 border-t border-gray-800">
-                  <h3 className="font-semibold text-gray-300 mb-3">Actions:</h3>
-                  <div className="flex space-x-3">
-                    <Button
-                      onClick={() => handleUpdateStatus(selectedBooking.bookingId, 'Confirmed')}
-                      disabled={isUpdating}
-                      className="bg-green-600 hover:bg-green-700"
-                    >
-                      <CheckCircle className="w-4 h-4 mr-2" />
-                      {isUpdating ? 'Processing...' : 'Accept & Create Session'}
-                    </Button>
-                    <Button
-                      onClick={() => handleUpdateStatus(selectedBooking.bookingId, 'Rejected')}
-                      disabled={isUpdating}
-                      variant="destructive"
-                    >
-                      <X className="w-4 h-4 mr-2" />
-                      {isUpdating ? 'Rejecting...' : 'Reject Booking'}
-                    </Button>
-                  </div>
-                </div>
+            <div className="py-4 max-h-[60vh] overflow-y-auto pr-2">
+              {error && (
+                <Alert className="mb-4 bg-red-900 border-red-800">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertTitle className="text-red-200">Error</AlertTitle>
+                  <AlertDescription className="text-red-300">{error}</AlertDescription>
+                </Alert>
               )}
 
-              {(selectedBooking.status === 'Confirmed' && new Date(selectedBooking.endTime) < new Date()) && (
-                <div className="pt-4 border-t border-gray-800">
-                  <h3 className="font-semibold text-gray-300 mb-3">Actions:</h3>
-                  <Button 
-                    onClick={() => handleUpdateStatus(selectedBooking.bookingId, 'Completed')} 
-                    disabled={isUpdating}
-                    className="bg-blue-600 hover:bg-blue-700"
-                  >
-                    <CheckCircle className="w-4 h-4 mr-2" />
-                    {isUpdating ? 'Completing...' : 'Mark as Completed'}
-                  </Button>
-                </div>
-              )}
+              <BookingDetailView
+                booking={selectedBooking}
+                userRole="tutor"
+                onUpdateStatus={(status) => handleUpdateStatus(selectedBooking.bookingId, status)}
+                isUpdating={isUpdating}
+                showActions={true}
+              />
             </div>
           )}
           
