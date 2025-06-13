@@ -38,35 +38,35 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const sidebarItems: SidebarItem[] = [
-    { 
-      icon: Home, 
-      label: 'Dashboard', 
-      onClick: () => location.pathname !== '/admin' || location.search !== '' ? undefined : (() => {}), 
-      href: '/admin?section=overview' 
+    {
+      icon: Home,
+      label: 'Dashboard',
+      onClick: () => {},
+      href: '/admin?section=overview'
     },
-    { 
-      icon: ListChecks, 
-      label: 'Tutor Verifications', 
-      onClick: onTutorVerificationClick || (() => {}), 
-      href: onTutorVerificationClick ? undefined : '/admin?section=tutor-verifications' 
+    {
+      icon: ListChecks,
+      label: 'Tutor Verifications',
+      onClick: onTutorVerificationClick || (() => {}),
+      href: '/admin?section=tutor-verifications'
     },
-    { 
-      icon: Users, 
-      label: 'Manage Users', 
-      onClick: onManageUsersClick || (() => {}), 
-      href: onManageUsersClick ? undefined : '/admin?section=manage-users' 
+    {
+      icon: Users,
+      label: 'Manage Users',
+      onClick: onManageUsersClick || (() => {}),
+      href: '/admin?section=manage-users'
     },
     {
       icon: Wrench,
       label: 'Manage Skills',
       onClick: onManageSkillsClick || (() => {}),
-      href: onManageSkillsClick ? undefined : '/admin?section=manage-skills'
+      href: '/admin?section=manage-skills'
     },
     {
       icon: BookOpen,
-      label: 'Booking Management',
+      label: 'Manage Bookings',
       onClick: onManageBookingsClick || (() => {}),
-      href: onManageBookingsClick ? undefined : '/admin?section=manage-bookings'
+      href: '/admin?section=manage-bookings'
     },
   ];
 
@@ -139,10 +139,11 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({
             const itemSection = itemUrl.searchParams.get('section');
             if (location.pathname === itemUrl.pathname) {
               if (itemSection) {
-                isActive = itemSection === currentSection;
-                 // Special case for overview: active if section is 'overview' or no section param
-                if (itemSection === 'overview' && (currentSection === 'overview' || currentSection === null)) {
-                    isActive = true;
+                // Special case for overview: active if section is 'overview' or no section param
+                if (itemSection === 'overview') {
+                  isActive = currentSection === 'overview' || currentSection === null;
+                } else {
+                  isActive = itemSection === currentSection;
                 }
               } else { // For items without section (e.g. /admin/analytics)
                  isActive = location.pathname === item.href && !itemSection && !currentSection;
@@ -173,23 +174,8 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({
             </>
           );
           
-          // If item.href is not present, it means it's purely an onClick driven by parent (AdminDashboardPage)
-          // or it's a placeholder for a future link.
-          // We prioritize onClick passed from parent if available.
-          if (item.onClick && !item.href) {
-            return (
-              <button
-                key={key}
-                onClick={() => handleItemClick(item)}
-                {...commonProps}
-              >
-                {content}
-              </button>
-            );
-          }
-          
-          // If item.href is present, it's a Link.
-          // If item.onClick is also present (e.g. from parent), it will also be called.
+          // All items now have href, so we always render as Link
+          // The onClick handler will still be called via handleItemClick
           return (
             <Link
               key={key}

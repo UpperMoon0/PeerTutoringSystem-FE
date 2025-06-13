@@ -117,7 +117,7 @@ const AdminDashboardPage: React.FC = () => {
                   {activeSection === 'tutor-verifications' && 'Tutor Verifications'}
                   {activeSection === 'manage-users' && 'Manage Users'}
                   {activeSection === 'manage-skills' && 'Manage Skills'}
-                  {activeSection === 'manage-bookings' && 'Booking Management'}
+                  {activeSection === 'manage-bookings' && 'Manage Bookings'}
                 </h1>
                 <p className="text-gray-400 mt-1 text-sm lg:text-base">
                   {activeSection === 'overview' && "Welcome to the admin portal. Manage system operations and users."}
@@ -257,7 +257,7 @@ const AdminDashboardPage: React.FC = () => {
                       className="w-full justify-start bg-gray-800 border-gray-700 hover:bg-gray-700 text-white"
                     >
                       <BookOpen className="w-4 h-4 mr-2" />
-                      Booking Management
+                      Manage Bookings
                     </Button>
                   </CardContent>
                 </Card>
