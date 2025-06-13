@@ -261,10 +261,11 @@ const TutorDashboardPage: React.FC = () => {
 
   const getStatusBadgeVariant = (status: string) => {
     switch (status) {
-      case 'Confirmed': return 'default';
       case 'Pending': return 'secondary';
-      case 'Completed': return 'default';
-      case 'Cancelled': return 'destructive';
+      case 'Confirmed': return 'default';
+      case 'Cancelled':
+      case 'Rejected': return 'destructive';
+      case 'Completed': return 'outline';
       default: return 'secondary';
     }
   };
