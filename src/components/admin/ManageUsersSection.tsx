@@ -75,16 +75,16 @@ const ManageUsersSection: React.FC = () => {
 
   if (loading && allUsers.length === 0) {
     return (
-      <div className="flex justify-center items-center h-64 bg-background">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        <p className="ml-2 text-lg text-muted-foreground">Loading users...</p>
+      <div className="flex justify-center items-center h-64 bg-gray-950">
+        <Loader2 className="h-8 w-8 animate-spin text-blue-400" />
+        <p className="ml-2 text-lg text-gray-400">Loading users...</p>
       </div>
     );
   }
 
   if (error) {
     return (
-      <Alert variant="destructive" className="mb-4 bg-destructive/10 text-destructive-foreground border-destructive">
+      <Alert variant="destructive" className="mb-4 bg-red-500/10 text-red-400 border-red-500">
         <ShieldAlert className="h-4 w-4" />
         <AlertTitle>Error</AlertTitle>
         <AlertDescription>{error}</AlertDescription>
@@ -93,15 +93,15 @@ const ManageUsersSection: React.FC = () => {
   }
 
   return (
-    <div className="container mx-auto p-4 bg-background text-foreground">
+    <div className="container mx-auto p-4 bg-gray-950 text-white">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold text-foreground">Manage Users</h1>
+        <h1 className="text-3xl font-bold text-white">Manage Users</h1>
         <div className="w-48">
           <Select value={selectedRoleFilter} onValueChange={setSelectedRoleFilter}>
-            <SelectTrigger className="bg-input border-input text-foreground">
+            <SelectTrigger className="bg-gray-800 border-gray-700 text-white">
               <SelectValue placeholder="Filter by role" />
             </SelectTrigger>
-            <SelectContent className="bg-popover text-popover-foreground border-border">
+            <SelectContent className="bg-gray-800 text-white border-gray-700">
               <SelectItem value="All">All Roles</SelectItem>
               <SelectItem value="Admin">Admin</SelectItem>
               <SelectItem value="Tutor">Tutor</SelectItem>
@@ -112,7 +112,7 @@ const ManageUsersSection: React.FC = () => {
       </div>
 
       {actionError && (
-        <Alert variant="destructive" className="mb-4 bg-destructive/10 text-destructive-foreground border-destructive">
+        <Alert variant="destructive" className="mb-4 bg-red-500/10 text-red-400 border-red-500">
           <ShieldAlert className="h-4 w-4" />
           <AlertTitle>Action Failed</AlertTitle>
           <AlertDescription>{actionError}</AlertDescription>
@@ -127,15 +127,15 @@ const ManageUsersSection: React.FC = () => {
       )}
 
       {filteredUsers.length === 0 && !loading && (
-        <p className="text-center text-muted-foreground text-lg">
+        <p className="text-center text-gray-400 text-lg">
           {selectedRoleFilter === 'All' ? 'No users found.' : `No users found with the role: ${selectedRoleFilter}`}
         </p>
       )}
 
       {filteredUsers.length > 0 && (
-        <div className="overflow-x-auto bg-card border border-border shadow-lg rounded-lg">
+        <div className="overflow-x-auto bg-gray-900 border border-gray-800 shadow-lg rounded-lg">
           <table className="min-w-full">
-            <thead className="bg-gray-900 text-muted-foreground">
+            <thead className="bg-gray-900 text-gray-400">
               <tr>
                 <th className="text-left py-3 px-4 uppercase font-semibold text-sm">Full Name</th>
                 <th className="text-left py-3 px-4 uppercase font-semibold text-sm">Email</th>
@@ -144,9 +144,9 @@ const ManageUsersSection: React.FC = () => {
                 <th className="text-center py-3 px-4 uppercase font-semibold text-sm">Actions</th>
               </tr>
             </thead>
-            <tbody className="text-foreground">
+            <tbody className="text-white">
               {filteredUsers.map((user) => (
-                <tr key={user.userID} className="border-b border-border hover:bg-gray-800/50">
+                <tr key={user.userID} className="border-b border-gray-800 hover:bg-gray-800/50">
                   <td className="py-3 px-4">{user.fullName}</td>
                   <td className="py-3 px-4">{user.email}</td>
                   <td className="py-3 px-4">{user.role}</td>
@@ -168,7 +168,7 @@ const ManageUsersSection: React.FC = () => {
                         variant={user.status === 'Banned' ? 'outline' : 'destructive'}
                         size="sm"
                         disabled={actingUserId === user.userID}
-                        className={`flex items-center justify-center ${user.status === 'Banned' ? 'border-green-500 text-green-400 hover:bg-green-500/10 hover:text-green-300' : 'bg-red-600 hover:bg-red-700 text-destructive-foreground'}`}
+                        className={`flex items-center justify-center ${user.status === 'Banned' ? 'border-green-500 text-green-400 hover:bg-green-500/10 hover:text-green-300' : 'bg-red-600 hover:bg-red-700 text-white'}`}
                       >
                         {actingUserId === user.userID ? (
                           <Loader2 className="mr-2 h-4 w-4 animate-spin" />

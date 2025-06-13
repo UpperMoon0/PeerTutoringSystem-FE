@@ -1,16 +1,12 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import { useParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { BookingService } from '@/services/BookingService';
 import { TutorService } from '@/services/TutorService';
-import { ReviewService } from '@/services/ReviewService'; // Added
 import type { ProfileDto, User } from '@/types/user.types';
 import type { Skill } from '@/types/skill.types';
 import type { TutorAvailability } from '@/types/tutorAvailability.types';
 import type { CreateBookingDto } from '@/types/booking.types';
-import type { ReviewDto } from '@/types/review.types'; // Added
-import ReviewList from '@/components/reviews/ReviewList'; // Added
-import SubmitReviewForm from '@/components/reviews/SubmitReviewForm'; // Added
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -49,30 +45,93 @@ const TutorDetailPage: React.FC = () => {
   const [description, setDescription] = useState<string>("");
   const [selectedSkillId] = useState<string | undefined>(undefined);
 
-  // Review State
-  const [reviews, setReviews] = useState<ReviewDto[]>([]);
-  const [isLoadingReviews, setIsLoadingReviews] = useState(false);
-  const [reviewsError, setReviewsError] = useState<string | null>(null);
-  // TODO: Determine a real bookingId for the review form. For now, a placeholder.
-  // This might come from a list of past bookings for this tutor by the current user.
-  const [exampleBookingIdForReview, setExampleBookingIdForReview] = useState<string>("placeholder-booking-id-123");
 
-  const fetchTutorReviews = useCallback(async () => {
-    if (!tutorId) return;
-    setIsLoadingReviews(true);
-    setReviewsError(null);
-    const result = await ReviewService.getReviewsByTutorId(tutorId);
-    if (result.success && result.data) {
-      setReviews(result.data);
-    } else {
-      setReviewsError(result.error as string || 'Failed to fetch reviews.');
+  const getProcessedAvailabilities = useCallback((slotsToProcess: TutorAvailability[]): TutorAvailability[] => {
+    interface RecurringGroup {
+      slots: TutorAvailability[];
+      minDate: Date;
+      maxDate: Date; // Tracks the start date of the latest slot in the group
+      originalRecurrenceEndDate?: Date | null; // From backend, if consistent for the group
     }
-    setIsLoadingReviews(false);
-  }, [tutorId]);
 
-  useEffect(() => {
-    fetchTutorReviews();
-  }, [fetchTutorReviews]);
+    const recurringGroups: Record<string, RecurringGroup> = {};
+    const nonRecurringSlots: TutorAvailability[] = [];
+
+    for (const slot of slotsToProcess) {
+      if (slot.isRecurring) {
+        try {
+          const startTimeDate = new Date(slot.startTime);
+          const endTimeDate = new Date(slot.endTime);
+
+          if (isNaN(startTimeDate.getTime()) || isNaN(endTimeDate.getTime())) {
+            nonRecurringSlots.push(slot);
+            continue;
+          }
+
+          const timeKey = `${slot.recurringDay || 'UNKNOWN_DAY'}-${format(startTimeDate, "HH:mm")}-${format(endTimeDate, "HH:mm")}`;
+
+          if (!recurringGroups[timeKey]) {
+            recurringGroups[timeKey] = {
+              slots: [],
+              minDate: startTimeDate,
+              maxDate: startTimeDate,
+              originalRecurrenceEndDate: slot.recurrenceEndDate ? new Date(slot.recurrenceEndDate) : null,
+            };
+          }
+          
+          recurringGroups[timeKey].slots.push(slot);
+          if (startTimeDate < recurringGroups[timeKey].minDate) {
+            recurringGroups[timeKey].minDate = startTimeDate;
+          }
+          if (startTimeDate > recurringGroups[timeKey].maxDate) {
+            recurringGroups[timeKey].maxDate = startTimeDate;
+          }
+          if (slot.recurrenceEndDate && !recurringGroups[timeKey].originalRecurrenceEndDate) {
+              recurringGroups[timeKey].originalRecurrenceEndDate = new Date(slot.recurrenceEndDate);
+          }
+
+        } catch (e) {
+          nonRecurringSlots.push(slot);
+        }
+      } else {
+        nonRecurringSlots.push(slot);
+      }
+    }
+
+    const finalProcessedSlots: TutorAvailability[] = [...nonRecurringSlots];
+
+    for (const key in recurringGroups) {
+      const group = recurringGroups[key];
+      if (group.slots.length > 0) {
+        const sortedSlotsInGroup = group.slots.sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
+        const firstSlotInGroup = sortedSlotsInGroup[0];
+
+        let displayUntilDate: Date | null = null;
+        if (group.originalRecurrenceEndDate) {
+          displayUntilDate = group.originalRecurrenceEndDate;
+        } else {
+          displayUntilDate = group.maxDate;
+        }
+        
+        const summaryDisplaySlot: TutorAvailability = {
+          ...firstSlotInGroup,
+          startTime: new Date(group.minDate).toISOString(),
+          recurrenceEndDate: displayUntilDate ? format(displayUntilDate, "yyyy-MM-dd") : null,
+        };
+        finalProcessedSlots.push(summaryDisplaySlot);
+      }
+    }
+
+    finalProcessedSlots.sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
+    
+    return finalProcessedSlots;
+  }, [format]);
+
+  const displaySlots = useMemo(() => {
+    const unbookedSlots = availabilities.filter(slot => !slot.isBooked);
+    return getProcessedAvailabilities(unbookedSlots);
+  }, [availabilities, getProcessedAvailabilities]);
+
 
   useEffect(() => {
     const fetchTutorDetails = async () => {
@@ -100,8 +159,7 @@ const TutorDetailPage: React.FC = () => {
       }
     };
     fetchTutorDetails();
-    if (tutorId) fetchTutorReviews(); // Fetch reviews when tutorId is available
-  }, [tutorId, fetchTutorReviews]); // Added fetchTutorReviews dependency
+  }, [tutorId]);
 
   const handleFetchAvailabilities = useCallback(async () => {
     if (!tutorId) {
@@ -228,7 +286,7 @@ const TutorDetailPage: React.FC = () => {
 
     setBookingError(null);
     setBookingSuccess(null);
-    setIsLoading(true); // Use general loading for booking action
+    setIsLoading(true);
 
     const bookingData: CreateBookingDto = {
       tutorId: tutorId,
@@ -393,7 +451,7 @@ const TutorDetailPage: React.FC = () => {
             <div className="space-y-3 pt-4">
               <h4 className="font-semibold text-lg text-white">Available Slots:</h4>
               <ul className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-                {availabilities.filter(slot => !slot.isBooked).map(avail => (
+                {displaySlots.map(avail => (
                   <li key={`${avail.availabilityId}-${avail.startTime}`}>
                     <Button
                       variant={
@@ -403,16 +461,39 @@ const TutorDetailPage: React.FC = () => {
                         : "outline" // Secondary unselected style
                       }
                       className={cn(
-                        "w-full text-left justify-start h-auto py-2.5 px-3 transition-all",
-                        selectedAvailability?.availabilityId === avail.availabilityId && selectedAvailability?.startTime === avail.startTime 
-                          ? "bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white border-transparent" 
+                        "w-full text-left justify-start h-auto py-3 px-3 transition-all min-h-[4rem]",
+                        selectedAvailability?.availabilityId === avail.availabilityId && selectedAvailability?.startTime === avail.startTime
+                          ? "bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white border-transparent"
                           : "bg-gray-800 border-gray-700 hover:bg-gray-750 text-gray-300 hover:text-white"
                       )}
                       onClick={() => setSelectedAvailability(avail)}
                     >
                       <div className="flex flex-col">
-                        <span className="font-medium">{format(new Date(avail.startTime), "PPP")}</span>
-                        <span className="text-sm">{format(new Date(avail.startTime), "p")} - {format(new Date(avail.endTime), "p")}</span>
+                        {avail.isRecurring ? (
+                          <>
+                            <div className="flex items-center gap-2">
+                              <span className="font-medium">
+                                {avail.recurringDay ? avail.recurringDay.charAt(0).toUpperCase() + avail.recurringDay.slice(1).toLowerCase() : 'Daily'}
+                              </span>
+                              <span className="text-xs bg-blue-600/20 text-blue-300 px-2 py-0.5 rounded-full">
+                                Recurring
+                              </span>
+                            </div>
+                            <span className="text-sm">
+                              {`${format(new Date(avail.startTime), "p")} - ${format(new Date(avail.endTime), "p")}`}
+                            </span>
+                            {avail.recurrenceEndDate && (
+                              <span className="text-xs text-gray-400">
+                                Until {format(new Date(avail.recurrenceEndDate), "PPP")}
+                              </span>
+                            )}
+                          </>
+                        ) : (
+                          <>
+                            <span className="font-medium">{format(new Date(avail.startTime), "PPP")}</span>
+                            <span className="text-sm">{`${format(new Date(avail.startTime), "p")} - ${format(new Date(avail.endTime), "p")}`}</span>
+                          </>
+                        )}
                       </div>
                     </Button>
                   </li>
@@ -461,39 +542,7 @@ const TutorDetailPage: React.FC = () => {
         </CardContent>
       </Card>
 
-      {/* Reviews Section */}
-      <Card className="bg-gray-900 border-gray-800 shadow-xl">
-        <CardHeader className="p-6">
-          <CardTitle className="text-2xl text-white">Tutor Reviews</CardTitle>
-        </CardHeader>
-        <CardContent className="p-6 space-y-6">
-          <ReviewList reviews={reviews} isLoading={isLoadingReviews} error={reviewsError} />
-        </CardContent>
-      </Card>
 
-      {/* Submit Review Section - Conditionally render based on if user can review */}
-      {/* TODO: Add logic to determine if the currentUser has a completed booking with this tutor
-          and hasn't reviewed it yet. For now, showing if logged in and tutorId exists.
-          A more robust solution would involve checking past bookings.
-      */}
-      {currentUser && tutorId && exampleBookingIdForReview && (
-        <Card className="bg-gray-900 border-gray-800 shadow-xl">
-          <CardHeader className="p-6">
-            <CardTitle className="text-2xl text-white">Leave a Review</CardTitle>
-            <CardDescription className="text-gray-400">
-              Share your experience with {tutor?.fullName || "this tutor"}.
-              (Using placeholder booking ID: {exampleBookingIdForReview} for now)
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="p-6">
-            <SubmitReviewForm
-              tutorId={tutorId}
-              bookingId={exampleBookingIdForReview} // Replace with actual booking ID
-              onReviewSubmitted={fetchTutorReviews} // Refresh reviews after submission
-            />
-          </CardContent>
-        </Card>
-      )}
     </div>
   );
 };

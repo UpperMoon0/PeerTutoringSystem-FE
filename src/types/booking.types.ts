@@ -1,22 +1,25 @@
 import type { AuthResponse } from './auth.types';
+import type { Session } from './session.types';
 
 export interface Booking {
   bookingId: string;
   studentId: string;
   tutorId: string;
-  availabilityId: string; 
+  availabilityId?: string;
+  sessionDate: string;
   startTime: string;
   endTime: string;
-  status: 'Pending' | 'Confirmed' | 'Cancelled' | 'Completed'; 
+  status: 'Pending' | 'Confirmed' | 'Cancelled' | 'Completed' | 'Rejected';
   createdAt: string;
-  updatedAt?: string; 
-  studentName?: string; 
-  tutorName?: string; 
-  topic: string; 
-  description: string; 
-  skillId?: string; 
+  updatedAt?: string;
+  studentName?: string;
+  tutorName?: string;
+  topic: string;
+  description: string;
+  skillId?: string;
   student?: AuthResponse;
   tutor?: AuthResponse;
+  session?: Session;
 }
 
 export interface CreateBookingDto {
@@ -31,7 +34,7 @@ export interface CreateBookingDto {
 }
 
 export interface UpdateBookingStatusDto {
-  status: 'Pending' | 'Confirmed' | 'Cancelled' | 'Completed';
+  status: 'Pending' | 'Confirmed' | 'Cancelled' | 'Completed' | 'Rejected';
 }
 
 export interface BookingListResponse {
@@ -44,4 +47,13 @@ export interface BookingListResponse {
 export interface BookingResponse {
     data: Booking;
     message?: string;
+}
+
+export interface StudentBookingHistoryParams {
+  page?: number;
+  pageSize?: number;
+  status?: 'Pending' | 'Confirmed' | 'Cancelled' | 'Completed' | 'Rejected' | null;
+  skillId?: string;
+  startDate?: string; // ISO string for query
+  endDate?: string;   // ISO string for query
 }

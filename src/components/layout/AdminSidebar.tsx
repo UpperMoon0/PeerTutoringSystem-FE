@@ -2,14 +2,14 @@ import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import {
-  Calendar,
-  BookOpen,
-  User,
-  DollarSign,
+  ListChecks,
+  Users,
+  Wrench,
   Home,
   Menu,
   X,
-  Briefcase
+  Shield,
+  BookOpen
 } from 'lucide-react';
 
 interface SidebarItem {
@@ -19,22 +19,55 @@ interface SidebarItem {
   onClick?: () => void;
 }
 
-interface TutorSidebarProps {
+interface AdminSidebarProps {
   className?: string;
-  onAvailabilityClick?: () => void;
-  onBookingsClick?: () => void;
-  onProfileClick?: () => void; // Added
+  onTutorVerificationClick?: () => void;
+  onManageUsersClick?: () => void;
+  onManageSkillsClick?: () => void;
+  onManageBookingsClick?: () => void;
 }
 
-const TutorSidebar: React.FC<TutorSidebarProps> = ({ className, onAvailabilityClick, onBookingsClick, onProfileClick }) => {
+const AdminSidebar: React.FC<AdminSidebarProps> = ({
+  className,
+  onTutorVerificationClick,
+  onManageUsersClick,
+  onManageSkillsClick,
+  onManageBookingsClick
+}) => {
   const location = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const sidebarItems: SidebarItem[] = [
-    { icon: Home, label: 'Dashboard', onClick: () => location.pathname !== '/tutor' || location.search !== '' ? undefined : (() => {}), href: '/tutor?section=overview' },
-    { icon: BookOpen, label: 'My Bookings', onClick: onBookingsClick || (() => {}), href: onBookingsClick ? undefined : '/tutor?section=bookings' },
-    { icon: Calendar, label: 'Manage Availability', onClick: onAvailabilityClick || (() => {}), href: onAvailabilityClick ? undefined : '/tutor?section=availability' },
-    { icon: Briefcase, label: 'Profile', onClick: onProfileClick || (() => {}), href: onProfileClick ? undefined : '/tutor?section=profile' }, // Changed icon and href/onClick
+    {
+      icon: Home,
+      label: 'Dashboard',
+      onClick: () => {},
+      href: '/admin?section=overview'
+    },
+    {
+      icon: ListChecks,
+      label: 'Tutor Verifications',
+      onClick: onTutorVerificationClick || (() => {}),
+      href: '/admin?section=tutor-verifications'
+    },
+    {
+      icon: Users,
+      label: 'Manage Users',
+      onClick: onManageUsersClick || (() => {}),
+      href: '/admin?section=manage-users'
+    },
+    {
+      icon: Wrench,
+      label: 'Manage Skills',
+      onClick: onManageSkillsClick || (() => {}),
+      href: '/admin?section=manage-skills'
+    },
+    {
+      icon: BookOpen,
+      label: 'Manage Bookings',
+      onClick: onManageBookingsClick || (() => {}),
+      href: '/admin?section=manage-bookings'
+    },
   ];
 
   const handleItemClick = (item: SidebarItem) => {
@@ -75,12 +108,12 @@ const TutorSidebar: React.FC<TutorSidebarProps> = ({ className, onAvailabilityCl
       <div className="p-6 border-b border-gray-800">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
-              <User className="w-6 h-6 text-white" />
+            <div className="w-10 h-10 bg-gradient-to-br from-red-500 to-orange-600 rounded-lg flex items-center justify-center">
+              <Shield className="w-6 h-6 text-white" />
             </div>
             <div>
-              <h2 className="text-white font-semibold text-lg">Tutor Portal</h2>
-              <p className="text-gray-400 text-sm">Manage your sessions</p>
+              <h2 className="text-white font-semibold text-lg">Admin Portal</h2>
+              <p className="text-gray-400 text-sm">System Management</p>
             </div>
           </div>
           {/* Mobile Close Button */}
@@ -106,17 +139,17 @@ const TutorSidebar: React.FC<TutorSidebarProps> = ({ className, onAvailabilityCl
             const itemSection = itemUrl.searchParams.get('section');
             if (location.pathname === itemUrl.pathname) {
               if (itemSection) {
-                isActive = itemSection === currentSection;
-                 // Special case for overview: active if section is 'overview' or no section param
-                if (itemSection === 'overview' && (currentSection === 'overview' || currentSection === null)) {
-                    isActive = true;
+                // Special case for overview: active if section is 'overview' or no section param
+                if (itemSection === 'overview') {
+                  isActive = currentSection === 'overview' || currentSection === null;
+                } else {
+                  isActive = itemSection === currentSection;
                 }
-              } else { // For items without section (e.g. /tutor/analytics)
+              } else { // For items without section (e.g. /admin/analytics)
                  isActive = location.pathname === item.href && !itemSection && !currentSection;
               }
             }
           }
-
 
           const Icon = item.icon;
           const key = item.href || `item-${index}-${item.label}`;
@@ -125,7 +158,7 @@ const TutorSidebar: React.FC<TutorSidebarProps> = ({ className, onAvailabilityCl
             className: cn(
               "w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all duration-200 group",
               isActive
-                ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg"
+                ? "bg-gradient-to-r from-red-600 to-orange-600 text-white shadow-lg"
                 : "text-gray-300 hover:text-white hover:bg-gray-800"
             ),
             "aria-label": item.label,
@@ -141,23 +174,8 @@ const TutorSidebar: React.FC<TutorSidebarProps> = ({ className, onAvailabilityCl
             </>
           );
           
-          // If item.href is not present, it means it's purely an onClick driven by parent (TutorDashboardPage)
-          // or it's a placeholder for a future link.
-          // We prioritize onClick passed from parent if available.
-          if (item.onClick && !item.href) {
-            return (
-              <button
-                key={key}
-                onClick={() => handleItemClick(item)}
-                {...commonProps}
-              >
-                {content}
-              </button>
-            );
-          }
-          
-          // If item.href is present, it's a Link.
-          // If item.onClick is also present (e.g. from parent), it will also be called.
+          // All items now have href, so we always render as Link
+          // The onClick handler will still be called via handleItemClick
           return (
             <Link
               key={key}
@@ -175,17 +193,17 @@ const TutorSidebar: React.FC<TutorSidebarProps> = ({ className, onAvailabilityCl
       <div className="p-4 border-t border-gray-800">
         <div className="bg-gray-800 rounded-lg p-4">
           <div className="flex items-center space-x-3 mb-3">
-            <DollarSign className="w-5 h-5 text-green-400" />
-            <span className="text-gray-300 text-sm font-medium">Quick Stats</span>
+            <Shield className="w-5 h-5 text-red-400" />
+            <span className="text-gray-300 text-sm font-medium">System Stats</span>
           </div>
           <div className="space-y-2 text-xs">
             <div className="flex justify-between">
-              <span className="text-gray-400">This Month</span>
-              <span className="text-green-400 font-medium">$1,250</span>
+              <span className="text-gray-400">Total Users</span>
+              <span className="text-blue-400 font-medium">1,250</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-gray-400">Sessions</span>
-              <span className="text-blue-400 font-medium">24</span>
+              <span className="text-gray-400">Pending Verifications</span>
+              <span className="text-yellow-400 font-medium">12</span>
             </div>
           </div>
         </div>
@@ -195,4 +213,4 @@ const TutorSidebar: React.FC<TutorSidebarProps> = ({ className, onAvailabilityCl
   );
 };
 
-export default TutorSidebar;
+export default AdminSidebar;

@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import type { User } from '../types/user.types';
 import { TutorService } from '../services/TutorService';
-import TutorCard from '@/components/tutor/TutorCard'; 
+import TutorCard from '@/components/tutor/TutorCard';
+import { useAuth } from '@/contexts/AuthContext';
 
 const TutorListPage: React.FC = () => {
+  const { currentUser } = useAuth();
   const [allTutors, setAllTutors] = useState<User[]>([]);
   const [filteredTutors, setFilteredTutors] = useState<User[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -39,17 +41,25 @@ const TutorListPage: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    if (!searchTerm) {
-      setFilteredTutors(allTutors);
-      return;
+    let tutorsToDisplay = allTutors;
+
+    // Filter out the current user if they are a tutor
+    if (currentUser && currentUser.role === 'Tutor') {
+      tutorsToDisplay = tutorsToDisplay.filter(tutor => tutor.userID !== currentUser.userId);
     }
-    const lowerSearchTerm = searchTerm.toLowerCase();
-    const filtered = allTutors.filter(tutor => 
-      tutor.fullName.toLowerCase().includes(lowerSearchTerm) ||
-      tutor.email.toLowerCase().includes(lowerSearchTerm)
-    );
-    setFilteredTutors(filtered);
-  }, [searchTerm, allTutors]); 
+
+    // Filter by search term
+    if (searchTerm) {
+      const lowerSearchTerm = searchTerm.toLowerCase();
+      tutorsToDisplay = tutorsToDisplay.filter(tutor =>
+        tutor.fullName.toLowerCase().includes(lowerSearchTerm) ||
+        tutor.email.toLowerCase().includes(lowerSearchTerm)
+        // Add other searchable fields if necessary, e.g., skills
+      );
+    }
+    
+    setFilteredTutors(tutorsToDisplay);
+  }, [searchTerm, allTutors, currentUser]);
 
   if (loading) {
     return <div className="w-full p-6 bg-gray-950 min-h-screen text-white">Loading tutors...</div>;

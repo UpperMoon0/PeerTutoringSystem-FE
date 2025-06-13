@@ -1,6 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { BookingService } from '@/services/BookingService';
+import { SessionService } from '@/services/SessionService';
+import { ReviewService } from '@/services/ReviewService';
 import type { Booking } from '@/types/booking.types';
+import type { CreateSessionDto } from '@/types/session.types';
+import type { ReviewDto } from '@/types/review.types';
 import type { ApiResult } from '@/types/api.types';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -10,22 +14,23 @@ import { Button } from '@/components/ui/button';
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { 
-  BookOpen, 
-  Calendar, 
-  Clock, 
-  User, 
-  Eye, 
-  CheckCircle, 
-  X, 
+import CreateSessionForm from '@/components/session/CreateSessionForm';
+import { BookingDetailModal } from '@/components/booking/BookingDetailModal';
+import {
+  BookOpen,
+  Clock,
+  Eye,
+  CheckCircle,
   AlertCircle,
   TrendingUp,
-  Filter
+  Filter,
+  Star,
+  MessageSquare
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
-type BookingStatus = 'All' | 'Pending' | 'Confirmed' | 'Cancelled' | 'Completed';
+type BookingStatus = 'All' | 'Pending' | 'Confirmed' | 'Cancelled' | 'Completed' | 'Rejected';
 
 const ManageBookingsSection: React.FC = () => {
   const { currentUser } = useAuth();
@@ -37,7 +42,16 @@ const ManageBookingsSection: React.FC = () => {
   const [selectedStatus, setSelectedStatus] = useState<BookingStatus>('All');
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+  const [isSessionFormOpen, setIsSessionFormOpen] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
+  const [sessionError, setSessionError] = useState<string | null>(null);
+  
+  // Review-related state
+  const [bookingsWithReviews, setBookingsWithReviews] = useState<Set<string>>(new Set());
+  const [selectedReview, setSelectedReview] = useState<ReviewDto | null>(null);
+  const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
+  const [reviewError, setReviewError] = useState<string | null>(null);
+  
   const pageSize = 10;
 
   const fetchBookings = async () => {
@@ -52,14 +66,31 @@ const ManageBookingsSection: React.FC = () => {
       setError(null);
       const response = await BookingService.getTutorBookings(selectedStatus, currentPage, pageSize);
       if (response.success && response.data) {
-        setBookings(response.data.bookings);
+        const fetchedBookings = response.data.bookings;
+        setBookings(fetchedBookings);
         setTotalPages(Math.ceil(response.data.totalCount / pageSize));
+        
+        // Check which completed bookings have reviews
+        const completedBookings = fetchedBookings.filter(booking => booking.status === 'Completed');
+        const reviewChecks = await Promise.allSettled(
+          completedBookings.map(booking =>
+            ReviewService.checkReviewExistsForBooking(booking.bookingId)
+          )
+        );
+
+        const newBookingsWithReviews = new Set<string>();
+        reviewChecks.forEach((result, index) => {
+          if (result.status === 'fulfilled' && result.value.success && result.value.data) {
+            newBookingsWithReviews.add(completedBookings[index].bookingId);
+          }
+        });
+        setBookingsWithReviews(newBookingsWithReviews);
       } else {
         setError(typeof response.error === 'string' ? response.error : response.error?.message || 'Failed to fetch bookings.');
         setBookings([]);
       }
-    } catch (err: any) {
-      setError(err.message || 'Failed to fetch bookings.');
+    } catch (err: unknown) {
+      setError((err as Error)?.message || 'Failed to fetch bookings.');
       setBookings([]);
       console.error(err);
     } finally {
@@ -90,19 +121,44 @@ const ManageBookingsSection: React.FC = () => {
           setError('You are not authorized to view this booking.');
           return;
         }
-        setSelectedBooking(result.data);
+
+        let bookingWithSession = result.data;
+
+        // Fetch session data for confirmed or completed bookings
+        if (result.data.status === 'Confirmed' || result.data.status === 'Completed') {
+          try {
+            const sessionResult = await SessionService.getSessionByBookingId(bookingId);
+            if (sessionResult.success && sessionResult.data) {
+              bookingWithSession = {
+                ...result.data,
+                session: sessionResult.data
+              };
+            }
+          } catch (sessionErr: unknown) {
+            // Log the error but don't prevent showing the booking details
+            console.warn('Failed to fetch session data for booking:', sessionErr);
+          }
+        }
+
+        setSelectedBooking(bookingWithSession);
         setIsDetailModalOpen(true);
       } else {
         setError(typeof result.error === 'string' ? result.error : result.error?.message || 'Failed to fetch booking details.');
       }
-    } catch (err: any) {
-      setError(err.message || 'Failed to fetch booking details.');
+    } catch (err: unknown) {
+      setError((err as Error)?.message || 'Failed to fetch booking details.');
       console.error(err);
     }
   };
 
   const handleUpdateStatus = async (bookingId: string, newStatus: Booking['status']) => {
     if (!bookingId || isUpdating) return;
+
+    // For accepting bookings, show the session creation form instead of directly updating status
+    if (newStatus === 'Confirmed') {
+      setIsSessionFormOpen(true);
+      return;
+    }
 
     setIsUpdating(true);
     setError(null);
@@ -114,12 +170,67 @@ const ManageBookingsSection: React.FC = () => {
       } else {
         setError(typeof result.error === 'string' ? result.error : result.error?.message || 'Failed to update booking status.');
       }
-    } catch (err: any) {
-      setError(err.message || 'An unexpected error occurred while updating status.');
+    } catch (err: unknown) {
+      setError((err as Error)?.message || 'An unexpected error occurred while updating status.');
       console.error(err);
     } finally {
       setIsUpdating(false);
     }
+  };
+
+  const handleSessionCreation = async (sessionData: CreateSessionDto) => {
+    if (!selectedBooking) return;
+
+    setIsUpdating(true);
+    setSessionError(null);
+    try {
+      // First, update booking status to Confirmed
+      const bookingResult = await BookingService.updateBookingStatus(selectedBooking.bookingId, 'Confirmed');
+      if (!bookingResult.success) {
+        throw new Error(typeof bookingResult.error === 'string' ? bookingResult.error : bookingResult.error?.message || 'Failed to confirm booking');
+      }
+
+      // Then create the session
+      const sessionResult = await SessionService.createSession(sessionData);
+      if (!sessionResult.success) {
+        // If session creation fails, we might want to revert the booking status
+        // For now, we'll just show the error
+        throw new Error(typeof sessionResult.error === 'string' ? sessionResult.error : sessionResult.error?.message || 'Failed to create session');
+      }
+
+      // Success - update UI
+      if (bookingResult.data) {
+        setSelectedBooking(bookingResult.data);
+      }
+      setIsSessionFormOpen(false);
+      setIsDetailModalOpen(false);
+      fetchBookings(); // Refresh the list
+    } catch (err: unknown) {
+      setSessionError((err as Error)?.message || 'An unexpected error occurred while creating session.');
+      console.error(err);
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+  const handleViewReview = async (bookingId: string) => {
+    setReviewError(null);
+    try {
+      const response = await ReviewService.getReviewByBookingId(bookingId);
+      if (response.success && response.data) {
+        setSelectedReview(response.data);
+        setIsReviewModalOpen(true);
+      } else {
+        setReviewError('Failed to fetch review details.');
+      }
+    } catch (err: unknown) {
+      setReviewError((err as Error)?.message || 'An unexpected error occurred while fetching review.');
+      console.error(err);
+    }
+  };
+
+  const hasReview = (bookingId: string): boolean => {
+    return bookingsWithReviews.has(bookingId);
   };
 
   const getStatusBadgeVariant = (status: string) => {
@@ -129,6 +240,7 @@ const ManageBookingsSection: React.FC = () => {
       case 'Confirmed':
         return 'default';
       case 'Cancelled':
+      case 'Rejected':
         return 'destructive';
       case 'Completed':
         return 'outline';
@@ -143,6 +255,8 @@ const ManageBookingsSection: React.FC = () => {
       pending: bookings.filter(b => b.status === 'Pending').length,
       confirmed: bookings.filter(b => b.status === 'Confirmed').length,
       completed: bookings.filter(b => b.status === 'Completed').length,
+      rejected: bookings.filter(b => b.status === 'Rejected').length,
+      cancelled: bookings.filter(b => b.status === 'Cancelled').length,
     };
     return stats;
   };
@@ -171,7 +285,7 @@ const ManageBookingsSection: React.FC = () => {
       </div>
 
       {/* Booking Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
         <Card className="bg-gray-900 border-gray-800">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
@@ -227,6 +341,20 @@ const ManageBookingsSection: React.FC = () => {
             </div>
           </CardContent>
         </Card>
+
+        <Card className="bg-gray-900 border-gray-800">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-gray-400 text-sm font-medium">Rejected</p>
+                <p className="text-2xl font-bold text-white mt-1">{stats.rejected}</p>
+              </div>
+              <div className="p-2 bg-red-600 bg-opacity-20 rounded-lg">
+                <AlertCircle className="w-5 h-5 text-red-400" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Bookings Table */}
@@ -249,6 +377,7 @@ const ManageBookingsSection: React.FC = () => {
                   <SelectItem value="Confirmed" className="text-white hover:bg-gray-700">Confirmed</SelectItem>
                   <SelectItem value="Completed" className="text-white hover:bg-gray-700">Completed</SelectItem>
                   <SelectItem value="Cancelled" className="text-white hover:bg-gray-700">Cancelled</SelectItem>
+                  <SelectItem value="Rejected" className="text-white hover:bg-gray-700">Rejected</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -312,15 +441,28 @@ const ManageBookingsSection: React.FC = () => {
                         </Badge>
                       </TableCell>
                       <TableCell>
-                        <Button 
-                          variant="ghost" 
-                          size="sm"
-                          onClick={() => handleViewDetails(booking.bookingId)}
-                          className="text-blue-400 hover:text-blue-300 hover:bg-gray-800"
-                        >
-                          <Eye className="w-4 h-4 mr-1" />
-                          View Details
-                        </Button>
+                        <div className="flex items-center gap-2">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleViewDetails(booking.bookingId)}
+                            className="text-blue-400 hover:text-blue-300 hover:bg-gray-800"
+                          >
+                            <Eye className="w-4 h-4 mr-1" />
+                            View Details
+                          </Button>
+                          {booking.status === 'Completed' && hasReview(booking.bookingId) && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleViewReview(booking.bookingId)}
+                              className="text-yellow-400 hover:text-yellow-300 hover:bg-gray-800"
+                            >
+                              <Star className="w-4 h-4 mr-1" />
+                              View Review
+                            </Button>
+                          )}
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))}
@@ -374,100 +516,129 @@ const ManageBookingsSection: React.FC = () => {
       </Card>
 
       {/* Booking Detail Modal */}
-      <Dialog open={isDetailModalOpen} onOpenChange={setIsDetailModalOpen}>
-        <DialogContent className="bg-gray-900 border-gray-800 text-white max-w-2xl">
+      {selectedBooking && (
+        <BookingDetailModal
+          booking={selectedBooking}
+          isOpen={isDetailModalOpen}
+          onClose={() => setIsDetailModalOpen(false)}
+          onBookingCancelled={() => {
+            fetchBookings(); // Refresh the list
+            setIsDetailModalOpen(false);
+          }}
+          onUpdateStatus={(status) => {
+            handleUpdateStatus(selectedBooking.bookingId, status as Booking['status']);
+            fetchBookings(); // Refresh the list
+            setIsDetailModalOpen(false);
+          }}
+          userRole="tutor"
+        />
+      )}
+
+      {/* Session Creation Modal */}
+      <Dialog open={isSessionFormOpen} onOpenChange={setIsSessionFormOpen}>
+        <DialogContent className="bg-gray-900 border-gray-800 text-white max-w-3xl">
           <DialogHeader>
-            <DialogTitle className="text-white">Booking Details</DialogTitle>
+            <DialogTitle className="text-white">Accept Booking & Create Session</DialogTitle>
             <DialogDescription className="text-gray-400">
-              Review and manage this booking session.
+              Provide session details to complete the booking acceptance.
             </DialogDescription>
           </DialogHeader>
           
           {selectedBooking && (
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <h3 className="font-semibold text-gray-300 mb-1">Student:</h3>
-                  <p className="text-white">{selectedBooking.studentName || 'N/A'}</p>
-                </div>
-                <div>
-                  <h3 className="font-semibold text-gray-300 mb-1">Status:</h3>
-                  <Badge variant={getStatusBadgeVariant(selectedBooking.status)}>
-                    {selectedBooking.status}
-                  </Badge>
-                </div>
-              </div>
-              
-              <div>
-                <h3 className="font-semibold text-gray-300 mb-1">Date & Time:</h3>
-                <div className="flex items-center space-x-4 text-white">
-                  <div className="flex items-center">
-                    <Calendar className="w-4 h-4 mr-1 text-blue-400" />
-                    {format(new Date(selectedBooking.startTime), 'PPP')}
-                  </div>
-                  <div className="flex items-center">
-                    <Clock className="w-4 h-4 mr-1 text-blue-400" />
-                    {format(new Date(selectedBooking.startTime), 'p')} - {format(new Date(selectedBooking.endTime), 'p')}
-                  </div>
-                </div>
-              </div>
-              
-              <div>
-                <h3 className="font-semibold text-gray-300 mb-1">Topic:</h3>
-                <p className="text-white">{selectedBooking.topic}</p>
-              </div>
-              
-              <div>
-                <h3 className="font-semibold text-gray-300 mb-1">Description:</h3>
-                <p className="text-gray-300 bg-gray-800 p-3 rounded-lg">
-                  {selectedBooking.description || 'No description provided.'}
-                </p>
-              </div>
-
-              {selectedBooking.status === 'Pending' && (
-                <div className="pt-4 border-t border-gray-800">
-                  <h3 className="font-semibold text-gray-300 mb-3">Actions:</h3>
-                  <div className="flex space-x-3">
-                    <Button 
-                      onClick={() => handleUpdateStatus(selectedBooking.bookingId, 'Confirmed')} 
-                      disabled={isUpdating}
-                      className="bg-green-600 hover:bg-green-700"
-                    >
-                      <CheckCircle className="w-4 h-4 mr-2" />
-                      {isUpdating ? 'Accepting...' : 'Accept Booking'}
-                    </Button>
-                    <Button 
-                      onClick={() => handleUpdateStatus(selectedBooking.bookingId, 'Cancelled')} 
-                      disabled={isUpdating}
-                      variant="destructive"
-                    >
-                      <X className="w-4 h-4 mr-2" />
-                      {isUpdating ? 'Rejecting...' : 'Reject Booking'}
-                    </Button>
-                  </div>
-                </div>
-              )}
-
-              {(selectedBooking.status === 'Confirmed' && new Date(selectedBooking.endTime) < new Date()) && (
-                <div className="pt-4 border-t border-gray-800">
-                  <h3 className="font-semibold text-gray-300 mb-3">Actions:</h3>
-                  <Button 
-                    onClick={() => handleUpdateStatus(selectedBooking.bookingId, 'Completed')} 
-                    disabled={isUpdating}
-                    className="bg-blue-600 hover:bg-blue-700"
-                  >
-                    <CheckCircle className="w-4 h-4 mr-2" />
-                    {isUpdating ? 'Completing...' : 'Mark as Completed'}
-                  </Button>
-                </div>
-              )}
-            </div>
+            <CreateSessionForm
+              booking={selectedBooking}
+              onSubmit={handleSessionCreation}
+              isSubmitting={isUpdating}
+              error={sessionError || undefined}
+            />
           )}
           
           <DialogFooter>
-            <Button 
-              variant="outline" 
-              onClick={() => setIsDetailModalOpen(false)}
+            <Button
+              variant="outline"
+              onClick={() => {
+                setIsSessionFormOpen(false);
+                setSessionError(null);
+              }}
+              disabled={isUpdating}
+              className="bg-gray-800 border-gray-700 text-white hover:bg-gray-700"
+            >
+              Cancel
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Review Display Modal */}
+      <Dialog open={isReviewModalOpen} onOpenChange={setIsReviewModalOpen}>
+        <DialogContent className="bg-gray-900 border-gray-800 text-white max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-white flex items-center">
+              <Star className="w-5 h-5 mr-2 text-yellow-400" />
+              Student Review
+            </DialogTitle>
+            <DialogDescription className="text-gray-400">
+              Review left by the student for this tutoring session.
+            </DialogDescription>
+          </DialogHeader>
+
+          {reviewError && (
+            <Alert variant="destructive" className="mb-4">
+              <AlertCircle className="h-4 w-4" />
+              <AlertTitle>Error</AlertTitle>
+              <AlertDescription>{reviewError}</AlertDescription>
+            </Alert>
+          )}
+
+          {selectedReview && (
+            <div className="space-y-4">
+              <div>
+                <h3 className="text-sm font-medium text-gray-300 mb-2">Rating</h3>
+                <div className="flex items-center space-x-1">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <Star
+                      key={star}
+                      className={`w-5 h-5 ${
+                        star <= selectedReview.rating
+                          ? 'text-yellow-400 fill-yellow-400'
+                          : 'text-gray-600'
+                      }`}
+                    />
+                  ))}
+                  <span className="ml-2 text-white font-medium">
+                    {selectedReview.rating}/5
+                  </span>
+                </div>
+              </div>
+
+              {selectedReview.comment && (
+                <div>
+                  <h3 className="text-sm font-medium text-gray-300 mb-2 flex items-center">
+                    <MessageSquare className="w-4 h-4 mr-1" />
+                    Comment
+                  </h3>
+                  <div className="bg-gray-800 p-3 rounded-lg">
+                    <p className="text-gray-200 whitespace-pre-wrap">
+                      {selectedReview.comment}
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              <div className="text-xs text-gray-500">
+                Reviewed on: {format(new Date(selectedReview.reviewDate), 'MMM dd, yyyy')}
+              </div>
+            </div>
+          )}
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setIsReviewModalOpen(false);
+                setSelectedReview(null);
+                setReviewError(null);
+              }}
               className="bg-gray-800 border-gray-700 text-white hover:bg-gray-700"
             >
               Close
