@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { BookingService } from '@/services/BookingService';
 import { SessionService } from '@/services/SessionService';
 import type { Booking } from '@/types/booking.types';
-import type { CreateSessionDto, Session } from '@/types/session.types';
+import type { CreateSessionDto } from '@/types/session.types';
 import type { ApiResult } from '@/types/api.types';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -13,14 +13,12 @@ import { Pagination, PaginationContent, PaginationItem, PaginationLink, Paginati
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import CreateSessionForm from '@/components/session/CreateSessionForm';
-import { BookingDetailView } from '@/components/booking/BookingDetailView';
+import { BookingDetailModal } from '@/components/booking/BookingDetailModal';
 import {
   BookOpen,
-  Calendar,
   Clock,
   Eye,
   CheckCircle,
-  X,
   AlertCircle,
   TrendingUp,
   Filter
@@ -63,8 +61,8 @@ const ManageBookingsSection: React.FC = () => {
         setError(typeof response.error === 'string' ? response.error : response.error?.message || 'Failed to fetch bookings.');
         setBookings([]);
       }
-    } catch (err: any) {
-      setError(err.message || 'Failed to fetch bookings.');
+    } catch (err: unknown) {
+      setError((err as Error)?.message || 'Failed to fetch bookings.');
       setBookings([]);
       console.error(err);
     } finally {
@@ -108,7 +106,7 @@ const ManageBookingsSection: React.FC = () => {
                 session: sessionResult.data
               };
             }
-          } catch (sessionErr: any) {
+          } catch (sessionErr: unknown) {
             // Log the error but don't prevent showing the booking details
             console.warn('Failed to fetch session data for booking:', sessionErr);
           }
@@ -119,8 +117,8 @@ const ManageBookingsSection: React.FC = () => {
       } else {
         setError(typeof result.error === 'string' ? result.error : result.error?.message || 'Failed to fetch booking details.');
       }
-    } catch (err: any) {
-      setError(err.message || 'Failed to fetch booking details.');
+    } catch (err: unknown) {
+      setError((err as Error)?.message || 'Failed to fetch booking details.');
       console.error(err);
     }
   };
@@ -144,8 +142,8 @@ const ManageBookingsSection: React.FC = () => {
       } else {
         setError(typeof result.error === 'string' ? result.error : result.error?.message || 'Failed to update booking status.');
       }
-    } catch (err: any) {
-      setError(err.message || 'An unexpected error occurred while updating status.');
+    } catch (err: unknown) {
+      setError((err as Error)?.message || 'An unexpected error occurred while updating status.');
       console.error(err);
     } finally {
       setIsUpdating(false);
@@ -179,25 +177,14 @@ const ManageBookingsSection: React.FC = () => {
       setIsSessionFormOpen(false);
       setIsDetailModalOpen(false);
       fetchBookings(); // Refresh the list
-    } catch (err: any) {
-      setSessionError(err.message || 'An unexpected error occurred while creating session.');
+    } catch (err: unknown) {
+      setSessionError((err as Error)?.message || 'An unexpected error occurred while creating session.');
       console.error(err);
     } finally {
       setIsUpdating(false);
     }
   };
 
-  const handleSessionUpdated = (updatedSession: Session) => {
-    // Update the selected booking with the new session information
-    if (selectedBooking) {
-      setSelectedBooking({
-        ...selectedBooking,
-        session: updatedSession
-      });
-    }
-    // Optionally refresh the bookings list to reflect changes
-    fetchBookings();
-  };
 
   const getStatusBadgeVariant = (status: string) => {
     switch (status) {
@@ -453,47 +440,23 @@ const ManageBookingsSection: React.FC = () => {
       </Card>
 
       {/* Booking Detail Modal */}
-      <Dialog open={isDetailModalOpen} onOpenChange={setIsDetailModalOpen}>
-        <DialogContent className="bg-gray-900 border-gray-800 text-white max-w-2xl">
-          <DialogHeader>
-            <DialogTitle className="text-white">Booking Details</DialogTitle>
-            <DialogDescription className="text-gray-400">
-              Review and manage this booking session.
-            </DialogDescription>
-          </DialogHeader>
-          
-          {selectedBooking && (
-            <div className="py-4 max-h-[60vh] overflow-y-auto pr-2">
-              {error && (
-                <Alert className="mb-4 bg-red-900 border-red-800">
-                  <AlertCircle className="h-4 w-4" />
-                  <AlertTitle className="text-red-200">Error</AlertTitle>
-                  <AlertDescription className="text-red-300">{error}</AlertDescription>
-                </Alert>
-              )}
-
-              <BookingDetailView
-                booking={selectedBooking}
-                userRole="tutor"
-                onUpdateStatus={(status) => handleUpdateStatus(selectedBooking.bookingId, status)}
-                onSessionUpdated={handleSessionUpdated}
-                isUpdating={isUpdating}
-                showActions={true}
-              />
-            </div>
-          )}
-          
-          <DialogFooter>
-            <Button 
-              variant="outline" 
-              onClick={() => setIsDetailModalOpen(false)}
-              className="bg-gray-800 border-gray-700 text-white hover:bg-gray-700"
-            >
-              Close
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      {selectedBooking && (
+        <BookingDetailModal
+          booking={selectedBooking}
+          isOpen={isDetailModalOpen}
+          onClose={() => setIsDetailModalOpen(false)}
+          onBookingCancelled={() => {
+            fetchBookings(); // Refresh the list
+            setIsDetailModalOpen(false);
+          }}
+          onUpdateStatus={(status) => {
+            handleUpdateStatus(selectedBooking.bookingId, status as Booking['status']);
+            fetchBookings(); // Refresh the list
+            setIsDetailModalOpen(false);
+          }}
+          userRole="tutor"
+        />
+      )}
 
       {/* Session Creation Modal */}
       <Dialog open={isSessionFormOpen} onOpenChange={setIsSessionFormOpen}>
