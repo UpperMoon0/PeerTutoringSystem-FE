@@ -25,7 +25,9 @@ import {
   Filter,
   AlertCircle,
   ListChecks,
-  Star
+  Star,
+  Bell,
+  MessageSquareHeart
 } from 'lucide-react';
 import { format } from 'date-fns';
 import type { DateRange } from 'react-day-picker';
@@ -207,6 +209,9 @@ const StudentBookingHistoryPage: React.FC = () => {
     return booking.status === 'Completed' && !reviewedBookings.has(booking.bookingId);
   };
 
+  // Get count of completed bookings without reviews
+  const pendingReviewsCount = bookings.filter(canLeaveReview).length;
+
   if (!currentUser) {
     return (
       <div className="container mx-auto p-4 md:p-6 text-center">
@@ -230,6 +235,23 @@ const StudentBookingHistoryPage: React.FC = () => {
         </h1>
         <p className="text-gray-400 mt-1">Review your past and upcoming tutoring sessions.</p>
       </header>
+
+      {/* Pending Reviews Notification */}
+      {!isLoading && pendingReviewsCount > 0 && (
+        <Alert className="bg-gradient-to-r from-yellow-900/50 to-orange-900/50 border-yellow-500/50 mb-6">
+          <Bell className="h-5 w-5 text-yellow-400" />
+          <AlertTitle className="text-yellow-400 font-semibold flex items-center">
+            <MessageSquareHeart className="w-4 h-4 mr-1" />
+            Review Pending Sessions
+          </AlertTitle>
+          <AlertDescription className="text-yellow-200">
+            You have <span className="font-bold text-yellow-300">{pendingReviewsCount}</span> completed session{pendingReviewsCount !== 1 ? 's' : ''} waiting for your review.
+            <span className="block mt-1 text-sm">
+              Help other students by sharing your experience with your tutors! ⭐
+            </span>
+          </AlertDescription>
+        </Alert>
+      )}
 
       <Card className="bg-gray-900 border-gray-800">
         <CardHeader>
@@ -305,7 +327,11 @@ const StudentBookingHistoryPage: React.FC = () => {
                   {bookings.map((booking) => (
                     <TableRow
                       key={booking.bookingId}
-                      className="border-gray-800 hover:bg-gray-800/50 cursor-pointer"
+                      className={`border-gray-800 hover:bg-gray-800/50 cursor-pointer transition-colors ${
+                        canLeaveReview(booking)
+                          ? 'bg-gradient-to-r from-yellow-900/20 to-transparent border-l-4 border-l-yellow-500'
+                          : ''
+                      }`}
                       onClick={() => handleViewDetails(booking)}
                     >
                       <TableCell className="text-white font-medium">
@@ -355,12 +381,25 @@ const StudentBookingHistoryPage: React.FC = () => {
                       </TableCell>
                       <TableCell>
                         <div className="space-y-1">
-                          <Badge variant={getStatusBadgeVariant(booking.status)} className="capitalize">
-                            {booking.status}
-                          </Badge>
+                          <div className="flex items-center gap-2">
+                            <Badge variant={getStatusBadgeVariant(booking.status)} className="capitalize">
+                              {booking.status}
+                            </Badge>
+                            {canLeaveReview(booking) && (
+                              <Badge variant="outline" className="text-yellow-400 border-yellow-400 animate-pulse">
+                                <Star className="w-3 h-3 mr-1" />
+                                Review Needed
+                              </Badge>
+                            )}
+                          </div>
                           {(booking.status === 'Confirmed' || booking.status === 'Completed') && (
                             <div className="text-xs text-gray-400">
                               {booking.status === 'Confirmed' ? 'Ready to start' : 'Session ended'}
+                            </div>
+                          )}
+                          {canLeaveReview(booking) && (
+                            <div className="text-xs text-yellow-400 font-medium">
+                              📝 Click to leave a review
                             </div>
                           )}
                         </div>
@@ -380,14 +419,14 @@ const StudentBookingHistoryPage: React.FC = () => {
                             <Button
                               variant="ghost"
                               size="sm"
-                              className="text-yellow-400 hover:text-yellow-300 hover:bg-gray-700/50"
+                              className="text-yellow-400 hover:text-yellow-300 hover:bg-yellow-500/20 border border-yellow-500/30 animate-pulse hover:animate-none"
                               onClick={(e) => {
                                 e.stopPropagation();
                                 handleLeaveReview(booking);
                               }}
                             >
                               <Star className="w-4 h-4 mr-1" />
-                              Review
+                              Leave Review
                             </Button>
                           )}
                         </div>
