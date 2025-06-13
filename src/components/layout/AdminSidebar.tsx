@@ -8,7 +8,8 @@ import {
   Home,
   Menu,
   X,
-  Shield
+  Shield,
+  BookOpen
 } from 'lucide-react';
 
 interface SidebarItem {
@@ -23,13 +24,15 @@ interface AdminSidebarProps {
   onTutorVerificationClick?: () => void;
   onManageUsersClick?: () => void;
   onManageSkillsClick?: () => void;
+  onManageBookingsClick?: () => void;
 }
 
-const AdminSidebar: React.FC<AdminSidebarProps> = ({ 
-  className, 
-  onTutorVerificationClick, 
-  onManageUsersClick, 
-  onManageSkillsClick 
+const AdminSidebar: React.FC<AdminSidebarProps> = ({
+  className,
+  onTutorVerificationClick,
+  onManageUsersClick,
+  onManageSkillsClick,
+  onManageBookingsClick
 }) => {
   const location = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -53,11 +56,17 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({
       onClick: onManageUsersClick || (() => {}), 
       href: onManageUsersClick ? undefined : '/admin?section=manage-users' 
     },
-    { 
-      icon: Wrench, 
-      label: 'Manage Skills', 
-      onClick: onManageSkillsClick || (() => {}), 
-      href: onManageSkillsClick ? undefined : '/admin?section=manage-skills' 
+    {
+      icon: Wrench,
+      label: 'Manage Skills',
+      onClick: onManageSkillsClick || (() => {}),
+      href: onManageSkillsClick ? undefined : '/admin?section=manage-skills'
+    },
+    {
+      icon: BookOpen,
+      label: 'Booking Management',
+      onClick: onManageBookingsClick || (() => {}),
+      href: onManageBookingsClick ? undefined : '/admin?section=manage-bookings'
     },
   ];
 

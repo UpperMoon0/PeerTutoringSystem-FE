@@ -7,6 +7,7 @@ import AdminSidebar from '@/components/layout/AdminSidebar';
 import TutorVerificationSection from '@/components/admin/TutorVerificationSection';
 import ManageUsersSection from '@/components/admin/ManageUsersSection';
 import ManageSkillsSection from '@/components/admin/ManageSkillsSection';
+import ManageBookingsSection from '@/components/admin/ManageBookingsSection';
 import {
   Shield,
   Users,
@@ -16,7 +17,8 @@ import {
   AlertCircle,
   CheckCircle,
   Clock,
-  UserCheck
+  UserCheck,
+  BookOpen
 } from 'lucide-react';
 
 interface DashboardStats {
@@ -26,7 +28,7 @@ interface DashboardStats {
   activeAdmins: number;
 }
 
-type AdminSection = 'overview' | 'tutor-verifications' | 'manage-users' | 'manage-skills';
+type AdminSection = 'overview' | 'tutor-verifications' | 'manage-users' | 'manage-skills' | 'manage-bookings';
 
 const AdminDashboardPage: React.FC = () => {
   const location = useLocation();
@@ -44,7 +46,7 @@ const AdminDashboardPage: React.FC = () => {
   useEffect(() => {
     const searchParams = new URLSearchParams(location.search);
     const section = searchParams.get('section') as AdminSection | null;
-    if (section && ['tutor-verifications', 'manage-users', 'manage-skills'].includes(section)) {
+    if (section && ['tutor-verifications', 'manage-users', 'manage-skills', 'manage-bookings'].includes(section)) {
       setActiveSection(section);
     } else {
       setActiveSection('overview');
@@ -86,6 +88,8 @@ const AdminDashboardPage: React.FC = () => {
         return <ManageUsersSection />;
       case 'manage-skills':
         return <ManageSkillsSection />;
+      case 'manage-bookings':
+        return <ManageBookingsSection />;
       default:
         return null;
     }
@@ -98,6 +102,7 @@ const AdminDashboardPage: React.FC = () => {
         onTutorVerificationClick={() => handleSectionChange('tutor-verifications')}
         onManageUsersClick={() => handleSectionChange('manage-users')}
         onManageSkillsClick={() => handleSectionChange('manage-skills')}
+        onManageBookingsClick={() => handleSectionChange('manage-bookings')}
       />
       
       {/* Main Content */}
@@ -112,12 +117,14 @@ const AdminDashboardPage: React.FC = () => {
                   {activeSection === 'tutor-verifications' && 'Tutor Verifications'}
                   {activeSection === 'manage-users' && 'Manage Users'}
                   {activeSection === 'manage-skills' && 'Manage Skills'}
+                  {activeSection === 'manage-bookings' && 'Booking Management'}
                 </h1>
                 <p className="text-gray-400 mt-1 text-sm lg:text-base">
                   {activeSection === 'overview' && "Welcome to the admin portal. Manage system operations and users."}
                   {activeSection === 'tutor-verifications' && "Review and approve tutor verification requests."}
                   {activeSection === 'manage-users' && "Manage user accounts and permissions."}
                   {activeSection === 'manage-skills' && "Manage system skills and categories."}
+                  {activeSection === 'manage-bookings' && "Monitor and manage all tutoring session bookings."}
                 </p>
               </div>
             </div>
@@ -243,6 +250,14 @@ const AdminDashboardPage: React.FC = () => {
                     >
                       <Wrench className="w-4 h-4 mr-2" />
                       Manage Skills
+                    </Button>
+                    <Button
+                      onClick={() => handleSectionChange('manage-bookings')}
+                      variant="outline"
+                      className="w-full justify-start bg-gray-800 border-gray-700 hover:bg-gray-700 text-white"
+                    >
+                      <BookOpen className="w-4 h-4 mr-2" />
+                      Booking Management
                     </Button>
                   </CardContent>
                 </Card>

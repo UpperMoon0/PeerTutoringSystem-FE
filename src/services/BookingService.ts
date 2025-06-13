@@ -286,5 +286,168 @@ export const BookingService = {
       console.error('Error updating booking status:', error);
       return { success: false, error: error.message || "Failed to update booking status." };
     }
+  },
+
+  // Admin method to get all bookings - this would need a backend endpoint like GET /api/Bookings/admin
+  async getAllBookingsForAdmin(
+    page: number = 1,
+    pageSize: number = 10,
+    status?: string,
+    startDate?: string,
+    endDate?: string,
+    searchTerm?: string
+  ): Promise<ApiResult<{ bookings: Booking[], totalCount: number }>> {
+    try {
+      const queryParams = new URLSearchParams({
+        page: page.toString(),
+        pageSize: pageSize.toString(),
+      });
+      
+      if (status && status !== 'All') {
+        queryParams.append('status', status);
+      }
+      
+      if (startDate) {
+        queryParams.append('startDate', formatDateForQuery(startDate));
+      }
+      
+      if (endDate) {
+        queryParams.append('endDate', formatDateForQuery(endDate));
+      }
+      
+      if (searchTerm) {
+        queryParams.append('searchTerm', searchTerm);
+      }
+
+      // TODO: This endpoint doesn't exist yet in the backend
+      // For now, we'll return mock data until the backend implements this
+      // const response = await AuthService.fetchWithAuth(`${API_BASE_URL}/Bookings/admin?${queryParams}`, {
+      //   method: 'GET',
+      // });
+      
+      // Mock implementation - replace with actual API call when backend is ready
+      await new Promise(resolve => setTimeout(resolve, 500)); // Simulate API delay
+      
+      const mockBookings: Booking[] = [
+        {
+          bookingId: '1',
+          studentId: 'student-1',
+          tutorId: 'tutor-1',
+          sessionDate: '2024-01-15',
+          startTime: '2024-01-15T10:00:00Z',
+          endTime: '2024-01-15T11:00:00Z',
+          status: 'Pending',
+          createdAt: '2024-01-10T08:00:00Z',
+          studentName: 'John Doe',
+          tutorName: 'Jane Smith',
+          topic: 'React Fundamentals',
+          description: 'Learning React basics and components',
+          skillId: 'skill-1'
+        },
+        {
+          bookingId: '2',
+          studentId: 'student-2',
+          tutorId: 'tutor-2',
+          sessionDate: '2024-01-16',
+          startTime: '2024-01-16T14:00:00Z',
+          endTime: '2024-01-16T15:00:00Z',
+          status: 'Confirmed',
+          createdAt: '2024-01-11T09:00:00Z',
+          studentName: 'Alice Johnson',
+          tutorName: 'Bob Wilson',
+          topic: 'Python Programming',
+          description: 'Advanced Python concepts and best practices',
+          skillId: 'skill-2'
+        },
+        {
+          bookingId: '3',
+          studentId: 'student-3',
+          tutorId: 'tutor-3',
+          sessionDate: '2024-01-17',
+          startTime: '2024-01-17T16:00:00Z',
+          endTime: '2024-01-17T17:00:00Z',
+          status: 'Completed',
+          createdAt: '2024-01-12T10:00:00Z',
+          studentName: 'Mike Johnson',
+          tutorName: 'Sarah Davis',
+          topic: 'JavaScript ES6',
+          description: 'Modern JavaScript features and syntax',
+          skillId: 'skill-3'
+        },
+        {
+          bookingId: '4',
+          studentId: 'student-4',
+          tutorId: 'tutor-4',
+          sessionDate: '2024-01-18',
+          startTime: '2024-01-18T11:00:00Z',
+          endTime: '2024-01-18T12:00:00Z',
+          status: 'Cancelled',
+          createdAt: '2024-01-13T11:00:00Z',
+          studentName: 'Emma Wilson',
+          tutorName: 'David Brown',
+          topic: 'Node.js Backend',
+          description: 'Building REST APIs with Node.js',
+          skillId: 'skill-4'
+        },
+        {
+          bookingId: '5',
+          studentId: 'student-5',
+          tutorId: 'tutor-5',
+          sessionDate: '2024-01-19',
+          startTime: '2024-01-19T13:00:00Z',
+          endTime: '2024-01-19T14:00:00Z',
+          status: 'Rejected',
+          createdAt: '2024-01-14T12:00:00Z',
+          studentName: 'Tom Anderson',
+          tutorName: 'Lisa Garcia',
+          topic: 'Database Design',
+          description: 'SQL and database optimization',
+          skillId: 'skill-5'
+        }
+      ];
+
+      // Apply filters to mock data
+      let filteredBookings = mockBookings;
+      
+      if (status && status !== 'All') {
+        filteredBookings = filteredBookings.filter(booking => booking.status === status);
+      }
+      
+      if (searchTerm && searchTerm.trim()) {
+        const search = searchTerm.toLowerCase();
+        filteredBookings = filteredBookings.filter(booking =>
+          booking.studentName?.toLowerCase().includes(search) ||
+          booking.tutorName?.toLowerCase().includes(search) ||
+          booking.topic.toLowerCase().includes(search)
+        );
+      }
+
+      if (startDate) {
+        filteredBookings = filteredBookings.filter(booking =>
+          new Date(booking.startTime) >= new Date(startDate)
+        );
+      }
+
+      if (endDate) {
+        filteredBookings = filteredBookings.filter(booking =>
+          new Date(booking.startTime) <= new Date(endDate)
+        );
+      }
+
+      // Apply pagination
+      const startIndex = (page - 1) * pageSize;
+      const paginatedBookings = filteredBookings.slice(startIndex, startIndex + pageSize);
+      
+      return {
+        success: true,
+        data: {
+          bookings: paginatedBookings,
+          totalCount: filteredBookings.length
+        }
+      };
+    } catch (error: any) {
+      console.error('Error fetching admin bookings:', error);
+      return { success: false, error: error.message || "Failed to fetch admin bookings." };
+    }
   }
 };
