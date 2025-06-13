@@ -53,12 +53,12 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
       if (result.success) {
         onBookingCancelled(); // This will close modal & refresh list via parent
       } else {
-        const errorMessage = typeof result.error === 'string' ? result.error : (result.error as any)?.message || "Failed to cancel booking.";
+        const errorMessage = typeof result.error === 'string' ? result.error : (result.error as { message?: string })?.message || "Failed to cancel booking.";
         setError(errorMessage);
         toast.error(`Cancellation failed: ${errorMessage}`);
       }
-    } catch (err: any) {
-      const errorMessage = err.message || "An unexpected error occurred during cancellation.";
+    } catch (err: unknown) {
+      const errorMessage = (err as Error)?.message || "An unexpected error occurred during cancellation.";
       setError(errorMessage);
       toast.error(`Cancellation error: ${errorMessage}`);
     } finally {
@@ -91,17 +91,6 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
           <BookingDetailView
             booking={currentBooking || booking}
             userRole={userRole}
-            onSessionUpdated={handleSessionUpdated}
-            onCancelBooking={handleCancelBooking}
-            isUpdating={isCancelling}
-            showActions={false} // We'll handle actions in the dialog footer
-          />
-        </div>
-        
-        <DialogFooter className="mt-2 pt-4 border-t border-gray-800 gap-2">
-          <BookingDetailView
-            booking={currentBooking || booking}
-            userRole={userRole}
             onContactUser={() => {
               const contactName = userRole === 'student' ? booking.tutorName : booking.studentName;
               toast.info(`Contact feature for ${contactName} would open here.`);
@@ -112,10 +101,13 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
             isUpdating={isCancelling}
             showActions={true}
           />
+        </div>
+        
+        <DialogFooter className="mt-2 pt-4 border-t border-gray-800">
           <Button
             variant="outline"
             onClick={onClose}
-            className="bg-gray-700 hover:bg-gray-600 border-gray-600 mt-4"
+            className="bg-gray-700 hover:bg-gray-600 border-gray-600"
           >
             Close
           </Button>

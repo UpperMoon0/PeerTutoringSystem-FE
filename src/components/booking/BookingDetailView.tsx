@@ -306,7 +306,7 @@ export const BookingDetailView: React.FC<BookingDetailViewProps> = ({
               </Button>
             )}
             
-            {canCancel && userRole === 'student' && (
+            {canCancel && userRole === 'tutor' && (
               <Button
                 variant="destructive"
                 onClick={onCancelBooking}
