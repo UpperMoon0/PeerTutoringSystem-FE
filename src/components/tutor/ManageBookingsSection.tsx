@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { BookingService } from '@/services/BookingService';
 import { SessionService } from '@/services/SessionService';
+import { ReviewService } from '@/services/ReviewService';
 import type { Booking } from '@/types/booking.types';
 import type { CreateSessionDto } from '@/types/session.types';
+import type { ReviewDto } from '@/types/review.types';
 import type { ApiResult } from '@/types/api.types';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -21,7 +23,9 @@ import {
   CheckCircle,
   AlertCircle,
   TrendingUp,
-  Filter
+  Filter,
+  Star,
+  MessageSquare
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -41,6 +45,13 @@ const ManageBookingsSection: React.FC = () => {
   const [isSessionFormOpen, setIsSessionFormOpen] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
   const [sessionError, setSessionError] = useState<string | null>(null);
+  
+  // Review-related state
+  const [bookingsWithReviews, setBookingsWithReviews] = useState<Set<string>>(new Set());
+  const [selectedReview, setSelectedReview] = useState<ReviewDto | null>(null);
+  const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
+  const [reviewError, setReviewError] = useState<string | null>(null);
+  
   const pageSize = 10;
 
   const fetchBookings = async () => {
@@ -55,8 +66,25 @@ const ManageBookingsSection: React.FC = () => {
       setError(null);
       const response = await BookingService.getTutorBookings(selectedStatus, currentPage, pageSize);
       if (response.success && response.data) {
-        setBookings(response.data.bookings);
+        const fetchedBookings = response.data.bookings;
+        setBookings(fetchedBookings);
         setTotalPages(Math.ceil(response.data.totalCount / pageSize));
+        
+        // Check which completed bookings have reviews
+        const completedBookings = fetchedBookings.filter(booking => booking.status === 'Completed');
+        const reviewChecks = await Promise.allSettled(
+          completedBookings.map(booking =>
+            ReviewService.checkReviewExistsForBooking(booking.bookingId)
+          )
+        );
+
+        const newBookingsWithReviews = new Set<string>();
+        reviewChecks.forEach((result, index) => {
+          if (result.status === 'fulfilled' && result.value.success && result.value.data) {
+            newBookingsWithReviews.add(completedBookings[index].bookingId);
+          }
+        });
+        setBookingsWithReviews(newBookingsWithReviews);
       } else {
         setError(typeof response.error === 'string' ? response.error : response.error?.message || 'Failed to fetch bookings.');
         setBookings([]);
@@ -185,6 +213,25 @@ const ManageBookingsSection: React.FC = () => {
     }
   };
 
+  const handleViewReview = async (bookingId: string) => {
+    setReviewError(null);
+    try {
+      const response = await ReviewService.getReviewByBookingId(bookingId);
+      if (response.success && response.data) {
+        setSelectedReview(response.data);
+        setIsReviewModalOpen(true);
+      } else {
+        setReviewError('Failed to fetch review details.');
+      }
+    } catch (err: unknown) {
+      setReviewError((err as Error)?.message || 'An unexpected error occurred while fetching review.');
+      console.error(err);
+    }
+  };
+
+  const hasReview = (bookingId: string): boolean => {
+    return bookingsWithReviews.has(bookingId);
+  };
 
   const getStatusBadgeVariant = (status: string) => {
     switch (status) {
@@ -208,6 +255,8 @@ const ManageBookingsSection: React.FC = () => {
       pending: bookings.filter(b => b.status === 'Pending').length,
       confirmed: bookings.filter(b => b.status === 'Confirmed').length,
       completed: bookings.filter(b => b.status === 'Completed').length,
+      rejected: bookings.filter(b => b.status === 'Rejected').length,
+      cancelled: bookings.filter(b => b.status === 'Cancelled').length,
     };
     return stats;
   };
@@ -236,7 +285,7 @@ const ManageBookingsSection: React.FC = () => {
       </div>
 
       {/* Booking Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
         <Card className="bg-gray-900 border-gray-800">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
@@ -288,6 +337,20 @@ const ManageBookingsSection: React.FC = () => {
               </div>
               <div className="p-2 bg-purple-600 bg-opacity-20 rounded-lg">
                 <TrendingUp className="w-5 h-5 text-purple-400" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-gray-900 border-gray-800">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-gray-400 text-sm font-medium">Rejected</p>
+                <p className="text-2xl font-bold text-white mt-1">{stats.rejected}</p>
+              </div>
+              <div className="p-2 bg-red-600 bg-opacity-20 rounded-lg">
+                <AlertCircle className="w-5 h-5 text-red-400" />
               </div>
             </div>
           </CardContent>
@@ -378,15 +441,28 @@ const ManageBookingsSection: React.FC = () => {
                         </Badge>
                       </TableCell>
                       <TableCell>
-                        <Button 
-                          variant="ghost" 
-                          size="sm"
-                          onClick={() => handleViewDetails(booking.bookingId)}
-                          className="text-blue-400 hover:text-blue-300 hover:bg-gray-800"
-                        >
-                          <Eye className="w-4 h-4 mr-1" />
-                          View Details
-                        </Button>
+                        <div className="flex items-center gap-2">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleViewDetails(booking.bookingId)}
+                            className="text-blue-400 hover:text-blue-300 hover:bg-gray-800"
+                          >
+                            <Eye className="w-4 h-4 mr-1" />
+                            View Details
+                          </Button>
+                          {booking.status === 'Completed' && hasReview(booking.bookingId) && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleViewReview(booking.bookingId)}
+                              className="text-yellow-400 hover:text-yellow-300 hover:bg-gray-800"
+                            >
+                              <Star className="w-4 h-4 mr-1" />
+                              View Review
+                            </Button>
+                          )}
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))}
@@ -488,6 +564,84 @@ const ManageBookingsSection: React.FC = () => {
               className="bg-gray-800 border-gray-700 text-white hover:bg-gray-700"
             >
               Cancel
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Review Display Modal */}
+      <Dialog open={isReviewModalOpen} onOpenChange={setIsReviewModalOpen}>
+        <DialogContent className="bg-gray-900 border-gray-800 text-white max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-white flex items-center">
+              <Star className="w-5 h-5 mr-2 text-yellow-400" />
+              Student Review
+            </DialogTitle>
+            <DialogDescription className="text-gray-400">
+              Review left by the student for this tutoring session.
+            </DialogDescription>
+          </DialogHeader>
+
+          {reviewError && (
+            <Alert variant="destructive" className="mb-4">
+              <AlertCircle className="h-4 w-4" />
+              <AlertTitle>Error</AlertTitle>
+              <AlertDescription>{reviewError}</AlertDescription>
+            </Alert>
+          )}
+
+          {selectedReview && (
+            <div className="space-y-4">
+              <div>
+                <h3 className="text-sm font-medium text-gray-300 mb-2">Rating</h3>
+                <div className="flex items-center space-x-1">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <Star
+                      key={star}
+                      className={`w-5 h-5 ${
+                        star <= selectedReview.rating
+                          ? 'text-yellow-400 fill-yellow-400'
+                          : 'text-gray-600'
+                      }`}
+                    />
+                  ))}
+                  <span className="ml-2 text-white font-medium">
+                    {selectedReview.rating}/5
+                  </span>
+                </div>
+              </div>
+
+              {selectedReview.comment && (
+                <div>
+                  <h3 className="text-sm font-medium text-gray-300 mb-2 flex items-center">
+                    <MessageSquare className="w-4 h-4 mr-1" />
+                    Comment
+                  </h3>
+                  <div className="bg-gray-800 p-3 rounded-lg">
+                    <p className="text-gray-200 whitespace-pre-wrap">
+                      {selectedReview.comment}
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              <div className="text-xs text-gray-500">
+                Reviewed on: {format(new Date(selectedReview.reviewDate), 'MMM dd, yyyy')}
+              </div>
+            </div>
+          )}
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setIsReviewModalOpen(false);
+                setSelectedReview(null);
+                setReviewError(null);
+              }}
+              className="bg-gray-800 border-gray-700 text-white hover:bg-gray-700"
+            >
+              Close
             </Button>
           </DialogFooter>
         </DialogContent>

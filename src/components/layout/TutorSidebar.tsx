@@ -6,11 +6,10 @@ import {
   BookOpen,
   User,
   DollarSign,
-  BarChart3,
   Home,
   Menu,
   X,
-  Briefcase 
+  Briefcase
 } from 'lucide-react';
 
 interface SidebarItem {
@@ -36,7 +35,6 @@ const TutorSidebar: React.FC<TutorSidebarProps> = ({ className, onAvailabilityCl
     { icon: BookOpen, label: 'My Bookings', onClick: onBookingsClick || (() => {}), href: onBookingsClick ? undefined : '/tutor?section=bookings' },
     { icon: Calendar, label: 'Manage Availability', onClick: onAvailabilityClick || (() => {}), href: onAvailabilityClick ? undefined : '/tutor?section=availability' },
     { icon: Briefcase, label: 'Profile', onClick: onProfileClick || (() => {}), href: onProfileClick ? undefined : '/tutor?section=profile' }, // Changed icon and href/onClick
-    { icon: BarChart3, label: 'Analytics', href: '/tutor/analytics' }, 
   ];
 
   const handleItemClick = (item: SidebarItem) => {
