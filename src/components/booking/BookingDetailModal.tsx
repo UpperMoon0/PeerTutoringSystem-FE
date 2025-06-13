@@ -20,7 +20,7 @@ interface BookingDetailModalProps {
   isOpen: boolean;
   onClose: () => void;
   onBookingCancelled: () => void;
-  userRole?: 'student' | 'tutor';
+  userRole?: 'student' | 'tutor' | 'admin';
   onUpdateStatus?: (status: string) => void;
 }
 
@@ -367,7 +367,7 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
                   </Button>
                 )}
                 
-                {canCancel && userRole === 'tutor' && (
+                {canCancel && (userRole === 'student' || userRole === 'admin') && (
                   <Button
                     variant="destructive"
                     onClick={() => handleUpdateStatus('Cancelled')}
