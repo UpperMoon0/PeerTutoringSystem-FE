@@ -13,7 +13,7 @@ export interface DashboardStatistics {
 export const AdminDashboardService = {
   getDashboardStatistics: async (): Promise<ServiceResult<DashboardStatistics>> => {
     try {
-      const fullUrl = `${API_URL}/Users/dashboard-statistics`;
+      const fullUrl = `${API_URL}/Users/admin-dashboard-statistics`;
       console.log('AdminDashboardService: Calling API URL:', fullUrl);
       console.log('AdminDashboardService: API_URL base:', API_URL);
       
