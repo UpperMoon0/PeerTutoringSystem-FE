@@ -3,11 +3,13 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import AdminSidebar from '@/components/layout/AdminSidebar';
 import TutorVerificationSection from '@/components/admin/TutorVerificationSection';
 import ManageUsersSection from '@/components/admin/ManageUsersSection';
 import ManageSkillsSection from '@/components/admin/ManageSkillsSection';
 import ManageBookingsSection from '@/components/admin/ManageBookingsSection';
+import { AdminDashboardService, type DashboardStatistics } from '@/services/AdminDashboardService';
 import {
   Shield,
   Users,
@@ -18,15 +20,9 @@ import {
   CheckCircle,
   Clock,
   UserCheck,
-  BookOpen
+  BookOpen,
+  ShieldAlert
 } from 'lucide-react';
-
-interface DashboardStats {
-  totalUsers: number;
-  pendingVerifications: number;
-  totalSkills: number;
-  activeAdmins: number;
-}
 
 type AdminSection = 'overview' | 'tutor-verifications' | 'manage-users' | 'manage-skills' | 'manage-bookings';
 
@@ -34,13 +30,14 @@ const AdminDashboardPage: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const [activeSection, setActiveSection] = useState<AdminSection>('overview');
-  const [stats, setStats] = useState<DashboardStats>({
+  const [stats, setStats] = useState<DashboardStatistics>({
     totalUsers: 0,
     pendingVerifications: 0,
     totalSkills: 0,
     activeAdmins: 0
   });
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   // Handle URL-based navigation
   useEffect(() => {
@@ -59,20 +56,29 @@ const AdminDashboardPage: React.FC = () => {
     navigate(`/admin?section=${section}`, { replace: true });
   };
 
-  // Load dashboard stats (mock data for now)
+  // Load dashboard stats from API
   useEffect(() => {
-    const loadDashboardStats = () => {
+    const loadDashboardStats = async () => {
       setLoading(true);
-      // Mock data - replace with actual API calls
-      setTimeout(() => {
-        setStats({
-          totalUsers: 1250,
-          pendingVerifications: 12,
-          totalSkills: 45,
-          activeAdmins: 3
-        });
+      setError(null);
+      
+      try {
+        const result = await AdminDashboardService.getDashboardStatistics();
+        
+        if (result.success && result.data) {
+          setStats(result.data);
+        } else {
+          const errorMessage = typeof result.error === 'string'
+            ? result.error
+            : result.error?.message || 'Failed to load dashboard statistics.';
+          setError(errorMessage);
+        }
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'An unexpected error occurred while loading dashboard statistics.');
+        console.error('Error loading dashboard stats:', err);
+      } finally {
         setLoading(false);
-      }, 500);
+      }
     };
 
     if (activeSection === 'overview') {
@@ -135,8 +141,33 @@ const AdminDashboardPage: React.FC = () => {
         <main className="flex-1 p-6 overflow-auto bg-gray-950">
           {activeSection === 'overview' ? (
             <>
-              {/* Stats Grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+              {/* Error Alert */}
+              {error && (
+                <Alert variant="destructive" className="mb-6 bg-red-500/10 text-red-400 border-red-500">
+                  <ShieldAlert className="h-4 w-4" />
+                  <AlertTitle>Error Loading Dashboard</AlertTitle>
+                  <AlertDescription>{error}</AlertDescription>
+                </Alert>
+              )}
+
+              {/* Loading State for Stats Grid */}
+              {loading ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                  {[...Array(4)].map((_, i) => (
+                    <Card key={i} className="bg-gray-900 border-gray-800">
+                      <CardContent className="p-4 lg:p-6">
+                        <div className="animate-pulse">
+                          <div className="h-4 bg-gray-800 rounded mb-2"></div>
+                          <div className="h-8 bg-gray-800 rounded mb-2"></div>
+                          <div className="h-4 bg-gray-800 rounded w-24"></div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              ) : !error ? (
+                /* Stats Grid */
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                 {/* Total Users */}
                 <Card className="bg-gray-900 border-gray-800">
                   <CardContent className="p-4 lg:p-6">
@@ -212,7 +243,8 @@ const AdminDashboardPage: React.FC = () => {
                     </div>
                   </CardContent>
                 </Card>
-              </div>
+                </div>
+              ) : null}
 
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {/* Quick Actions */}

@@ -33,24 +33,31 @@ const TutorVerificationSection: React.FC = () => {
     }
 
     try {
-      const response = await fetch(`${API_BASE_URL}/documents/${documentId}`, {
+      const fullUrl = `${API_BASE_URL}/Documents/${documentId}`;
+      console.log('TutorVerificationSection: Calling document API URL:', fullUrl);
+      console.log('TutorVerificationSection: API_BASE_URL:', API_BASE_URL);
+      
+      const response = await fetch(fullUrl, {
         headers: {
           'Authorization': `Bearer ${token}`,
         },
       });
 
       if (!response.ok) {
+        console.log('TutorVerificationSection: Document API call failed with status:', response.status);
         if (response.status === 401) {
           alert('Unauthorized. Please log in again.');
         } else if (response.status === 403) {
           alert('Forbidden. You do not have permission to view this document.');
         } else {
           const errorData = await response.json().catch(() => ({ error: 'Failed to fetch document.' }));
+          console.log('TutorVerificationSection: Error response data:', errorData);
           alert(`Error fetching document: ${errorData.error || response.statusText}`);
         }
         return;
       }
 
+      console.log('TutorVerificationSection: Document API call successful');
       const blob = await response.blob();
       const fileURL = URL.createObjectURL(blob);
       window.open(fileURL, '_blank');
