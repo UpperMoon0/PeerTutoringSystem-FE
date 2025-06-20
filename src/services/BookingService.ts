@@ -449,5 +449,30 @@ export const BookingService = {
       console.error('Error fetching admin bookings:', error);
       return { success: false, error: error.message || "Failed to fetch admin bookings." };
     }
+  },
+
+  async getTutorDashboardStats(): Promise<ApiResult<{
+    totalBookings: number;
+    availableSlots: number;
+    completedSessions: number;
+    totalEarnings: number;
+    pendingBookings: number;
+    confirmedBookings: number;
+  }>> {
+    try {
+      const response = await AuthService.fetchWithAuth(`${API_BASE_URL}/Bookings/tutor/dashboard-stats`, {
+        method: 'GET',
+      });
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: "Failed to parse error response." }));
+        throw new Error(errorData.error || `Failed to fetch tutor dashboard stats: ${response.statusText}`);
+      }
+      const responseData = await response.json();
+      
+      return { success: true, data: responseData.data };
+    } catch (error: any) {
+      console.error('Error fetching tutor dashboard stats:', error);
+      return { success: false, error: error.message || "Failed to fetch tutor dashboard stats." };
+    }
   }
 };

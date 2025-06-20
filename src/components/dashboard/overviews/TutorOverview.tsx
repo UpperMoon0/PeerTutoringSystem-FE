@@ -10,13 +10,9 @@ import {
   DollarSign,
   TrendingUp,
   Users,
-  Star,
-  Eye,
   CheckCircle,
   AlertCircle,
-  Edit,
   User,
-  CalendarDays,
   PlusCircle
 } from 'lucide-react';
 import type { Booking } from '@/types/booking.types';
@@ -25,19 +21,23 @@ interface DashboardStats {
   totalBookings: number;
   availableSlots: number;
   completedSessions: number;
-  earnings: number;
+  totalEarnings: number;
+  pendingBookings: number;
+  confirmedBookings: number;
 }
 
 interface TutorOverviewProps {
   onNavigateToSection?: (section: string) => void;
 }
 
-const TutorOverview: React.FC<TutorOverviewProps> = ({ onNavigateToSection }) => {
+const TutorOverview: React.FC<TutorOverviewProps> = () => {
   const [stats, setStats] = useState<DashboardStats>({
     totalBookings: 0,
     availableSlots: 0,
     completedSessions: 0,
-    earnings: 0
+    totalEarnings: 0,
+    pendingBookings: 0,
+    confirmedBookings: 0
   });
   const [recentBookings, setRecentBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
@@ -50,22 +50,16 @@ const TutorOverview: React.FC<TutorOverviewProps> = ({ onNavigateToSection }) =>
     try {
       setLoading(true);
       
-      // Load tutor bookings
+      // Load dashboard stats
+      const statsResult = await BookingService.getTutorDashboardStats();
+      if (statsResult.success && statsResult.data) {
+        setStats(statsResult.data);
+      }
+      
+      // Load recent bookings
       const bookingsResult = await BookingService.getTutorBookings('All', 1, 5);
       if (bookingsResult.success && bookingsResult.data) {
         setRecentBookings(bookingsResult.data.bookings);
-        
-        // Calculate stats from bookings
-        const totalBookings = bookingsResult.data.totalCount;
-        const completedSessions = bookingsResult.data.bookings.filter(b => b.status === 'Completed').length;
-        
-        setStats(prev => ({
-          ...prev,
-          totalBookings,
-          completedSessions,
-          earnings: completedSessions * 50, // Mock calculation
-          availableSlots: 12 // Mock data
-        }));
       }
     } catch (error) {
       console.error('Error loading dashboard data:', error);
@@ -74,11 +68,6 @@ const TutorOverview: React.FC<TutorOverviewProps> = ({ onNavigateToSection }) =>
     }
   };
 
-  const handleQuickAction = (section: string) => {
-    if (onNavigateToSection) {
-      onNavigateToSection(section);
-    }
-  };
 
   const getStatusBadgeVariant = (status: string) => {
     switch (status) {
@@ -173,7 +162,7 @@ const TutorOverview: React.FC<TutorOverviewProps> = ({ onNavigateToSection }) =>
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-gray-400 text-sm font-medium">Total Earnings</p>
-                <p className="text-3xl font-bold text-white mt-2">${stats.earnings}</p>
+                <p className="text-3xl font-bold text-white mt-2">${stats.totalEarnings}</p>
                 <p className="text-green-500 text-sm mt-1 flex items-center">
                   <DollarSign className="w-4 h-4 mr-1" />
                   +15% from last month
@@ -187,48 +176,9 @@ const TutorOverview: React.FC<TutorOverviewProps> = ({ onNavigateToSection }) =>
         </Card>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Quick Actions */}
-        <Card className="bg-gray-900 border-gray-800">
-          <CardHeader>
-            <CardTitle className="text-white flex items-center">
-              <Star className="w-5 h-5 mr-2 text-yellow-400" />
-              Quick Actions
-            </CardTitle>
-            <CardDescription className="text-gray-400">
-              Manage your tutoring activities
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <Button
-              variant="outline"
-              onClick={() => handleQuickAction('availability')}
-              className="w-full justify-start bg-gray-800 border-gray-700 hover:bg-gray-700 text-white"
-            >
-              <CalendarDays className="w-4 h-4 mr-2" />
-              Manage Availability
-            </Button>
-            <Button
-              onClick={() => handleQuickAction('bookings')}
-              variant="outline"
-              className="w-full justify-start bg-gray-800 border-gray-700 hover:bg-gray-700 text-white"
-            >
-              <Eye className="w-4 h-4 mr-2" />
-              Manage Bookings
-            </Button>
-            <Button 
-              onClick={() => handleQuickAction('profile')}
-              variant="outline" 
-              className="w-full justify-start bg-gray-800 border-gray-700 hover:bg-gray-700 text-white"
-            >
-              <Edit className="w-4 h-4 mr-2" />
-              Update Tutor Profile
-            </Button>
-          </CardContent>
-        </Card>
-
+      <div className="grid grid-cols-1 gap-6">
         {/* Recent Bookings */}
-        <Card className="lg:col-span-2 bg-gray-900 border-gray-800">
+        <Card className="bg-gray-900 border-gray-800">
           <CardHeader>
             <CardTitle className="text-white flex items-center justify-between">
               <span className="flex items-center">
@@ -237,7 +187,6 @@ const TutorOverview: React.FC<TutorOverviewProps> = ({ onNavigateToSection }) =>
               </span>
               <Button
                 variant="ghost"
-                onClick={() => handleQuickAction('bookings')}
                 className="text-blue-400 hover:text-blue-300 text-sm font-normal"
               >
                 View all
@@ -359,7 +308,6 @@ const TutorOverview: React.FC<TutorOverviewProps> = ({ onNavigateToSection }) =>
             <Button
               variant="outline"
               size="sm"
-              onClick={() => handleQuickAction('availability')}
               className="bg-gray-800 border-gray-700 text-white hover:bg-gray-700"
             >
               <PlusCircle className="w-4 h-4 mr-2" />

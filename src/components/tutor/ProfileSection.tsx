@@ -14,7 +14,11 @@ import {
   Loader2
 } from 'lucide-react';
 
-const ProfileSection: React.FC = () => {
+interface ProfileSectionProps {
+  onBioStatusChange?: () => Promise<void>;
+}
+
+const ProfileSection: React.FC<ProfileSectionProps> = ({ onBioStatusChange }) => {
   const { currentUser } = useAuth();
   const [tutorDisplayProfile, setTutorDisplayProfile] = useState<TutorProfileDto | null>(null);
   const [isEditingProfile, setIsEditingProfile] = useState(false);
@@ -140,6 +144,11 @@ const ProfileSection: React.FC = () => {
         };
         await fetchTutorDisplayProfileData(); // Re-fetch without global loading
         setIsEditingProfile(false);
+        
+        // Notify parent component that bio status has changed
+        if (onBioStatusChange) {
+          await onBioStatusChange();
+        }
       } else {
         console.error('Failed to save tutor profile:', profileResult.error);
         // Handle error display to user if necessary

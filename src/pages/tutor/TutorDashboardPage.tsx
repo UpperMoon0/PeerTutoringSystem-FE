@@ -4,7 +4,7 @@ import { createDashboardConfig } from '@/config/dashboards';
 import { useTutorBioStatus } from '@/hooks/useTutorBioStatus';
 
 const TutorDashboardPage: React.FC = () => {
-  const { hasBio, loading } = useTutorBioStatus();
+  const { hasBio, loading, refresh } = useTutorBioStatus();
   
   // Create indicator callback for profile section
   const indicatorCallback = (sectionId: string) => {
@@ -29,6 +29,13 @@ const TutorDashboardPage: React.FC = () => {
         </div>
       </div>
     );
+  }
+
+  // Pass the refresh function to the profile section
+  if (config.sections.profile?.component) {
+    const OriginalProfileComponent = config.sections.profile.component;
+    config.sections.profile.component = (props: Record<string, unknown>) =>
+      React.createElement(OriginalProfileComponent, { ...props, onBioStatusChange: refresh });
   }
 
   return <Dashboard config={config} />;

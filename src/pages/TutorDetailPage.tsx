@@ -21,8 +21,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 
-interface TutorProfile extends ProfileDto {
-}
+type TutorProfile = ProfileDto;
 
 const TutorDetailPage: React.FC = () => {
   const { tutorId } = useParams<{ tutorId: string }>();
@@ -90,7 +89,7 @@ const TutorDetailPage: React.FC = () => {
               recurringGroups[timeKey].originalRecurrenceEndDate = new Date(slot.recurrenceEndDate);
           }
 
-        } catch (e) {
+        } catch {
           nonRecurringSlots.push(slot);
         }
       } else {
@@ -354,193 +353,210 @@ const TutorDetailPage: React.FC = () => {
         </CardContent>
       </Card>
 
-      <Card className="bg-gray-900 border-gray-800 shadow-xl">
-        <CardHeader className="p-6">
-          <CardTitle className="text-2xl text-white">Book a Session</CardTitle>
-        </CardHeader>
-        <CardContent className="p-6 space-y-6">
-          <div className="flex flex-col sm:flex-row gap-4 items-end">
-            <div className="flex-1 space-y-1">
-              <Label htmlFor="startDate" className="block text-sm font-medium text-gray-300">
-                Start Date
-              </Label>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant={"outline"}
-                    className={cn(
-                      "w-full justify-start text-left font-normal bg-gray-800 border-gray-700 hover:bg-gray-750 text-white",
-                      !dateRangeStart && "text-gray-500"
-                    )}
-                  >
-                    <CalendarIcon className="mr-2 size-4 text-gray-400" />
-                    {dateRangeStart ? format(dateRangeStart, "PPP") : <span>Pick a start date</span>}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0 bg-gray-900 border-gray-700 text-white" align="start">
-                  <Calendar
-                    mode="single"
-                    selected={dateRangeStart}
-                    onSelect={(date) => {
-                      if (date) {
-                        date.setHours(0,0,0,0);
-                        setDateRangeStart(date);
-                        if (dateRangeEnd && dateRangeEnd < date) { // Auto-adjust end date if it's before new start date
-                          const newEndDate = new Date(date);
-                          newEndDate.setDate(newEndDate.getDate() + 7); // Default to 1 week after
-                          setDateRangeEnd(newEndDate);
-                        }
-                      }
-                    }}
-                    disabled={(date) => {
-                      const today = new Date();
-                      today.setHours(0,0,0,0);
-                      return date < today;
-                    }}
-                    initialFocus
-                    className="bg-gray-900 text-white [&_button]:text-white [&_button:hover]:bg-gray-800 [&_button[aria-selected]]:bg-blue-600"
-                  />
-                </PopoverContent>
-              </Popover>
-            </div>
-            <div className="flex-1 space-y-1">
-              <Label htmlFor="endDate" className="block text-sm font-medium text-gray-300">
-                End Date
-              </Label>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant={"outline"}
-                    className={cn(
-                      "w-full justify-start text-left font-normal bg-gray-800 border-gray-700 hover:bg-gray-750 text-white",
-                      !dateRangeEnd && "text-gray-500"
-                    )}
-                  >
-                    <CalendarIcon className="mr-2 size-4 text-gray-400" />
-                    {dateRangeEnd ? format(dateRangeEnd, "PPP") : <span>Pick an end date</span>}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0 bg-gray-900 border-gray-700 text-white" align="start">
-                  <Calendar
-                    mode="single"
-                    selected={dateRangeEnd}
-                    onSelect={(date) => {
-                       if(date) {
-                        date.setHours(23,59,59,999); // Ensure end date covers the whole day
-                        setDateRangeEnd(date);
-                       }
-                    }}
-                    disabled={(date) =>
-                      dateRangeStart ? date < dateRangeStart : false // Can't be before start date
-                    }
-                    initialFocus
-                    className="bg-gray-900 text-white [&_button]:text-white [&_button:hover]:bg-gray-800 [&_button[aria-selected]]:bg-blue-600"
-                  />
-                </PopoverContent>
-              </Popover>
-            </div>
-            {/* Removed the "View Slots" button as slots fetch automatically */}
-          </div>
-
-          {bookingError && <Alert variant="destructive" className="bg-red-900 border-red-700 text-red-200"><AlertDescription>{bookingError}</AlertDescription></Alert>}
-          {bookingSuccess && <Alert variant="default" className="bg-green-800 border-green-700 text-green-200"><AlertDescription>{bookingSuccess}</AlertDescription></Alert>}
-          
-          {isFetchingSlots && <p className="text-center text-gray-400 py-3">Fetching available slots...</p>}
-
-          {!isFetchingSlots && availabilities.length > 0 && (
-            <div className="space-y-3 pt-4">
-              <h4 className="font-semibold text-lg text-white">Available Slots:</h4>
-              <ul className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-                {displaySlots.map(avail => (
-                  <li key={`${avail.availabilityId}-${avail.startTime}`}>
+      {/* Only show booking section for authenticated users */}
+      {currentUser && (
+        <Card className="bg-gray-900 border-gray-800 shadow-xl">
+          <CardHeader className="p-6">
+            <CardTitle className="text-2xl text-white">Book a Session</CardTitle>
+          </CardHeader>
+          <CardContent className="p-6 space-y-6">
+            <div className="flex flex-col sm:flex-row gap-4 items-end">
+              <div className="flex-1 space-y-1">
+                <Label htmlFor="startDate" className="block text-sm font-medium text-gray-300">
+                  Start Date
+                </Label>
+                <Popover>
+                  <PopoverTrigger asChild>
                     <Button
-                      variant={
-                        selectedAvailability?.availabilityId === avail.availabilityId &&
-                        selectedAvailability?.startTime === avail.startTime
-                        ? "default" // Primary selected style
-                        : "outline" // Secondary unselected style
-                      }
+                      variant={"outline"}
                       className={cn(
-                        "w-full text-left justify-start h-auto py-3 px-3 transition-all min-h-[4rem]",
-                        selectedAvailability?.availabilityId === avail.availabilityId && selectedAvailability?.startTime === avail.startTime
-                          ? "bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white border-transparent"
-                          : "bg-gray-800 border-gray-700 hover:bg-gray-750 text-gray-300 hover:text-white"
+                        "w-full justify-start text-left font-normal bg-gray-800 border-gray-700 hover:bg-gray-750 text-white",
+                        !dateRangeStart && "text-gray-500"
                       )}
-                      onClick={() => setSelectedAvailability(avail)}
                     >
-                      <div className="flex flex-col">
-                        {avail.isRecurring ? (
-                          <>
-                            <div className="flex items-center gap-2">
-                              <span className="font-medium">
-                                {avail.recurringDay ? avail.recurringDay.charAt(0).toUpperCase() + avail.recurringDay.slice(1).toLowerCase() : 'Daily'}
-                              </span>
-                              <span className="text-xs bg-blue-600/20 text-blue-300 px-2 py-0.5 rounded-full">
-                                Recurring
-                              </span>
-                            </div>
-                            <span className="text-sm">
-                              {`${format(new Date(avail.startTime), "p")} - ${format(new Date(avail.endTime), "p")}`}
-                            </span>
-                            {avail.recurrenceEndDate && (
-                              <span className="text-xs text-gray-400">
-                                Until {format(new Date(avail.recurrenceEndDate), "PPP")}
-                              </span>
-                            )}
-                          </>
-                        ) : (
-                          <>
-                            <span className="font-medium">{format(new Date(avail.startTime), "PPP")}</span>
-                            <span className="text-sm">{`${format(new Date(avail.startTime), "p")} - ${format(new Date(avail.endTime), "p")}`}</span>
-                          </>
-                        )}
-                      </div>
+                      <CalendarIcon className="mr-2 size-4 text-gray-400" />
+                      {dateRangeStart ? format(dateRangeStart, "PPP") : <span>Pick a start date</span>}
                     </Button>
-                  </li>
-                ))}
-              </ul>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0 bg-gray-900 border-gray-700 text-white" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={dateRangeStart}
+                      onSelect={(date) => {
+                        if (date) {
+                          date.setHours(0,0,0,0);
+                          setDateRangeStart(date);
+                          if (dateRangeEnd && dateRangeEnd < date) { // Auto-adjust end date if it's before new start date
+                            const newEndDate = new Date(date);
+                            newEndDate.setDate(newEndDate.getDate() + 7); // Default to 1 week after
+                            setDateRangeEnd(newEndDate);
+                          }
+                        }
+                      }}
+                      disabled={(date) => {
+                        const today = new Date();
+                        today.setHours(0,0,0,0);
+                        return date < today;
+                      }}
+                      initialFocus
+                      className="bg-gray-900 text-white [&_button]:text-white [&_button:hover]:bg-gray-800 [&_button[aria-selected]]:bg-blue-600"
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+              <div className="flex-1 space-y-1">
+                <Label htmlFor="endDate" className="block text-sm font-medium text-gray-300">
+                  End Date
+                </Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant={"outline"}
+                      className={cn(
+                        "w-full justify-start text-left font-normal bg-gray-800 border-gray-700 hover:bg-gray-750 text-white",
+                        !dateRangeEnd && "text-gray-500"
+                      )}
+                    >
+                      <CalendarIcon className="mr-2 size-4 text-gray-400" />
+                      {dateRangeEnd ? format(dateRangeEnd, "PPP") : <span>Pick an end date</span>}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0 bg-gray-900 border-gray-700 text-white" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={dateRangeEnd}
+                      onSelect={(date) => {
+                         if(date) {
+                          date.setHours(23,59,59,999); // Ensure end date covers the whole day
+                          setDateRangeEnd(date);
+                         }
+                      }}
+                      disabled={(date) =>
+                        dateRangeStart ? date < dateRangeStart : false // Can't be before start date
+                      }
+                      initialFocus
+                      className="bg-gray-900 text-white [&_button]:text-white [&_button:hover]:bg-gray-800 [&_button[aria-selected]]:bg-blue-600"
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+              {/* Removed the "View Slots" button as slots fetch automatically */}
             </div>
-          )}
-          
-          {!isFetchingSlots && availabilities.length === 0 && !bookingError && dateRangeStart && dateRangeEnd && (
-             <p className="text-center text-gray-500 py-3">No slots available for the selected criteria. Try adjusting the dates.</p>
-          )}
+
+            {bookingError && <Alert variant="destructive" className="bg-red-900 border-red-700 text-red-200"><AlertDescription>{bookingError}</AlertDescription></Alert>}
+            {bookingSuccess && <Alert variant="default" className="bg-green-800 border-green-700 text-green-200"><AlertDescription>{bookingSuccess}</AlertDescription></Alert>}
+            
+            {isFetchingSlots && <p className="text-center text-gray-400 py-3">Fetching available slots...</p>}
+
+            {!isFetchingSlots && availabilities.length > 0 && (
+              <div className="space-y-3 pt-4">
+                <h4 className="font-semibold text-lg text-white">Available Slots:</h4>
+                <ul className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                  {displaySlots.map(avail => (
+                    <li key={`${avail.availabilityId}-${avail.startTime}`}>
+                      <Button
+                        variant={
+                          selectedAvailability?.availabilityId === avail.availabilityId &&
+                          selectedAvailability?.startTime === avail.startTime
+                          ? "default" // Primary selected style
+                          : "outline" // Secondary unselected style
+                        }
+                        className={cn(
+                          "w-full text-left justify-start h-auto py-3 px-3 transition-all min-h-[4rem]",
+                          selectedAvailability?.availabilityId === avail.availabilityId && selectedAvailability?.startTime === avail.startTime
+                            ? "bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white border-transparent"
+                            : "bg-gray-800 border-gray-700 hover:bg-gray-750 text-gray-300 hover:text-white"
+                        )}
+                        onClick={() => setSelectedAvailability(avail)}
+                      >
+                        <div className="flex flex-col">
+                          {avail.isRecurring ? (
+                            <>
+                              <div className="flex items-center gap-2">
+                                <span className="font-medium">
+                                  {avail.recurringDay ? avail.recurringDay.charAt(0).toUpperCase() + avail.recurringDay.slice(1).toLowerCase() : 'Daily'}
+                                </span>
+                                <span className="text-xs bg-blue-600/20 text-blue-300 px-2 py-0.5 rounded-full">
+                                  Recurring
+                                </span>
+                              </div>
+                              <span className="text-sm">
+                                {`${format(new Date(avail.startTime), "p")} - ${format(new Date(avail.endTime), "p")}`}
+                              </span>
+                              {avail.recurrenceEndDate && (
+                                <span className="text-xs text-gray-400">
+                                  Until {format(new Date(avail.recurrenceEndDate), "PPP")}
+                                </span>
+                              )}
+                            </>
+                          ) : (
+                            <>
+                              <span className="font-medium">{format(new Date(avail.startTime), "PPP")}</span>
+                              <span className="text-sm">{`${format(new Date(avail.startTime), "p")} - ${format(new Date(avail.endTime), "p")}`}</span>
+                            </>
+                          )}
+                        </div>
+                      </Button>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+            
+            {!isFetchingSlots && availabilities.length === 0 && !bookingError && dateRangeStart && dateRangeEnd && (
+               <p className="text-center text-gray-500 py-3">No slots available for the selected criteria. Try adjusting the dates.</p>
+            )}
 
 
-          {selectedAvailability && (
-            <div className="mt-6 pt-6 border-t border-gray-800 space-y-4">
-              <h4 className="text-lg font-semibold text-white">Confirm Booking Details:</h4>
-              <div>
-                <Label htmlFor="topic" className="text-gray-300">Topic</Label>
-                <Input 
-                  id="topic" 
-                  value={topic} 
-                  onChange={(e) => setTopic(e.target.value)} 
-                  placeholder="e.g., Algebra Basics, React Hooks"
-                  className="bg-gray-800 border-gray-700 text-white placeholder-gray-500 focus:ring-blue-500 focus:border-blue-500"
-                />
+            {selectedAvailability && (
+              <div className="mt-6 pt-6 border-t border-gray-800 space-y-4">
+                <h4 className="text-lg font-semibold text-white">Confirm Booking Details:</h4>
+                <div>
+                  <Label htmlFor="topic" className="text-gray-300">Topic</Label>
+                  <Input
+                    id="topic"
+                    value={topic}
+                    onChange={(e) => setTopic(e.target.value)}
+                    placeholder="e.g., Algebra Basics, React Hooks"
+                    className="bg-gray-800 border-gray-700 text-white placeholder-gray-500 focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="description" className="text-gray-300">Description</Label>
+                  <Textarea
+                    id="description"
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    placeholder="Briefly describe what you want to learn or discuss."
+                    className="bg-gray-800 border-gray-700 text-white placeholder-gray-500 focus:ring-blue-500 focus:border-blue-500 min-h-[100px]"
+                  />
+                </div>
+                <Button
+                  onClick={handleBookSession}
+                  disabled={isLoading || !selectedAvailability}
+                  className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-3 text-base"
+                >
+                  {isLoading ? 'Booking...' : 'Confirm & Book Session'}
+                </Button>
               </div>
-              <div>
-                <Label htmlFor="description" className="text-gray-300">Description</Label>
-                <Textarea 
-                  id="description" 
-                  value={description} 
-                  onChange={(e) => setDescription(e.target.value)} 
-                  placeholder="Briefly describe what you want to learn or discuss."
-                  className="bg-gray-800 border-gray-700 text-white placeholder-gray-500 focus:ring-blue-500 focus:border-blue-500 min-h-[100px]"
-                />
-              </div>
-              <Button 
-                onClick={handleBookSession} 
-                disabled={isLoading || !selectedAvailability} 
-                className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-3 text-base"
-              >
-                {isLoading ? 'Booking...' : 'Confirm & Book Session'}
-              </Button>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Show message for guest users */}
+      {!currentUser && (
+        <Card className="bg-gray-900 border-gray-800 shadow-xl">
+          <CardContent className="p-6 text-center">
+            <p className="text-gray-300 text-lg mb-4">
+              Please <a href="/login" className="text-blue-400 hover:text-blue-300 underline">log in</a> to book a session with this tutor.
+            </p>
+            <p className="text-gray-500 text-sm">
+              You need to be authenticated to view availability and make bookings.
+            </p>
+          </CardContent>
+        </Card>
+      )}
 
 
     </div>

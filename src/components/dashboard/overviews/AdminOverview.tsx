@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Button } from '@/components/ui/button';
 import { AdminDashboardService, type DashboardStatistics } from '@/services/AdminDashboardService';
 import {
   Shield,
@@ -15,16 +14,13 @@ import {
   Clock,
   UserCheck,
   ShieldAlert,
-  BookOpen,
-  Calendar,
-  PlusCircle
 } from 'lucide-react';
 
 interface AdminOverviewProps {
   onNavigateToSection?: (section: string) => void;
 }
 
-const AdminOverview: React.FC<AdminOverviewProps> = ({ onNavigateToSection }) => {
+const AdminOverview: React.FC<AdminOverviewProps> = () => {
   const [stats, setStats] = useState<DashboardStatistics>({
     totalUsers: 0,
     pendingVerifications: 0,
@@ -62,11 +58,6 @@ const AdminOverview: React.FC<AdminOverviewProps> = ({ onNavigateToSection }) =>
     loadDashboardStats();
   }, []);
 
-  const handleQuickAction = (section: string) => {
-    if (onNavigateToSection) {
-      onNavigateToSection(section);
-    }
-  };
 
   return (
     <div className="space-y-6">
@@ -190,54 +181,7 @@ const AdminOverview: React.FC<AdminOverviewProps> = ({ onNavigateToSection }) =>
         </div>
       ) : null}
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Quick Actions */}
-        <Card className="bg-gray-900 border-gray-800">
-          <CardHeader>
-            <CardTitle className="text-white flex items-center">
-              <PlusCircle className="w-5 h-5 mr-2 text-red-400" />
-              Quick Actions
-            </CardTitle>
-            <CardDescription className="text-gray-400">
-              Common administrative tasks
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <Button
-              variant="outline"
-              onClick={() => handleQuickAction('tutor-verifications')}
-              className="w-full justify-start bg-gray-800 border-gray-700 hover:bg-gray-700 text-white"
-            >
-              <UserCheck className="w-4 h-4 mr-2" />
-              Review Tutor Verifications
-            </Button>
-            <Button
-              onClick={() => handleQuickAction('manage-users')}
-              variant="outline"
-              className="w-full justify-start bg-gray-800 border-gray-700 hover:bg-gray-700 text-white"
-            >
-              <Users className="w-4 h-4 mr-2" />
-              Manage Users
-            </Button>
-            <Button
-              onClick={() => handleQuickAction('manage-skills')}
-              variant="outline"
-              className="w-full justify-start bg-gray-800 border-gray-700 hover:bg-gray-700 text-white"
-            >
-              <BookOpen className="w-4 h-4 mr-2" />
-              Manage Skills
-            </Button>
-            <Button
-              onClick={() => handleQuickAction('manage-bookings')}
-              variant="outline"
-              className="w-full justify-start bg-gray-800 border-gray-700 hover:bg-gray-700 text-white"
-            >
-              <Calendar className="w-4 h-4 mr-2" />
-              Monitor Bookings
-            </Button>
-          </CardContent>
-        </Card>
-
+      <div className="grid grid-cols-1 gap-6">
         {/* System Status */}
         <Card className="bg-gray-900 border-gray-800">
           <CardHeader>
