@@ -4,6 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { BookingService } from '@/services/BookingService';
 import { TutorService } from '@/services/TutorService';
 import { UserSkillService } from '@/services/UserSkillService';
+import { ReviewService } from '@/services/ReviewService';
 import type { ProfileDto, User } from '@/types/user.types';
 import type { Skill, UserSkill } from '@/types/skill.types';
 import type { TutorAvailability } from '@/types/tutorAvailability.types';
@@ -17,10 +18,11 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { CalendarIcon } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
-import { cn } from '@/lib/utils'; 
+import { cn } from '@/lib/utils';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
+import StarRating from '@/components/ui/StarRating';
 
 type TutorProfile = ProfileDto;
 
@@ -33,6 +35,8 @@ const TutorDetailPage: React.FC = () => {
   const [availabilities, setAvailabilities] = useState<TutorAvailability[]>([]);
   const [selectedAvailability, setSelectedAvailability] = useState<TutorAvailability | null>(null);
   const [isFetchingSlots, setIsFetchingSlots] = useState(false);
+  const [rating, setRating] = useState<{ averageRating: number; reviewCount: number }>({ averageRating: 0, reviewCount: 0 });
+  const [ratingLoading, setRatingLoading] = useState<boolean>(true);
 
   const [dateRangeStart, setDateRangeStart] = useState<Date | undefined>(undefined);
   const [dateRangeEnd, setDateRangeEnd] = useState<Date | undefined>(undefined);
@@ -188,6 +192,37 @@ const TutorDetailPage: React.FC = () => {
     };
     
     fetchTutorSkills();
+  }, [tutorId]);
+
+  // Fetch tutor rating
+  useEffect(() => {
+    const fetchTutorRating = async () => {
+      if (!tutorId) {
+        setRating({ averageRating: 0, reviewCount: 0 });
+        setRatingLoading(false);
+        return;
+      }
+      
+      setRatingLoading(true);
+      try {
+        const [avgRatingResult, reviewsResult] = await Promise.all([
+          ReviewService.getAverageRatingByTutorId(tutorId),
+          ReviewService.getReviewsByTutorId(tutorId)
+        ]);
+
+        const averageRating = avgRatingResult.success && avgRatingResult.data ? avgRatingResult.data.averageRating : 0;
+        const reviewCount = reviewsResult.success && reviewsResult.data ? reviewsResult.data.length : 0;
+        
+        setRating({ averageRating, reviewCount });
+      } catch (err) {
+        console.warn('Error fetching tutor rating:', err);
+        setRating({ averageRating: 0, reviewCount: 0 });
+      } finally {
+        setRatingLoading(false);
+      }
+    };
+    
+    fetchTutorRating();
   }, [tutorId]);
 
   const handleFetchAvailabilities = useCallback(async () => {
@@ -362,6 +397,20 @@ const TutorDetailPage: React.FC = () => {
             <CardTitle className="text-3xl text-white">{tutor.fullName || tutorAccount?.fullName || "Tutor"}</CardTitle>
             {tutorAccount && tutorAccount.email && <CardDescription className="text-gray-400">Email: {tutorAccount.email}</CardDescription>}
             {tutor.school && <CardDescription className="text-gray-400">School: {tutor.school}</CardDescription>}
+            
+            {/* Rating Section */}
+            <div className="mt-3">
+              {ratingLoading ? (
+                <p className="text-sm text-gray-400">Loading rating...</p>
+              ) : (
+                <StarRating
+                  rating={rating.averageRating}
+                  reviewCount={rating.reviewCount}
+                  size="md"
+                  className="justify-center md:justify-start"
+                />
+              )}
+            </div>
           </div>
         </CardHeader>
         <CardContent className="p-6 space-y-3">

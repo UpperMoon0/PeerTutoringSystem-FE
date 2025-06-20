@@ -1,4 +1,4 @@
-import { apiClient } from './AuthService';
+import { apiClient, publicApiClient } from './AuthService';
 import type { ServiceResult, ApiResult } from '@/types/api.types';
 import type { CreateReviewDto, ReviewDto } from '@/types/review.types';
 
@@ -45,7 +45,7 @@ const getReviewById = async (reviewId: number): Promise<ServiceResult<ReviewDto>
  */
 const getReviewsByTutorId = async (tutorId: string): Promise<ServiceResult<ReviewDto[]>> => {
   try {
-    const response = await apiClient.get(`/Reviews/tutor/${tutorId}`);
+    const response = await publicApiClient.get(`/Reviews/tutor/${tutorId}`);
     return { success: true, data: response.data as ReviewDto[] };
   } catch (error: any) {
     console.error(`Error fetching reviews for tutor ID ${tutorId}:`, error);
@@ -94,10 +94,50 @@ const getReviewByBookingId = async (bookingId: string): Promise<ServiceResult<Re
   }
 };
 
+/**
+ * Fetches the average rating for a specific tutor.
+ * @param tutorId - The ID of the tutor.
+ * @returns A promise that resolves with the average rating.
+ */
+const getAverageRatingByTutorId = async (tutorId: string): Promise<ServiceResult<{ tutorId: string; averageRating: number }>> => {
+  try {
+    const response = await publicApiClient.get(`/Reviews/tutor/${tutorId}/average-rating`);
+    return { success: true, data: response.data };
+  } catch (error: any) {
+    console.error(`Error fetching average rating for tutor ID ${tutorId}:`, error);
+    const errorMessage = error.response?.data?.error || error.message || `Failed to fetch average rating for tutor ${tutorId}.`;
+    return { success: false, error: errorMessage };
+  }
+};
+
+/**
+ * Fetches the top N tutors by rating.
+ * @param count - The number of top tutors to fetch (default: 10).
+ * @returns A promise that resolves with an array of top-rated tutors.
+ */
+const getTopTutorsByRating = async (count: number = 10): Promise<ServiceResult<Array<{
+  tutorId: string;
+  tutorName: string;
+  email: string;
+  averageRating: number;
+  reviewCount: number;
+}>>> => {
+  try {
+    const response = await publicApiClient.get(`/Reviews/top-tutors?count=${count}`);
+    return { success: true, data: response.data };
+  } catch (error: any) {
+    console.error(`Error fetching top ${count} tutors:`, error);
+    const errorMessage = error.response?.data?.error || error.message || `Failed to fetch top ${count} tutors.`;
+    return { success: false, error: errorMessage };
+  }
+};
+
 export const ReviewService = {
   createReview,
   getReviewById,
   getReviewsByTutorId,
   checkReviewExistsForBooking,
   getReviewByBookingId,
+  getAverageRatingByTutorId,
+  getTopTutorsByRating,
 };

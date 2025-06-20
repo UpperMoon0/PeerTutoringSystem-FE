@@ -5,6 +5,8 @@ import type { TutorProfileDto } from '@/types/TutorProfile';
 import type { UserSkill } from '@/types/skill.types';
 import { TutorProfileService } from '@/services/TutorProfileService';
 import { UserSkillService } from '@/services/UserSkillService';
+import { ReviewService } from '@/services/ReviewService';
+import StarRating from '@/components/ui/StarRating';
 
 interface TutorCardProps {
   tutor: User;
@@ -16,6 +18,8 @@ const TutorCard: React.FC<TutorCardProps> = ({ tutor }) => {
   const [skills, setSkills] = useState<UserSkill[]>([]);
   const [skillsLoading, setSkillsLoading] = useState<boolean>(true);
   const [skillsError, setSkillsError] = useState<string | null>(null);
+  const [rating, setRating] = useState<{ averageRating: number; reviewCount: number }>({ averageRating: 0, reviewCount: 0 });
+  const [ratingLoading, setRatingLoading] = useState<boolean>(true);
 
   useEffect(() => {
     const fetchBio = async () => {
@@ -26,15 +30,11 @@ const TutorCard: React.FC<TutorCardProps> = ({ tutor }) => {
         if (result.success && result.data) {
           setTutorBio(result.data);
         } else if (result.isNotFoundError) {
-          // Since tutors are pre-filtered to have bios, this shouldn't happen
-          // but we'll handle it gracefully
           setTutorBio(null);
         } else {
-          // Handle other errors silently since this is a display component
           setTutorBio(null);
         }
       } catch (err) {
-        // Handle errors silently since tutors are pre-filtered
         console.log('Error fetching tutor bio (expected for pre-filtered tutors):', err);
         setTutorBio(null);
       } finally {
@@ -61,8 +61,30 @@ const TutorCard: React.FC<TutorCardProps> = ({ tutor }) => {
       }
     };
 
+    const fetchRating = async () => {
+      if (!tutor.userID) return;
+      setRatingLoading(true);
+      try {
+        const [avgRatingResult, reviewsResult] = await Promise.all([
+          ReviewService.getAverageRatingByTutorId(tutor.userID),
+          ReviewService.getReviewsByTutorId(tutor.userID)
+        ]);
+
+        const averageRating = avgRatingResult.success && avgRatingResult.data ? avgRatingResult.data.averageRating : 0;
+        const reviewCount = reviewsResult.success && reviewsResult.data ? reviewsResult.data.length : 0;
+        
+        setRating({ averageRating, reviewCount });
+      } catch (err) {
+        console.log('Error fetching tutor rating:', err);
+        setRating({ averageRating: 0, reviewCount: 0 });
+      } finally {
+        setRatingLoading(false);
+      }
+    };
+
     fetchBio();
     fetchSkills();
+    fetchRating();
   }, [tutor.userID]);
 
   return (
@@ -73,6 +95,20 @@ const TutorCard: React.FC<TutorCardProps> = ({ tutor }) => {
         className="w-24 h-24 rounded-full mx-auto mb-3 object-cover border-2 border-gray-700"
       />
       <h2 className="text-xl font-semibold text-center mb-2 text-white">{tutor.fullName}</h2>
+      
+      {/* Rating Section */}
+      <div className="text-center mb-3">
+        {ratingLoading ? (
+          <p className="text-xs text-gray-400">Loading rating...</p>
+        ) : (
+          <StarRating
+            rating={rating.averageRating}
+            reviewCount={rating.reviewCount}
+            size="sm"
+            className="justify-center"
+          />
+        )}
+      </div>
 
       <div className="flex-grow">
         {bioLoading && <p className="text-sm text-gray-400 text-center py-2">Loading bio...</p>}
