@@ -3,8 +3,9 @@ import { useParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { BookingService } from '@/services/BookingService';
 import { TutorService } from '@/services/TutorService';
+import { UserSkillService } from '@/services/UserSkillService';
 import type { ProfileDto, User } from '@/types/user.types';
-import type { Skill } from '@/types/skill.types';
+import type { Skill, UserSkill } from '@/types/skill.types';
 import type { TutorAvailability } from '@/types/tutorAvailability.types';
 import type { CreateBookingDto } from '@/types/booking.types';
 import { Button } from '@/components/ui/button';
@@ -28,7 +29,7 @@ const TutorDetailPage: React.FC = () => {
   const { currentUser } = useAuth();
   const [tutor, setTutor] = useState<TutorProfile | null>(null);
   const [tutorAccount] = useState<User | null>(null);
-  const [skills] = useState<Skill[]>([]);
+  const [skills, setSkills] = useState<Skill[]>([]);
   const [availabilities, setAvailabilities] = useState<TutorAvailability[]>([]);
   const [selectedAvailability, setSelectedAvailability] = useState<TutorAvailability | null>(null);
   const [isFetchingSlots, setIsFetchingSlots] = useState(false);
@@ -145,7 +146,7 @@ const TutorDetailPage: React.FC = () => {
       try {
         const profileResponse = await TutorService.getTutorById(tutorId);
         if (profileResponse.success && profileResponse.data) {
-          setTutor(profileResponse.data); 
+          setTutor(profileResponse.data);
         } else {
           setError(profileResponse.error as string || 'Failed to fetch tutor details.');
           setTutor(null);
@@ -158,6 +159,35 @@ const TutorDetailPage: React.FC = () => {
       }
     };
     fetchTutorDetails();
+  }, [tutorId]);
+
+  // Fetch tutor skills
+  useEffect(() => {
+    const fetchTutorSkills = async () => {
+      if (!tutorId) {
+        setSkills([]);
+        return;
+      }
+      
+      try {
+        const skillsResponse = await UserSkillService.getUserSkills(tutorId);
+        if (skillsResponse.success && skillsResponse.data) {
+          // Extract the Skill objects from UserSkill objects
+          const tutorSkills = skillsResponse.data
+            .filter((userSkill: UserSkill) => userSkill.isTutor)
+            .map((userSkill: UserSkill) => userSkill.skill);
+          setSkills(tutorSkills);
+        } else {
+          console.warn('Failed to fetch tutor skills:', skillsResponse.error);
+          setSkills([]);
+        }
+      } catch (err) {
+        console.warn('Error fetching tutor skills:', err);
+        setSkills([]);
+      }
+    };
+    
+    fetchTutorSkills();
   }, [tutorId]);
 
   const handleFetchAvailabilities = useCallback(async () => {
@@ -348,7 +378,7 @@ const TutorDetailPage: React.FC = () => {
               ))}
             </div>
           ) : (
-            <p className="text-gray-500">No skills listed for this tutor profile. (Note: Skills might be fetched separately)</p>
+            <p className="text-gray-500">No skills listed for this tutor.</p>
           )}
         </CardContent>
       </Card>
