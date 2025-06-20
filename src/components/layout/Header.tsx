@@ -19,8 +19,17 @@ const Header: React.FC = () => {
       <div className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-6">
-            <Link to="/" className="text-xl font-bold text-foreground hover:text-muted-foreground transition-colors">
-              TheTutorGroup
+            <Link to="/" className="flex items-center space-x-3 text-xl font-bold text-foreground hover:text-muted-foreground transition-colors">
+              <img
+                src="/src/assets/images/icon.png"
+                alt="TheTutorGroup Icon"
+                className="w-16 h-16 object-contain hover:drop-shadow-[0_0_20px_rgba(255,255,255,1)] transition-all duration-300"
+                style={{
+                  animation: 'flicker 4s infinite ease-in-out',
+                  filter: 'drop-shadow(0 0 8px rgba(255,255,255,0.7)) drop-shadow(0 0 16px rgba(255,255,255,0.4)) drop-shadow(0 0 24px rgba(255,255,255,0.2))'
+                }}
+              />
+              <span>TheTutorGroup</span>
             </Link>
             <div className="hidden md:flex items-center space-x-4">
               <Link

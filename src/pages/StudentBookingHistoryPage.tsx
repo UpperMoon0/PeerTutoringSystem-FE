@@ -67,7 +67,7 @@ const StudentBookingHistoryPage: React.FC = () => {
       case 'Confirmed': return 'default';
       case 'Cancelled':
       case 'Rejected': return 'destructive';
-      case 'Completed': return 'outline'; // Or a success-like variant e.g. 'bg-green-600 text-white'
+      case 'Completed': return 'outline'; 
       default: return 'secondary';
     }
   };
