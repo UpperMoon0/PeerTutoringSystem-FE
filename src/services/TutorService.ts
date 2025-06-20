@@ -10,6 +10,43 @@ import type { User, ProfileDto } from '@/types/user.types';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
+// Helper type for error response objects
+interface ErrorResponse {
+  message?: string;
+  error?: string;
+}
+
+// Helper function to extract error message from response
+const extractErrorMessage = (errorBody: unknown, status: number): string => {
+  if (typeof errorBody === 'object' && errorBody !== null) {
+    const errorObj = errorBody as ErrorResponse;
+    if (errorObj.message && typeof errorObj.message === 'string' && errorObj.message.trim() !== '') {
+      return errorObj.message;
+    } else if (errorObj.error && typeof errorObj.error === 'string' && errorObj.error.trim() !== '') {
+      return errorObj.error;
+    } else {
+      return `Request failed with status ${status}. Response body: ${JSON.stringify(errorBody)}`;
+    }
+  } else if (typeof errorBody === 'string' && errorBody.trim() !== '') {
+    return errorBody;
+  } else {
+    return `Request failed with status ${status}`;
+  }
+};
+
+// Helper function to get error body from response
+const getErrorBody = async (response: Response): Promise<unknown> => {
+  try {
+    return await response.json();
+  } catch {
+    try {
+      return await response.text();
+    } catch {
+      return `Request failed with status ${response.status} and error body could not be read.`;
+    }
+  }
+};
+
 const requestTutor = async (userId: string, payload: RequestTutorPayload): Promise<ApiResult<RequestTutorResponse>> => {
   const url = `${API_BASE_URL}/Users/${userId}/request-tutor`;
   try {
@@ -19,31 +56,9 @@ const requestTutor = async (userId: string, payload: RequestTutorPayload): Promi
       headers: { 'Content-Type': 'application/json' },
     });
     if (!response.ok) {
-      let errorBody: unknown;
-      try {
-        errorBody = await response.json();
-      } catch (e) {
-        try {
-          errorBody = await response.text();
-        } catch (textError) {
-          errorBody = `Request failed with status ${response.status} and error body could not be read.`;
-        }
-      }
+      const errorBody = await getErrorBody(response);
       console.error(`API Error ${response.status} for URL ${url}:`, errorBody);
-      let finalErrorMessageApi: string;
-      if (typeof errorBody === 'object' && errorBody !== null) {
-        if ('message' in errorBody && typeof (errorBody as any).message === 'string' && (errorBody as any).message.trim() !== '') {
-          finalErrorMessageApi = (errorBody as any).message;
-        } else if ('error' in errorBody && typeof (errorBody as any).error === 'string' && (errorBody as any).error.trim() !== '') {
-          finalErrorMessageApi = (errorBody as any).error;
-        } else {
-          finalErrorMessageApi = `Request failed with status ${response.status}. Response body: ${JSON.stringify(errorBody)}`;
-        }
-      } else if (typeof errorBody === 'string' && errorBody.trim() !== '') {
-        finalErrorMessageApi = errorBody;
-      } else {
-        finalErrorMessageApi = `Request failed with status ${response.status}`;
-      }
+      const finalErrorMessageApi = extractErrorMessage(errorBody, response.status);
       return { success: false, error: finalErrorMessageApi };
     }
     if (response.status === 204) {
@@ -81,31 +96,9 @@ const uploadDocument = async (file: File, userId: string): Promise<ApiResult<Doc
       body: formData,
     });
     if (!response.ok) {
-      let errorBody: unknown;
-      try {
-        errorBody = await response.json();
-      } catch (e) {
-        try {
-          errorBody = await response.text();
-        } catch (textError) {
-          errorBody = `Request failed with status ${response.status} and error body could not be read.`;
-        }
-      }
+      const errorBody = await getErrorBody(response);
       console.error(`API Error ${response.status} for URL ${url}:`, errorBody);
-      let finalErrorMessageApi: string;
-      if (typeof errorBody === 'object' && errorBody !== null) {
-        if ('message' in errorBody && typeof (errorBody as any).message === 'string' && (errorBody as any).message.trim() !== '') {
-          finalErrorMessageApi = (errorBody as any).message;
-        } else if ('error' in errorBody && typeof (errorBody as any).error === 'string' && (errorBody as any).error.trim() !== '') {
-          finalErrorMessageApi = (errorBody as any).error;
-        } else {
-          finalErrorMessageApi = `Request failed with status ${response.status}. Response body: ${JSON.stringify(errorBody)}`;
-        }
-      } else if (typeof errorBody === 'string' && errorBody.trim() !== '') {
-        finalErrorMessageApi = errorBody;
-      } else {
-        finalErrorMessageApi = `Request failed with status ${response.status}`;
-      }
+      const finalErrorMessageApi = extractErrorMessage(errorBody, response.status);
       return { success: false, error: finalErrorMessageApi };
     }
 
@@ -152,8 +145,11 @@ const getFeaturedTutors = async (searchTerm?: string): Promise<Tutor[]> => {
     const response = await fetch(`${API_BASE_URL}/tutors/featured${query}`);
 
     if (!response.ok) {
-      const errorBody = await response.text();
-      console.error(`API Error ${response.status}: ${response.statusText}`, errorBody);
+      // Suppress 404 errors for featured tutors as this endpoint might not be implemented
+      if (response.status !== 404) {
+        const errorBody = await response.text();
+        console.error(`API Error ${response.status}: ${response.statusText}`, errorBody);
+      }
       return [];
     }
     const data: Tutor[] = await response.json();
@@ -169,31 +165,9 @@ const getTutorVerifications = async (): Promise<ApiResult<TutorVerification[]>> 
   try {
     const response = await AuthService.fetchWithAuth(url, { method: 'GET' });
     if (!response.ok) {
-      let errorBody: unknown;
-      try {
-        errorBody = await response.json();
-      } catch (e) {
-        try {
-          errorBody = await response.text();
-        } catch (textError) {
-          errorBody = `Request failed with status ${response.status} and error body could not be read.`;
-        }
-      }
+      const errorBody = await getErrorBody(response);
       console.error(`API Error ${response.status} for URL ${url}:`, errorBody);
-      let finalErrorMessageApi: string;
-      if (typeof errorBody === 'object' && errorBody !== null) {
-        if ('message' in errorBody && typeof (errorBody as any).message === 'string' && (errorBody as any).message.trim() !== '') {
-          finalErrorMessageApi = (errorBody as any).message;
-        } else if ('error' in errorBody && typeof (errorBody as any).error === 'string' && (errorBody as any).error.trim() !== '') {
-          finalErrorMessageApi = (errorBody as any).error;
-        } else {
-          finalErrorMessageApi = `Request failed with status ${response.status}. Response body: ${JSON.stringify(errorBody)}`;
-        }
-      } else if (typeof errorBody === 'string' && errorBody.trim() !== '') {
-        finalErrorMessageApi = errorBody;
-      } else {
-        finalErrorMessageApi = `Request failed with status ${response.status}`;
-      }
+      const finalErrorMessageApi = extractErrorMessage(errorBody, response.status);
       return { success: false, error: finalErrorMessageApi };
     }
     if (response.status === 204) {
@@ -233,31 +207,9 @@ const updateTutorVerificationStatus = async (
       headers: { 'Content-Type': 'application/json' },
     });
     if (!response.ok) {
-      let errorBody: unknown;
-      try {
-        errorBody = await response.json();
-      } catch (e) {
-        try {
-          errorBody = await response.text();
-        } catch (textError) {
-          errorBody = `Request failed with status ${response.status} and error body could not be read.`;
-        }
-      }
+      const errorBody = await getErrorBody(response);
       console.error(`API Error ${response.status} for URL ${url}:`, errorBody);
-      let finalErrorMessageApi: string;
-      if (typeof errorBody === 'object' && errorBody !== null) {
-        if ('message' in errorBody && typeof (errorBody as any).message === 'string' && (errorBody as any).message.trim() !== '') {
-          finalErrorMessageApi = (errorBody as any).message;
-        } else if ('error' in errorBody && typeof (errorBody as any).error === 'string' && (errorBody as any).error.trim() !== '') {
-          finalErrorMessageApi = (errorBody as any).error;
-        } else {
-          finalErrorMessageApi = `Request failed with status ${response.status}. Response body: ${JSON.stringify(errorBody)}`;
-        }
-      } else if (typeof errorBody === 'string' && errorBody.trim() !== '') {
-        finalErrorMessageApi = errorBody;
-      } else {
-        finalErrorMessageApi = `Request failed with status ${response.status}`;
-      }
+      const finalErrorMessageApi = extractErrorMessage(errorBody, response.status);
       return { success: false, error: finalErrorMessageApi };
     }
     if (response.status === 204) {
@@ -320,34 +272,13 @@ const checkPendingTutorVerification = async (userId: string): Promise<ApiResult<
 const getAllTutors = async (): Promise<ApiResult<User[]>> => {
   const url = `${API_BASE_URL}/Users/tutors`;
   try {
-    const response = await AuthService.fetchWithAuth(url, { method: 'GET' });
+    // Use regular fetch instead of fetchWithAuth to allow guest access
+    const response = await fetch(url, { method: 'GET' });
 
     if (!response.ok) {
-      let errorBody: unknown;
-      try {
-        errorBody = await response.json();
-      } catch (e) {
-        try {
-          errorBody = await response.text();
-        } catch (textError) {
-          errorBody = `Request failed with status ${response.status} and error body could not be read.`;
-        }
-      }
+      const errorBody = await getErrorBody(response);
       console.error(`API Error ${response.status} for URL ${url}:`, errorBody);
-      let finalErrorMessageApi: string;
-      if (typeof errorBody === 'object' && errorBody !== null) {
-        if ('message' in errorBody && typeof (errorBody as any).message === 'string' && (errorBody as any).message.trim() !== '') {
-          finalErrorMessageApi = (errorBody as any).message;
-        } else if ('error' in errorBody && typeof (errorBody as any).error === 'string' && (errorBody as any).error.trim() !== '') {
-          finalErrorMessageApi = (errorBody as any).error;
-        } else {
-          finalErrorMessageApi = `Request failed with status ${response.status}. Response body: ${JSON.stringify(errorBody)}`;
-        }
-      } else if (typeof errorBody === 'string' && errorBody.trim() !== '') {
-        finalErrorMessageApi = errorBody;
-      } else {
-        finalErrorMessageApi = `Request failed with status ${response.status}`;
-      }
+      const finalErrorMessageApi = extractErrorMessage(errorBody, response.status);
       return { success: false, error: finalErrorMessageApi };
     }
 
@@ -363,36 +294,15 @@ const getAllTutors = async (): Promise<ApiResult<User[]>> => {
   }
 };
 
-const getTutorById = async (tutorId: string): Promise<ApiResult<ProfileDto>> => { 
-  const url = `${API_BASE_URL}/UserBio/user/${tutorId}`; 
+const getTutorById = async (tutorId: string): Promise<ApiResult<ProfileDto>> => {
+  const url = `${API_BASE_URL}/UserBio/user/${tutorId}`;
   try {
-    const response = await AuthService.fetchWithAuth(url, { method: 'GET' });
+    // Use regular fetch instead of fetchWithAuth to allow guest access
+    const response = await fetch(url, { method: 'GET' });
     if (!response.ok) {
-      let errorBody: unknown;
-      try {
-        errorBody = await response.json();
-      } catch (e) {
-        try {
-          errorBody = await response.text();
-        } catch (textError) {
-          errorBody = `Request failed with status ${response.status} and error body could not be read.`;
-        }
-      }
+      const errorBody = await getErrorBody(response);
       console.error(`API Error ${response.status} for URL ${url}:`, errorBody);
-      let finalErrorMessageApi: string;
-      if (typeof errorBody === 'object' && errorBody !== null) {
-        if ('message' in errorBody && typeof (errorBody as any).message === 'string' && (errorBody as any).message.trim() !== '') {
-          finalErrorMessageApi = (errorBody as any).message;
-        } else if ('error' in errorBody && typeof (errorBody as any).error === 'string' && (errorBody as any).error.trim() !== '') {
-          finalErrorMessageApi = (errorBody as any).error;
-        } else {
-          finalErrorMessageApi = `Request failed with status ${response.status}. Response body: ${JSON.stringify(errorBody)}`;
-        }
-      } else if (typeof errorBody === 'string' && errorBody.trim() !== '') {
-        finalErrorMessageApi = errorBody;
-      } else {
-        finalErrorMessageApi = `Request failed with status ${response.status}`;
-      }
+      const finalErrorMessageApi = extractErrorMessage(errorBody, response.status);
       return { success: false, error: finalErrorMessageApi };
     }
     if (response.status === 204) {

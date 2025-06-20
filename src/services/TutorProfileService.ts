@@ -5,7 +5,7 @@ import type { ServiceResult } from '@/types/api.types';
 const BASE_API_URL = import.meta.env.VITE_API_BASE_URL;
 
 export const TutorProfileService = {
-  getTutorProfileByUserId: async (userId: string): Promise<ServiceResult<TutorProfileDto>> => {
+  getTutorProfileByUserId: async (userId: string, suppressErrors: boolean = false): Promise<ServiceResult<TutorProfileDto>> => {
     const url = `${BASE_API_URL}/UserBio/user/${userId}`;
     try {
       const response = await AuthService.fetchWithAuth(url, { method: 'GET' });
@@ -20,7 +20,9 @@ export const TutorProfileService = {
             errorBody = `Request failed with status ${response.status} and error body could not be read.`;
           }
         }
-        console.error(`API Error ${response.status} for URL ${url}:`, errorBody);
+        if (!suppressErrors) {
+          console.error(`API Error ${response.status} for URL ${url}:`, errorBody);
+        }
         let finalErrorMessage: string;
         if (typeof errorBody === 'object' && errorBody !== null) {
           if ('message' in errorBody && typeof (errorBody as any).message === 'string' && (errorBody as any).message.trim() !== '') {
@@ -56,7 +58,9 @@ export const TutorProfileService = {
         return { success: false, error: new Error("Failed to parse server response.") };
       }
     } catch (networkOrOtherError) {
-      console.error(`Request processing failed for URL ${url}:`, networkOrOtherError);
+      if (!suppressErrors) {
+        console.error(`Request processing failed for URL ${url}:`, networkOrOtherError);
+      }
       return {
         success: false,
         error: networkOrOtherError instanceof Error ? networkOrOtherError : new Error(String(networkOrOtherError))

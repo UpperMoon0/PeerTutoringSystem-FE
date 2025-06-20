@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import type { User } from '../types/user.types';
 import { TutorService } from '../services/TutorService';
+import { TutorProfileService } from '../services/TutorProfileService';
 import TutorCard from '@/components/tutor/TutorCard';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -18,8 +19,10 @@ const TutorListPage: React.FC = () => {
         setLoading(true);
         const result = await TutorService.getAllTutors();
         if (result.success && result.data) {
-          setAllTutors(result.data);
-          setFilteredTutors(result.data);
+          // Filter tutors to only include those with user bios
+          const tutorsWithBios = await filterTutorsWithBios(result.data);
+          setAllTutors(tutorsWithBios);
+          setFilteredTutors(tutorsWithBios);
         } else {
           if (typeof result.error === 'string') {
             setError(result.error || 'Failed to fetch tutors');
@@ -35,6 +38,31 @@ const TutorListPage: React.FC = () => {
       } finally {
         setLoading(false);
       }
+    };
+
+    const filterTutorsWithBios = async (tutors: User[]): Promise<User[]> => {
+      // Create concurrent bio check promises for all tutors
+      const bioCheckPromises = tutors.map(async (tutor) => {
+        try {
+          // Use suppressErrors=true to avoid console errors during filtering
+          const bioResult = await TutorProfileService.getTutorProfileByUserId(tutor.userID, true);
+          // Return tutor if bio exists and is successful
+          if (bioResult.success && bioResult.data) {
+            return tutor;
+          }
+          // Return null if no bio found or error
+          return null;
+        } catch {
+          // Return null for tutors with bio fetch errors
+          return null;
+        }
+      });
+      
+      // Wait for all bio checks to complete
+      const bioCheckResults = await Promise.all(bioCheckPromises);
+      
+      // Filter out null results (tutors without bios)
+      return bioCheckResults.filter((tutor): tutor is User => tutor !== null);
     };
 
     fetchTutors();

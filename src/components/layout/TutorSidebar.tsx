@@ -9,7 +9,8 @@ import {
   Home,
   Menu,
   X,
-  Briefcase
+  Briefcase,
+  AlertCircle
 } from 'lucide-react';
 
 interface SidebarItem {
@@ -23,10 +24,11 @@ interface TutorSidebarProps {
   className?: string;
   onAvailabilityClick?: () => void;
   onBookingsClick?: () => void;
-  onProfileClick?: () => void; // Added
+  onProfileClick?: () => void;
+  hasProfileBio?: boolean;
 }
 
-const TutorSidebar: React.FC<TutorSidebarProps> = ({ className, onAvailabilityClick, onBookingsClick, onProfileClick }) => {
+const TutorSidebar: React.FC<TutorSidebarProps> = ({ className, onAvailabilityClick, onBookingsClick, onProfileClick, hasProfileBio = true }) => {
   const location = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -138,6 +140,12 @@ const TutorSidebar: React.FC<TutorSidebarProps> = ({ className, onAvailabilityCl
                 isActive ? "text-white" : "text-gray-400 group-hover:text-white"
               )} />
               <span className="font-medium">{item.label}</span>
+              {/* Show indicator for Profile item when tutor doesn't have a bio */}
+              {item.label === 'Profile' && !hasProfileBio && (
+                <div className="ml-auto" title="Profile incomplete - Please create your tutor bio">
+                  <AlertCircle className="w-4 h-4 text-yellow-400" />
+                </div>
+              )}
             </>
           );
           

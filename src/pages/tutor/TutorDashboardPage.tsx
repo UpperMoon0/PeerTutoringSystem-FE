@@ -60,6 +60,7 @@ const TutorDashboardPage: React.FC = () => {
   const [loading, setLoading] = useState(true); // General loading for dashboard data
   const [userProfile, setUserProfile] = useState<ProfileDto | null>(null);
   const [tutorDisplayProfile, setTutorDisplayProfile] = useState<TutorProfileDto | null>(null);
+  const [hasBioChecked, setHasBioChecked] = useState<boolean>(false);
   const [isEditingProfile, setIsEditingProfile] = useState(false); // Added for profile edit mode
   const [isSavingProfile, setIsSavingProfile] = useState(false); // Added for profile save loading state
 
@@ -96,7 +97,8 @@ const TutorDashboardPage: React.FC = () => {
     const fetchTutorDisplayProfileData = async (showLoading = true) => {
       if (currentUser?.userId) {
         if (showLoading) setLoading(true);
-        const result = await TutorProfileService.getTutorProfileByUserId(currentUser.userId);
+        // Use suppressErrors=true to avoid console errors for missing bio
+        const result = await TutorProfileService.getTutorProfileByUserId(currentUser.userId, true);
         if (result.success && result.data) {
           // Fetch skills separately and merge
           const skillsResult = await UserSkillService.getUserSkills(currentUser.userId);
@@ -107,9 +109,10 @@ const TutorDashboardPage: React.FC = () => {
             setTutorDisplayProfile({ ...result.data, skills: [] }); // Set skills to empty array on error
           }
         } else {
-          console.error("Failed to fetch tutor display profile for dashboard:", result.error);
+          // Silently handle missing bio - this is normal for new tutors
           setTutorDisplayProfile(null);
         }
+        setHasBioChecked(true);
         if (showLoading) setLoading(false);
       }
     };
@@ -121,8 +124,12 @@ const TutorDashboardPage: React.FC = () => {
     if (activeSection === 'profile') {
       fetchTutorDisplayProfileData();
     } else {
-      setTutorDisplayProfile(null);
       setIsEditingProfile(false); // Reset edit mode if navigating away from profile
+    }
+
+    // Always check bio status for sidebar indicator
+    if (!hasBioChecked && currentUser?.userId) {
+      fetchTutorDisplayProfileData(false);
     }
   }, [currentUser, activeSection]);
 
@@ -167,7 +174,8 @@ const TutorDashboardPage: React.FC = () => {
       const fetchTutorDisplayProfileData = async (showLoading = true) => {
         if (currentUser?.userId) {
           if (showLoading) setLoading(true); // Or a more specific loading state
-          const result = await TutorProfileService.getTutorProfileByUserId(currentUser.userId);
+          // Use suppressErrors=true to avoid console errors for missing bio
+          const result = await TutorProfileService.getTutorProfileByUserId(currentUser.userId, true);
           if (result.success && result.data) {
             const skillsResult = await UserSkillService.getUserSkills(currentUser.userId);
             if (skillsResult.success && skillsResult.data) {
@@ -233,7 +241,8 @@ const TutorDashboardPage: React.FC = () => {
         const fetchTutorDisplayProfileData = async (showLoading = true) => {
             if (currentUser?.userId) {
               if (showLoading) setLoading(true);
-              const result = await TutorProfileService.getTutorProfileByUserId(currentUser.userId);
+              // Use suppressErrors=true to avoid console errors for missing bio
+              const result = await TutorProfileService.getTutorProfileByUserId(currentUser.userId, true);
               if (result.success && result.data) {
                 const skillsResult = await UserSkillService.getUserSkills(currentUser.userId);
                 if (skillsResult.success && skillsResult.data) {
@@ -285,7 +294,8 @@ const TutorDashboardPage: React.FC = () => {
       <TutorSidebar
         onAvailabilityClick={() => handleSectionChange('availability')}
         onBookingsClick={() => handleSectionChange('bookings')}
-        onProfileClick={() => handleSectionChange('profile')} // Added
+        onProfileClick={() => handleSectionChange('profile')}
+        hasProfileBio={tutorDisplayProfile !== null}
       />
       
       {/* Main Content */}

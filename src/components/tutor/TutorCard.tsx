@@ -13,7 +13,6 @@ interface TutorCardProps {
 const TutorCard: React.FC<TutorCardProps> = ({ tutor }) => {
   const [tutorBio, setTutorBio] = useState<TutorProfileDto | null>(null);
   const [bioLoading, setBioLoading] = useState<boolean>(true);
-  const [bioError, setBioError] = useState<string | null>(null);
   const [skills, setSkills] = useState<UserSkill[]>([]);
   const [skillsLoading, setSkillsLoading] = useState<boolean>(true);
   const [skillsError, setSkillsError] = useState<string | null>(null);
@@ -22,21 +21,21 @@ const TutorCard: React.FC<TutorCardProps> = ({ tutor }) => {
     const fetchBio = async () => {
       if (!tutor.userID) return;
       setBioLoading(true);
-      setBioError(null);
       try {
         const result = await TutorProfileService.getTutorProfileByUserId(tutor.userID);
         if (result.success && result.data) {
           setTutorBio(result.data);
         } else if (result.isNotFoundError) {
-          setBioError('Tutor bio not found.');
+          // Since tutors are pre-filtered to have bios, this shouldn't happen
+          // but we'll handle it gracefully
           setTutorBio(null);
         } else {
-          if (result.error instanceof Error) { setBioError(result.error.message); } else if (typeof result.error === 'string') { setBioError(result.error); } else { setBioError('Failed to fetch bio.'); }
+          // Handle other errors silently since this is a display component
           setTutorBio(null);
         }
       } catch (err) {
-        console.error('Error fetching tutor bio:', err);
-        setBioError('An unexpected error occurred while fetching bio.');
+        // Handle errors silently since tutors are pre-filtered
+        console.log('Error fetching tutor bio (expected for pre-filtered tutors):', err);
         setTutorBio(null);
       } finally {
         setBioLoading(false);
@@ -77,7 +76,6 @@ const TutorCard: React.FC<TutorCardProps> = ({ tutor }) => {
 
       <div className="flex-grow">
         {bioLoading && <p className="text-sm text-gray-400 text-center py-2">Loading bio...</p>}
-        {bioError && !tutorBio && <p className="text-sm text-red-400 text-center py-2">{bioError}</p>}
         
         {tutorBio && (
           <div className="text-sm text-gray-400 mt-2 space-y-1">
@@ -98,8 +96,8 @@ const TutorCard: React.FC<TutorCardProps> = ({ tutor }) => {
             )}
           </div>
         )}
-        {!bioLoading && !tutorBio && !bioError && (
-           <p className="text-sm text-gray-500 text-center mt-2 py-2">No additional bio information available.</p>
+        {!bioLoading && !tutorBio && (
+           <p className="text-sm text-gray-500 text-center mt-2 py-2">Loading tutor information...</p>
         )}
 
         <div className="mt-3 pt-3 border-t border-gray-700">
