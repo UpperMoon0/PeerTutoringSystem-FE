@@ -12,22 +12,18 @@ export interface User {
   role: string;
 }
 
-export interface ProfileDto { 
+export interface ProfileDto {
+  bioID: number;
   userID: string;
-  fullName: string; 
-  email: string; // Added email field
-  dateOfBirth: string; 
-  phoneNumber: string; 
-  gender: string; 
-  hometown: string; 
-  avatarUrl?: string; 
-  status: string; 
-  role: string; 
-  bio?: string; 
-  hourlyRate?: number; 
-  experience?: string; 
-  availability?: string; 
-  school?: string; 
+  tutorName: string;
+  bio?: string;
+  experience?: string;
+  hourlyRate?: number;
+  availability?: string;
+  avatarUrl?: string;
+  school?: string;
+  createdDate: string;
+  updatedDate?: string;
 }
 
 export interface UpdateProfileDto { 

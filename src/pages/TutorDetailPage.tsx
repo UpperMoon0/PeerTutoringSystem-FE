@@ -390,11 +390,11 @@ const TutorDetailPage: React.FC = () => {
       <Card className="bg-gray-900 border-gray-800 shadow-xl">
         <CardHeader className="flex flex-col md:flex-row items-center space-y-4 md:space-y-0 md:space-x-6 p-6">
           <Avatar className="h-28 w-28 border-2 border-gray-700">
-            <AvatarImage src={tutor.avatarUrl} alt={tutor.fullName || tutorAccount?.fullName || "Tutor avatar"} />
-            <AvatarFallback className="bg-gray-700 text-gray-300 text-4xl">{(tutor.fullName || tutorAccount?.fullName)?.charAt(0) || 'T'}</AvatarFallback>
+            <AvatarImage src={tutor.avatarUrl} alt={tutor.tutorName || tutorAccount?.fullName || "Tutor avatar"} />
+            <AvatarFallback className="bg-gray-700 text-gray-300 text-4xl">{(tutor.tutorName || tutorAccount?.fullName)?.charAt(0) || 'T'}</AvatarFallback>
           </Avatar>
           <div className="text-center md:text-left">
-            <CardTitle className="text-3xl text-white">{tutor.fullName || tutorAccount?.fullName || "Tutor"}</CardTitle>
+            <CardTitle className="text-3xl text-white">{tutor.tutorName || tutorAccount?.fullName || "Tutor"}</CardTitle>
             {tutorAccount && tutorAccount.email && <CardDescription className="text-gray-400">Email: {tutorAccount.email}</CardDescription>}
             {tutor.school && <CardDescription className="text-gray-400">School: {tutor.school}</CardDescription>}
             
