@@ -10,16 +10,46 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Label } from '@/components/ui/label';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import { AlertTriangle, CheckCircle, XCircle } from 'lucide-react';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export type VerificationStatus = 'Pending' | 'Approved' | 'Rejected';
+
+type AlertInfo = {
+  type: 'success' | 'error' | 'warning';
+  title: string;
+  message: string;
+} | null;
 
 const TutorVerificationSection: React.FC = () => {
   const [verifications, setVerifications] = useState<TutorVerification[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [filterStatus, setFilterStatus] = useState<VerificationStatus | 'All'>('All');
+  const [alertInfo, setAlertInfo] = useState<AlertInfo>(null);
+  const [confirmDialog, setConfirmDialog] = useState<{
+    open: boolean;
+    verificationId: string;
+    status: 'Approved' | 'Rejected';
+    tutorName: string;
+  }>({
+    open: false,
+    verificationId: '',
+    status: 'Approved',
+    tutorName: ''
+  });
 
   useEffect(() => {
     fetchVerifications();
@@ -28,7 +58,11 @@ const TutorVerificationSection: React.FC = () => {
   const handleOpenDocument = async (documentId: string) => {
     const token = localStorage.getItem('accessToken');
     if (!token) {
-      alert('Authentication token not found. Please log in again.');
+      setAlertInfo({
+        type: 'error',
+        title: 'Authentication Error',
+        message: 'Authentication token not found. Please log in again.'
+      });
       return;
     }
 
@@ -46,13 +80,25 @@ const TutorVerificationSection: React.FC = () => {
       if (!response.ok) {
         console.log('TutorVerificationSection: Document API call failed with status:', response.status);
         if (response.status === 401) {
-          alert('Unauthorized. Please log in again.');
+          setAlertInfo({
+            type: 'error',
+            title: 'Unauthorized',
+            message: 'Please log in again.'
+          });
         } else if (response.status === 403) {
-          alert('Forbidden. You do not have permission to view this document.');
+          setAlertInfo({
+            type: 'error',
+            title: 'Forbidden',
+            message: 'You do not have permission to view this document.'
+          });
         } else {
           const errorData = await response.json().catch(() => ({ error: 'Failed to fetch document.' }));
           console.log('TutorVerificationSection: Error response data:', errorData);
-          alert(`Error fetching document: ${errorData.error || response.statusText}`);
+          setAlertInfo({
+            type: 'error',
+            title: 'Document Error',
+            message: `Error fetching document: ${errorData.error || response.statusText}`
+          });
         }
         return;
       }
@@ -63,7 +109,11 @@ const TutorVerificationSection: React.FC = () => {
       window.open(fileURL, '_blank');
     } catch (err) {
       console.error('Failed to open document:', err);
-      alert('An unexpected error occurred while trying to open the document.');
+      setAlertInfo({
+        type: 'error',
+        title: 'Unexpected Error',
+        message: 'An unexpected error occurred while trying to open the document.'
+      });
     }
   };
 
@@ -90,15 +140,41 @@ const TutorVerificationSection: React.FC = () => {
     try {
       const result = await TutorService.updateTutorVerificationStatus(verificationID, status);
       if (result.success) {
-        alert(`Verification ${verificationID} status updated to ${status}`);
+        setAlertInfo({
+          type: 'success',
+          title: 'Status Updated',
+          message: `Verification ${verificationID} status updated to ${status}`
+        });
         fetchVerifications(); // Refresh the list
       } else {
-        alert(result.error || `Failed to update status for ${verificationID}`);
+        setAlertInfo({
+          type: 'error',
+          title: 'Update Failed',
+          message: typeof result.error === 'string' ? result.error : result.error?.message || `Failed to update status for ${verificationID}`
+        });
       }
     } catch (err) {
-      alert(`An unexpected error occurred while updating status for ${verificationID}`);
+      setAlertInfo({
+        type: 'error',
+        title: 'Unexpected Error',
+        message: `An unexpected error occurred while updating status for ${verificationID}`
+      });
       console.error(err);
     }
+  };
+
+  const handleStatusClick = (verificationID: string, status: 'Approved' | 'Rejected', tutorName: string) => {
+    setConfirmDialog({
+      open: true,
+      verificationId: verificationID,
+      status,
+      tutorName
+    });
+  };
+
+  const handleConfirmStatusUpdate = () => {
+    handleUpdateStatus(confirmDialog.verificationId, confirmDialog.status);
+    setConfirmDialog({ ...confirmDialog, open: false });
   };
 
   const filteredVerifications = verifications.filter(verification => {
@@ -175,13 +251,13 @@ const TutorVerificationSection: React.FC = () => {
               {verification.verificationStatus === 'Pending' && (
                 <div className="mt-4 flex space-x-3">
                   <Button
-                    onClick={() => handleUpdateStatus(verification.verificationID, 'Approved')}
+                    onClick={() => handleStatusClick(verification.verificationID, 'Approved', verification.fullName || verification.userID)}
                     className="bg-green-600 hover:bg-green-700 text-white"
                   >
                     Approve
                   </Button>
                   <Button
-                    onClick={() => handleUpdateStatus(verification.verificationID, 'Rejected')}
+                    onClick={() => handleStatusClick(verification.verificationID, 'Rejected', verification.fullName || verification.userID)}
                     variant="destructive"
                     className="bg-red-600 hover:bg-red-700 text-white"
                   >
@@ -191,6 +267,74 @@ const TutorVerificationSection: React.FC = () => {
               )}
             </div>
           ))}
+        </div>
+      )}
+
+      {/* Alert Dialog for Status Confirmation */}
+      <AlertDialog open={confirmDialog.open} onOpenChange={(open) => setConfirmDialog({ ...confirmDialog, open })}>
+        <AlertDialogContent className="bg-gray-900 border-gray-700 text-white">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-white">
+              {confirmDialog.status === 'Approved' ? (
+                <span className="flex items-center gap-2">
+                  <CheckCircle className="h-5 w-5 text-green-400" />
+                  Approve Verification
+                </span>
+              ) : (
+                <span className="flex items-center gap-2">
+                  <XCircle className="h-5 w-5 text-red-400" />
+                  Reject Verification
+                </span>
+              )}
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-gray-300">
+              Are you sure you want to {confirmDialog.status.toLowerCase()} the verification for{' '}
+              <strong>{confirmDialog.tutorName}</strong>? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="bg-gray-700 border-gray-600 text-white hover:bg-gray-600">
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleConfirmStatusUpdate}
+              className={
+                confirmDialog.status === 'Approved'
+                  ? 'bg-green-600 hover:bg-green-700 text-white'
+                  : 'bg-red-600 hover:bg-red-700 text-white'
+              }
+            >
+              {confirmDialog.status === 'Approved' ? 'Approve' : 'Reject'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Alert for notifications */}
+      {alertInfo && (
+        <div className="fixed top-4 right-4 z-50 w-96">
+          <Alert
+            variant={alertInfo.type === 'error' ? 'destructive' : 'default'}
+            className={`
+              ${alertInfo.type === 'success' ? 'bg-green-900 border-green-600 text-green-100' : ''}
+              ${alertInfo.type === 'error' ? 'bg-red-900 border-red-600 text-red-100' : ''}
+              ${alertInfo.type === 'warning' ? 'bg-yellow-900 border-yellow-600 text-yellow-100' : ''}
+            `}
+          >
+            {alertInfo.type === 'success' && <CheckCircle className="h-4 w-4" />}
+            {alertInfo.type === 'error' && <XCircle className="h-4 w-4" />}
+            {alertInfo.type === 'warning' && <AlertTriangle className="h-4 w-4" />}
+            <AlertTitle>{alertInfo.title}</AlertTitle>
+            <AlertDescription>{alertInfo.message}</AlertDescription>
+          </Alert>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="absolute top-2 right-2 h-6 w-6 p-0 text-current hover:bg-black/20"
+            onClick={() => setAlertInfo(null)}
+          >
+            ×
+          </Button>
         </div>
       )}
     </div>

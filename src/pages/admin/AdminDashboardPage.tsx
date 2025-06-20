@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import AdminSidebar from '@/components/layout/AdminSidebar';
@@ -20,7 +19,6 @@ import {
   CheckCircle,
   Clock,
   UserCheck,
-  BookOpen,
   ShieldAlert
 } from 'lucide-react';
 
@@ -194,13 +192,22 @@ const AdminDashboardPage: React.FC = () => {
                       <div>
                         <p className="text-gray-400 text-sm font-medium">Pending Verifications</p>
                         <p className="text-3xl font-bold text-white mt-2">{stats.pendingVerifications}</p>
-                        <p className="text-yellow-500 text-sm mt-1 flex items-center">
-                          <Clock className="w-4 h-4 mr-1" />
-                          Requires attention
+                        <p className={`text-sm mt-1 flex items-center ${stats.pendingVerifications > 0 ? 'text-yellow-500' : 'text-green-500'}`}>
+                          {stats.pendingVerifications > 0 ? (
+                            <>
+                              <Clock className="w-4 h-4 mr-1" />
+                              Requires attention
+                            </>
+                          ) : (
+                            <>
+                              <CheckCircle className="w-4 h-4 mr-1" />
+                              All caught up
+                            </>
+                          )}
                         </p>
                       </div>
-                      <div className="p-3 bg-yellow-600 bg-opacity-20 rounded-lg">
-                        <ListChecks className="w-6 h-6 text-yellow-400" />
+                      <div className={`p-3 ${stats.pendingVerifications > 0 ? 'bg-yellow-600 bg-opacity-20' : 'bg-green-600 bg-opacity-20'} rounded-lg`}>
+                        <ListChecks className={`w-6 h-6 ${stats.pendingVerifications > 0 ? 'text-yellow-400' : 'text-green-400'}`} />
                       </div>
                     </div>
                   </CardContent>
@@ -246,56 +253,9 @@ const AdminDashboardPage: React.FC = () => {
                 </div>
               ) : null}
 
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                {/* Quick Actions */}
-                <Card className="bg-gray-900 border-gray-800">
-                  <CardHeader>
-                    <CardTitle className="text-white flex items-center">
-                      <Shield className="w-5 h-5 mr-2 text-red-400" />
-                      Quick Actions
-                    </CardTitle>
-                    <CardDescription className="text-gray-400">
-                      Manage system operations
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-3">
-                    <Button
-                      variant="outline"
-                      onClick={() => handleSectionChange('tutor-verifications')}
-                      className="w-full justify-start bg-gray-800 border-gray-700 hover:bg-gray-700 text-white"
-                    >
-                      <ListChecks className="w-4 h-4 mr-2" />
-                      Review Verifications
-                    </Button>
-                    <Button
-                      onClick={() => handleSectionChange('manage-users')}
-                      variant="outline"
-                      className="w-full justify-start bg-gray-800 border-gray-700 hover:bg-gray-700 text-white"
-                    >
-                      <Users className="w-4 h-4 mr-2" />
-                      Manage Users
-                    </Button>
-                    <Button
-                      onClick={() => handleSectionChange('manage-skills')}
-                      variant="outline"
-                      className="w-full justify-start bg-gray-800 border-gray-700 hover:bg-gray-700 text-white"
-                    >
-                      <Wrench className="w-4 h-4 mr-2" />
-                      Manage Skills
-                    </Button>
-                    <Button
-                      onClick={() => handleSectionChange('manage-bookings')}
-                      variant="outline"
-                      className="w-full justify-start bg-gray-800 border-gray-700 hover:bg-gray-700 text-white"
-                    >
-                      <BookOpen className="w-4 h-4 mr-2" />
-                      Manage Bookings
-                    </Button>
-                  </CardContent>
-                </Card>
-
+              <div className="grid grid-cols-1 gap-6">
                 {/* System Status */}
-                <Card className="lg:col-span-2 bg-gray-900 border-gray-800">
+                <Card className="bg-gray-900 border-gray-800">
                   <CardHeader>
                     <CardTitle className="text-white flex items-center justify-between">
                       <span className="flex items-center">
@@ -338,16 +298,31 @@ const AdminDashboardPage: React.FC = () => {
                         
                         <div className="flex items-center justify-between p-4 bg-gray-800 rounded-lg">
                           <div className="flex items-center space-x-4">
-                            <div className="p-2 bg-yellow-600 bg-opacity-20 rounded-lg">
-                              <AlertCircle className="w-5 h-5 text-yellow-400" />
+                            <div className={`p-2 ${stats.pendingVerifications > 0 ? 'bg-yellow-600 bg-opacity-20' : 'bg-green-600 bg-opacity-20'} rounded-lg`}>
+                              {stats.pendingVerifications > 0 ? (
+                                <AlertCircle className="w-5 h-5 text-yellow-400" />
+                              ) : (
+                                <CheckCircle className="w-5 h-5 text-green-400" />
+                              )}
                             </div>
                             <div>
                               <p className="text-white font-medium">Pending Verifications</p>
-                              <p className="text-gray-400 text-sm">{stats.pendingVerifications} requests awaiting review</p>
+                              <p className="text-gray-400 text-sm">
+                                {stats.pendingVerifications === 0
+                                  ? 'No pending verification requests'
+                                  : `${stats.pendingVerifications} requests awaiting review`
+                                }
+                              </p>
                             </div>
                           </div>
-                          <Badge variant="outline" className="text-yellow-400 border-yellow-400">
-                            Attention
+                          <Badge
+                            variant="outline"
+                            className={stats.pendingVerifications > 0
+                              ? "text-yellow-400 border-yellow-400"
+                              : "text-green-400 border-green-400"
+                            }
+                          >
+                            {stats.pendingVerifications > 0 ? 'Attention' : 'Healthy'}
                           </Badge>
                         </div>
 
