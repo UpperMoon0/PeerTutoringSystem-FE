@@ -39,7 +39,7 @@ const TutorListPage: React.FC = () => {
   const [minHourlyRate, setMinHourlyRate] = useState<string>('');
   const [maxHourlyRate, setMaxHourlyRate] = useState<string>('');
   const [selectedSkillLevels, setSelectedSkillLevels] = useState<SkillLevel[]>([]);
-  const [minRating, setMinRating] = useState<string>('');
+  const [minRating, setMinRating] = useState<string>('any');
   const [sortBy, setSortBy] = useState<string>('name');
   const [showFilters, setShowFilters] = useState<boolean>(false);
 
@@ -185,7 +185,7 @@ const TutorListPage: React.FC = () => {
     }
 
     // Filter by minimum rating
-    if (minRating) {
+    if (minRating && minRating !== 'any') {
       const minRatingValue = parseFloat(minRating);
       tutorsToDisplay = tutorsToDisplay.filter(tutor =>
         (tutor.rating?.averageRating || 0) >= minRatingValue
@@ -236,7 +236,7 @@ const TutorListPage: React.FC = () => {
     setMinHourlyRate('');
     setMaxHourlyRate('');
     setSelectedSkillLevels([]);
-    setMinRating('');
+    setMinRating('any');
     setSortBy('name');
   };
 
@@ -426,7 +426,7 @@ const TutorListPage: React.FC = () => {
                   <SelectValue placeholder="Any rating" />
                 </SelectTrigger>
                 <SelectContent className="bg-gray-800 border-gray-600 text-white">
-                  <SelectItem value="">Any rating</SelectItem>
+                  <SelectItem value="any">Any rating</SelectItem>
                   <SelectItem value="1">1+ stars</SelectItem>
                   <SelectItem value="2">2+ stars</SelectItem>
                   <SelectItem value="3">3+ stars</SelectItem>
@@ -443,7 +443,7 @@ const TutorListPage: React.FC = () => {
       <div className="mb-6 max-w-6xl mx-auto">
         <p className="text-gray-400 text-center">
           {filteredTutors.length === 0
-            ? searchTerm || selectedSkills.length > 0 || minHourlyRate || maxHourlyRate || selectedSkillLevels.length > 0 || minRating
+            ? searchTerm || selectedSkills.length > 0 || minHourlyRate || maxHourlyRate || selectedSkillLevels.length > 0 || (minRating && minRating !== 'any')
               ? 'No tutors match your current filters.'
               : 'No tutors available at the moment.'
             : `Showing ${filteredTutors.length} tutor${filteredTutors.length !== 1 ? 's' : ''}`
