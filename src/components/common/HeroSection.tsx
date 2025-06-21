@@ -24,7 +24,15 @@ const HeroSection: React.FC = () => {
           <h1 className="text-4xl md:text-5xl font-bold mb-4 text-white" style={{ textShadow: '2px 2px 4px rgba(0, 0, 0, 0.8), 0 0 8px rgba(0, 0, 0, 0.6)' }}>
             Find the right tutor for you.
           </h1>
-          <p className="text-lg md:text-xl mb-8 text-gray-200" style={{ textShadow: '1px 1px 3px rgba(0, 0, 0, 0.8), 0 0 6px rgba(0, 0, 0, 0.6)' }}>
+          <p className="text-lg md:text-xl mb-8 text-white font-medium" style={{
+            textShadow: '4px 4px 16px rgba(0, 0, 0, 1), 0 0 32px rgba(0, 0, 0, 0.95), 0 0 48px rgba(0, 0, 0, 0.8), 8px 8px 24px rgba(0, 0, 0, 0.9), -2px -2px 8px rgba(0, 0, 0, 0.7)',
+            background: 'linear-gradient(135deg, rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.5))',
+            padding: '16px 20px',
+            borderRadius: '12px',
+            backdropFilter: 'blur(8px)',
+            border: '1px solid rgba(255, 255, 255, 0.1)',
+            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.1)'
+          }}>
             Connect with expert peer tutors who understand your learning style and academic goals. Experience personalized one-on-one sessions that boost your confidence and unlock your full potential in any subject.
           </p>
           <Button size="lg" className="bg-gray-800 border-gray-700 hover:bg-gray-700 text-white">
