@@ -7,24 +7,24 @@ const SuccessStoriesSection: React.FC = () => {
     {
       name: "Sarah Chen",
       subject: "Calculus",
-      grade: "A",
-      previousGrade: "C-",
+      grade: "9.2",
+      previousGrade: "4.5",
       quote: "My tutor helped me understand complex calculus concepts in a way that finally clicked. I went from struggling to excelling!",
       avatar: "SC"
     },
     {
       name: "Marcus Johnson",
       subject: "Chemistry",
-      grade: "A-",
-      previousGrade: "D+",
+      grade: "8.8",
+      previousGrade: "3.2",
       quote: "The personalized approach and patient explanations made all the difference. Chemistry is now one of my favorite subjects.",
       avatar: "MJ"
     },
     {
       name: "Emily Rodriguez",
       subject: "Computer Science",
-      grade: "A+",
-      previousGrade: "B",
+      grade: "9.7",
+      previousGrade: "7.1",
       quote: "Learning to code seemed impossible until I found the right tutor. Now I'm confident in my programming abilities!",
       avatar: "ER"
     }

@@ -432,8 +432,8 @@ const TutorDetailPage: React.FC = () => {
         </CardContent>
       </Card>
 
-      {/* Only show booking section for authenticated users */}
-      {currentUser && (
+      {/* Only show booking section for authenticated users who are not admins */}
+      {currentUser && currentUser.role !== 'Admin' && (
         <Card className="bg-gray-900 border-gray-800 shadow-xl">
           <CardHeader className="p-6">
             <CardTitle className="text-2xl text-white">Book a Session</CardTitle>
@@ -522,7 +522,7 @@ const TutorDetailPage: React.FC = () => {
               {/* Removed the "View Slots" button as slots fetch automatically */}
             </div>
 
-            {bookingError && <Alert variant="destructive" className="bg-red-900 border-red-700 text-red-200"><AlertDescription>{bookingError}</AlertDescription></Alert>}
+            {bookingError && <Alert variant="destructive" className="bg-red-900 border-red-700 !text-white"><AlertDescription className="!text-white">{bookingError}</AlertDescription></Alert>}
             {bookingSuccess && <Alert variant="default" className="bg-green-800 border-green-700 text-green-200"><AlertDescription>{bookingSuccess}</AlertDescription></Alert>}
             
             {isFetchingSlots && <p className="text-center text-gray-400 py-3">Fetching available slots...</p>}
@@ -623,15 +623,23 @@ const TutorDetailPage: React.FC = () => {
         </Card>
       )}
 
-      {/* Show message for guest users */}
-      {!currentUser && (
+      {/* Show message for guest users and admins */}
+      {(!currentUser || currentUser.role === 'Admin') && (
         <Card className="bg-gray-900 border-gray-800 shadow-xl">
           <CardContent className="p-6 text-center">
             <p className="text-gray-300 text-lg mb-4">
-              Please <a href="/login" className="text-blue-400 hover:text-blue-300 underline">log in</a> to book a session with this tutor.
+              {!currentUser ? (
+                <>Please <a href="/login" className="text-blue-400 hover:text-blue-300 underline">log in</a> to book a session with this tutor.</>
+              ) : (
+                <>Admins cannot book sessions with tutors.</>
+              )}
             </p>
             <p className="text-gray-500 text-sm">
-              You need to be authenticated to view availability and make bookings.
+              {!currentUser ? (
+                <>You need to be authenticated to view availability and make bookings.</>
+              ) : (
+                <>Only students and tutors can book tutoring sessions.</>
+              )}
             </p>
           </CardContent>
         </Card>
