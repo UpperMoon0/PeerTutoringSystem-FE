@@ -177,12 +177,26 @@ const TutorVerificationSection: React.FC = () => {
     setConfirmDialog({ ...confirmDialog, open: false });
   };
 
-  const filteredVerifications = verifications.filter(verification => {
-    if (filterStatus === 'All') {
-      return true;
-    }
-    return verification.verificationStatus === filterStatus;
-  });
+  const filteredVerifications = verifications
+    .filter(verification => {
+      if (filterStatus === 'All') {
+        return true;
+      }
+      return verification.verificationStatus === filterStatus;
+    })
+    .sort((a, b) => {
+      // Sort by status: Pending first, then Approved, then Rejected
+      const statusOrder = { 'Pending': 0, 'Approved': 1, 'Rejected': 2 };
+      const aOrder = statusOrder[a.verificationStatus as keyof typeof statusOrder] ?? 3;
+      const bOrder = statusOrder[b.verificationStatus as keyof typeof statusOrder] ?? 3;
+      
+      if (aOrder !== bOrder) {
+        return aOrder - bOrder;
+      }
+      
+      // If same status, sort by verification ID (or any other field you prefer)
+      return a.verificationID.localeCompare(b.verificationID);
+    });
 
   if (loading) {
     return <p className="text-muted-foreground">Loading tutor verifications...</p>;
