@@ -21,10 +21,10 @@ const HeroSection: React.FC = () => {
       {/* Content */}
       <div className="relative z-20 container mx-auto px-4 grid md:grid-cols-2 gap-8 items-center">
         <div>
-          <h1 className="text-4xl md:text-5xl font-bold mb-4 text-white">
+          <h1 className="text-4xl md:text-5xl font-bold mb-4 text-white" style={{ textShadow: '2px 2px 4px rgba(0, 0, 0, 0.8), 0 0 8px rgba(0, 0, 0, 0.6)' }}>
             Find the right tutor for you.
           </h1>
-          <p className="text-lg md:text-xl mb-8 text-gray-200">
+          <p className="text-lg md:text-xl mb-8 text-gray-200" style={{ textShadow: '1px 1px 3px rgba(0, 0, 0, 0.8), 0 0 6px rgba(0, 0, 0, 0.6)' }}>
             Tội ác xâm chiếm cả bầu trời, tai ương lan khắp vũ trụ, chẳng còn ai có thể hạn chế sự tự do của ngươi. Nhưng số phận ngươi vẫn gắn liền với thế giới này, cũng như một ngày không xa, ngươi sẽ đưa đệ tử của mình đến nơi này.
           </p>
           <Button size="lg" className="bg-gray-800 border-gray-700 hover:bg-gray-700 text-white">
