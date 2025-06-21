@@ -1,16 +1,31 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
+import homeVideo from '@/assets/videos/home_video.mp4';
 
 const HeroSection: React.FC = () => {
   return (
-    <section className="bg-gray-900 text-white py-12 md:py-24">
-      <div className="container mx-auto px-4 grid md:grid-cols-2 gap-8 items-center">
+    <section className="relative text-white py-12 md:py-24 overflow-hidden min-h-[600px]">
+      {/* Video Background */}
+      <video
+        className="absolute inset-0 w-full h-full object-cover z-0"
+        autoPlay
+        loop
+        muted
+        playsInline
+      >
+        <source src={homeVideo} type="video/mp4" />
+        Your browser does not support the video tag.
+      </video>
+      
+      
+      {/* Content */}
+      <div className="relative z-20 container mx-auto px-4 grid md:grid-cols-2 gap-8 items-center">
         <div>
           <h1 className="text-4xl md:text-5xl font-bold mb-4 text-white">
             Find the right tutor for you.
           </h1>
-          <p className="text-lg md:text-xl mb-8 text-gray-400">
-            Tội ác xâm chiếm cả bầu trời, tai ương lan khắp vũ trụ, chẳng còn ai có thể hạn chế sự tự do của ngươi. Nhưng số phận ngươi vẫn gắn liền với thế giới này, cũng như một ngày không xa, ngươi sẽ đưa đệ tử của mình đến nơi này.
+          <p className="text-lg md:text-xl mb-8 text-gray-200">
+            Tội ác xâm chiếm cả bầu trời, tai ương lan khắp vũ trụ, chẳng còn ai có thể hạn chế sự tự do của ngươi. Nhưng số phận ngươi vẫn gắn liền với thế giới này, cũng như một ngày không xa, ngươi sẽ đưa đệ tử của mình đến nơi này.
           </p>
           <Button size="lg" className="bg-gray-800 border-gray-700 hover:bg-gray-700 text-white">
             Learn More

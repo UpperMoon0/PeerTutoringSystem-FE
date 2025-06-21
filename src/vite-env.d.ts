@@ -1,5 +1,20 @@
 /// <reference types="vite/client" />
 
+declare module '*.mp4' {
+  const src: string;
+  export default src;
+}
+
+declare module '*.webm' {
+  const src: string;
+  export default src;
+}
+
+declare module '*.ogg' {
+  const src: string;
+  export default src;
+}
+
 interface ImportMetaEnv {
   readonly VITE_FIREBASE_API_KEY: string;
   readonly VITE_FIREBASE_AUTH_DOMAIN: string;
