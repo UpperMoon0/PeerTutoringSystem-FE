@@ -16,7 +16,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
-import { X, Filter, ChevronDown, ChevronUp } from 'lucide-react';
+import { X, Filter, ChevronDown, ChevronUp, Loader2 } from 'lucide-react';
 
 interface TutorWithData extends User {
   profile?: TutorProfileDto;
@@ -243,7 +243,14 @@ const TutorListPage: React.FC = () => {
   const skillLevels: SkillLevel[] = ['Beginner', 'Elementary', 'Intermediate', 'Advanced', 'Expert'];
 
   if (loading) {
-    return <div className="w-full p-6 bg-gray-950 min-h-screen text-white">Loading tutors...</div>;
+    return (
+      <div className="w-full bg-gray-950 min-h-screen flex items-center justify-center">
+        <div className="flex flex-col items-center space-y-4">
+          <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
+          <p className="text-white text-lg font-medium">Loading tutors...</p>
+        </div>
+      </div>
+    );
   }
 
   if (error) {
