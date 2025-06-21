@@ -50,9 +50,13 @@ const ManageBookingsSection: React.FC = () => {
       setIsLoading(true);
       setError(null);
       
-      // For admin, we'll fetch all bookings by getting both student and tutor bookings
-      // Since there's no direct admin endpoint, we'll simulate by fetching tutor bookings for now
-      const response = await BookingService.getTutorBookings(selectedStatus, currentPage, pageSize);
+      // Use the proper admin endpoint to fetch all bookings
+      const statusFilter = selectedStatus === 'All' ? undefined : selectedStatus;
+      const response = await BookingService.getAllBookingsForAdmin(
+        currentPage,
+        pageSize,
+        statusFilter
+      );
       
       if (response.success && response.data) {
         setBookings(response.data.bookings);

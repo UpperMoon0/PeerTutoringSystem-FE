@@ -18,25 +18,25 @@ const formatDateForQuery = (date: Date | string): string => {
 };
 
 // Helper function to convert backend DTOs to frontend types
-const convertBookingFromBackend = (backendBooking: any): Booking => {
+const convertBookingFromBackend = (backendBooking: Record<string, unknown>): Booking => {
   return {
-    bookingId: backendBooking.bookingId,
-    studentId: backendBooking.studentId,
-    tutorId: backendBooking.tutorId,
-    availabilityId: backendBooking.availabilityId,
-    sessionDate: backendBooking.sessionDate,
-    startTime: backendBooking.startTime,
-    endTime: backendBooking.endTime,
-    status: backendBooking.status,
-    createdAt: backendBooking.createdAt,
-    updatedAt: backendBooking.updatedAt,
-    studentName: backendBooking.studentName,
-    tutorName: backendBooking.tutorName,
-    topic: backendBooking.topic,
-    description: backendBooking.description,
-    skillId: backendBooking.skillId,
-    student: backendBooking.student,
-    tutor: backendBooking.tutor
+    bookingId: backendBooking.bookingId as string,
+    studentId: backendBooking.studentId as string,
+    tutorId: backendBooking.tutorId as string,
+    availabilityId: backendBooking.availabilityId as string,
+    sessionDate: backendBooking.sessionDate as string,
+    startTime: backendBooking.startTime as string,
+    endTime: backendBooking.endTime as string,
+    status: backendBooking.status as "Pending" | "Confirmed" | "Cancelled" | "Completed" | "Rejected",
+    createdAt: backendBooking.createdAt as string,
+    updatedAt: backendBooking.updatedAt as string,
+    studentName: backendBooking.studentName as string,
+    tutorName: backendBooking.tutorName as string,
+    topic: backendBooking.topic as string,
+    description: backendBooking.description as string,
+    skillId: backendBooking.skillId as string,
+    student: backendBooking.student as undefined,
+    tutor: backendBooking.tutor as undefined
   };
 };
 
@@ -63,10 +63,10 @@ export const BookingService = {
 
       if (!response.ok) {
         // Improved error handling
-        let errorPayload: any;
+        let errorPayload: Record<string, unknown>;
         try {
           errorPayload = await response.json();
-        } catch (e) {
+        } catch {
           // If response.json() fails (e.g. not valid JSON, or empty for some errors)
           return { success: false, error: `API request failed with status ${response.status}. Unable to parse error response.` };
         }
@@ -84,9 +84,9 @@ export const BookingService = {
         pageSize: apiJsonResponse.pageSize,
       };
       return { success: true, data: constructedPayload };
-    } catch (error: any) {
+    } catch (error: unknown) {
       // Catch network errors or other issues before fetchWithAuth completes
-      return { success: false, error: error.message || "Failed to fetch available slots due to a network or client-side error." };
+      return { success: false, error: error instanceof Error ? error.message : "Failed to fetch available slots due to a network or client-side error." };
     }
   },
 
@@ -107,9 +107,9 @@ export const BookingService = {
       const convertedBooking = convertBookingFromBackend(responseData.data);
       
       return { success: true, data: convertedBooking };
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error creating booking:', error);
-      return { success: false, error: error.message || "Failed to create booking." };
+      return { success: false, error: error instanceof Error ? error.message : "Failed to create booking." };
     }
   },
 
@@ -132,7 +132,7 @@ export const BookingService = {
       const responseData = await response.json();
       
       // Convert backend bookings to frontend format
-      const convertedBookings = responseData.data?.map((booking: any) => convertBookingFromBackend(booking)) || [];
+      const convertedBookings = responseData.data?.map((booking: Record<string, unknown>) => convertBookingFromBackend(booking)) || [];
       
       return {
         success: true,
@@ -141,9 +141,9 @@ export const BookingService = {
           totalCount: responseData.totalCount || 0
         }
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error fetching student bookings:', error);
-      return { success: false, error: error.message || "Failed to fetch student bookings." };
+      return { success: false, error: error instanceof Error ? error.message : "Failed to fetch student bookings." };
     }
   },
 
@@ -193,7 +193,7 @@ export const BookingService = {
       const responseData = await response.json();
       
       // Convert backend bookings to frontend format
-      const convertedBookings = responseData.data?.map((booking: any) => convertBookingFromBackend(booking)) || [];
+      const convertedBookings = responseData.data?.map((booking: Record<string, unknown>) => convertBookingFromBackend(booking)) || [];
       
       return {
         success: true,
@@ -204,9 +204,9 @@ export const BookingService = {
           pageSize: responseData.pageSize || pageSize
         }
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error fetching student booking history:', error);
-      return { success: false, error: error.message || "Failed to fetch student booking history." };
+      return { success: false, error: error instanceof Error ? error.message : "Failed to fetch student booking history." };
     }
   },
 
@@ -231,7 +231,7 @@ export const BookingService = {
       const responseData = await response.json();
       
       // Convert backend bookings to frontend format
-      const convertedBookings = responseData.data?.map((booking: any) => convertBookingFromBackend(booking)) || [];
+      const convertedBookings = responseData.data?.map((booking: Record<string, unknown>) => convertBookingFromBackend(booking)) || [];
       
       return {
         success: true,
@@ -240,9 +240,9 @@ export const BookingService = {
           totalCount: responseData.totalCount || 0
         }
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error fetching tutor bookings:', error);
-      return { success: false, error: error.message || "Failed to fetch tutor bookings." };
+      return { success: false, error: error instanceof Error ? error.message : "Failed to fetch tutor bookings." };
     }
   },
   
@@ -259,9 +259,9 @@ export const BookingService = {
       const convertedBooking = convertBookingFromBackend(responseData.data);
       
       return { success: true, data: convertedBooking };
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error fetching booking details:', error);
-      return { success: false, error: error.message || "Failed to fetch booking details." };
+      return { success: false, error: error instanceof Error ? error.message : "Failed to fetch booking details." };
     }
   },
 
@@ -282,13 +282,13 @@ export const BookingService = {
       const convertedBooking = convertBookingFromBackend(responseData.data);
       
       return { success: true, data: convertedBooking };
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error updating booking status:', error);
-      return { success: false, error: error.message || "Failed to update booking status." };
+      return { success: false, error: error instanceof Error ? error.message : "Failed to update booking status." };
     }
   },
 
-  // Admin method to get all bookings - this would need a backend endpoint like GET /api/Bookings/admin
+  // Admin method to get all bookings - using the correct admin endpoint
   async getAllBookingsForAdmin(
     page: number = 1,
     pageSize: number = 10,
@@ -303,8 +303,11 @@ export const BookingService = {
         pageSize: pageSize.toString(),
       });
       
+      // Backend requires Status field - use "null" for all statuses, specific status otherwise
       if (status && status !== 'All') {
-        queryParams.append('status', status);
+        queryParams.append('Status', status);
+      } else {
+        queryParams.append('Status', 'null');
       }
       
       if (startDate) {
@@ -319,135 +322,31 @@ export const BookingService = {
         queryParams.append('searchTerm', searchTerm);
       }
 
-      // TODO: This endpoint doesn't exist yet in the backend
-      // For now, we'll return mock data until the backend implements this
-      // const response = await AuthService.fetchWithAuth(`${API_BASE_URL}/Bookings/admin?${queryParams}`, {
-      //   method: 'GET',
-      // });
+      // Use the correct admin endpoint /Bookings/all which requires Admin role
+      const response = await AuthService.fetchWithAuth(`${API_BASE_URL}/Bookings/all?${queryParams}`, {
+        method: 'GET',
+      });
       
-      // Mock implementation - replace with actual API call when backend is ready
-      await new Promise(resolve => setTimeout(resolve, 500)); // Simulate API delay
-      
-      const mockBookings: Booking[] = [
-        {
-          bookingId: '1',
-          studentId: 'student-1',
-          tutorId: 'tutor-1',
-          sessionDate: '2024-01-15',
-          startTime: '2024-01-15T10:00:00Z',
-          endTime: '2024-01-15T11:00:00Z',
-          status: 'Pending',
-          createdAt: '2024-01-10T08:00:00Z',
-          studentName: 'John Doe',
-          tutorName: 'Jane Smith',
-          topic: 'React Fundamentals',
-          description: 'Learning React basics and components',
-          skillId: 'skill-1'
-        },
-        {
-          bookingId: '2',
-          studentId: 'student-2',
-          tutorId: 'tutor-2',
-          sessionDate: '2024-01-16',
-          startTime: '2024-01-16T14:00:00Z',
-          endTime: '2024-01-16T15:00:00Z',
-          status: 'Confirmed',
-          createdAt: '2024-01-11T09:00:00Z',
-          studentName: 'Alice Johnson',
-          tutorName: 'Bob Wilson',
-          topic: 'Python Programming',
-          description: 'Advanced Python concepts and best practices',
-          skillId: 'skill-2'
-        },
-        {
-          bookingId: '3',
-          studentId: 'student-3',
-          tutorId: 'tutor-3',
-          sessionDate: '2024-01-17',
-          startTime: '2024-01-17T16:00:00Z',
-          endTime: '2024-01-17T17:00:00Z',
-          status: 'Completed',
-          createdAt: '2024-01-12T10:00:00Z',
-          studentName: 'Mike Johnson',
-          tutorName: 'Sarah Davis',
-          topic: 'JavaScript ES6',
-          description: 'Modern JavaScript features and syntax',
-          skillId: 'skill-3'
-        },
-        {
-          bookingId: '4',
-          studentId: 'student-4',
-          tutorId: 'tutor-4',
-          sessionDate: '2024-01-18',
-          startTime: '2024-01-18T11:00:00Z',
-          endTime: '2024-01-18T12:00:00Z',
-          status: 'Cancelled',
-          createdAt: '2024-01-13T11:00:00Z',
-          studentName: 'Emma Wilson',
-          tutorName: 'David Brown',
-          topic: 'Node.js Backend',
-          description: 'Building REST APIs with Node.js',
-          skillId: 'skill-4'
-        },
-        {
-          bookingId: '5',
-          studentId: 'student-5',
-          tutorId: 'tutor-5',
-          sessionDate: '2024-01-19',
-          startTime: '2024-01-19T13:00:00Z',
-          endTime: '2024-01-19T14:00:00Z',
-          status: 'Rejected',
-          createdAt: '2024-01-14T12:00:00Z',
-          studentName: 'Tom Anderson',
-          tutorName: 'Lisa Garcia',
-          topic: 'Database Design',
-          description: 'SQL and database optimization',
-          skillId: 'skill-5'
-        }
-      ];
-
-      // Apply filters to mock data
-      let filteredBookings = mockBookings;
-      
-      if (status && status !== 'All') {
-        filteredBookings = filteredBookings.filter(booking => booking.status === status);
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: "Failed to parse error response." }));
+        throw new Error(errorData.error || `Failed to fetch admin bookings: ${response.statusText}`);
       }
       
-      if (searchTerm && searchTerm.trim()) {
-        const search = searchTerm.toLowerCase();
-        filteredBookings = filteredBookings.filter(booking =>
-          booking.studentName?.toLowerCase().includes(search) ||
-          booking.tutorName?.toLowerCase().includes(search) ||
-          booking.topic.toLowerCase().includes(search)
-        );
-      }
-
-      if (startDate) {
-        filteredBookings = filteredBookings.filter(booking =>
-          new Date(booking.startTime) >= new Date(startDate)
-        );
-      }
-
-      if (endDate) {
-        filteredBookings = filteredBookings.filter(booking =>
-          new Date(booking.startTime) <= new Date(endDate)
-        );
-      }
-
-      // Apply pagination
-      const startIndex = (page - 1) * pageSize;
-      const paginatedBookings = filteredBookings.slice(startIndex, startIndex + pageSize);
+      const responseData = await response.json();
+      
+      // Convert backend bookings to frontend format
+      const convertedBookings = responseData.data?.map((booking: Record<string, unknown>) => convertBookingFromBackend(booking)) || [];
       
       return {
         success: true,
         data: {
-          bookings: paginatedBookings,
-          totalCount: filteredBookings.length
+          bookings: convertedBookings,
+          totalCount: responseData.totalCount || 0
         }
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error fetching admin bookings:', error);
-      return { success: false, error: error.message || "Failed to fetch admin bookings." };
+      return { success: false, error: error instanceof Error ? error.message : "Failed to fetch admin bookings." };
     }
   },
 
@@ -470,9 +369,9 @@ export const BookingService = {
       const responseData = await response.json();
       
       return { success: true, data: responseData.data };
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error fetching tutor dashboard stats:', error);
-      return { success: false, error: error.message || "Failed to fetch tutor dashboard stats." };
+      return { success: false, error: error instanceof Error ? error.message : "Failed to fetch tutor dashboard stats." };
     }
   }
 };
