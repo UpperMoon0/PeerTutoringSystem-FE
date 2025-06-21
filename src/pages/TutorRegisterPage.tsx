@@ -113,9 +113,9 @@ const TutorRegisterPage: React.FC = () => {
         const errorMsg = typeof result.error === 'string' ? result.error : 'Failed to submit tutor registration request.';
         setError(errorMsg);
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Error during tutor registration submission:", err);
-      setError(err.message || 'An unexpected error occurred during submission.');
+      setError(err instanceof Error ? err.message : 'An unexpected error occurred during submission.');
     } finally {
       setIsLoading(false);
     }
@@ -174,82 +174,197 @@ const TutorRegisterPage: React.FC = () => {
 
   // If no pending request, show the form
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-950 text-gray-300">
-      <Card className="w-full max-w-lg bg-gray-900 border-gray-800">
-        <CardHeader>
-          <CardTitle className="text-2xl font-bold text-center text-white">Become a Tutor</CardTitle>
-          <CardDescription className="text-center text-gray-400">
-            Fill in the details below to apply as a tutor.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <Label htmlFor="citizenId" className="text-gray-300">Citizen ID</Label>
-              <Input
-                id="citizenId"
-                type="text"
-                value={citizenId}
-                onChange={(e) => setCitizenId(e.target.value)}
-                required
-                className="mt-1 bg-gray-800 border-gray-700 text-white placeholder-gray-500 focus:ring-blue-500 focus:border-blue-500"
-              />
+    <div className="min-h-screen bg-gray-950 text-gray-300">
+      {/* Header Section */}
+      <div className="bg-gradient-to-r from-blue-900 via-purple-900 to-blue-900 py-16">
+        <div className="max-w-6xl mx-auto px-4 text-center">
+          <h1 className="text-4xl md:text-5xl font-bold text-white mb-6">
+            Join Our Tutoring Community
+          </h1>
+          <p className="text-xl text-gray-200 max-w-3xl mx-auto mb-8">
+            Share your knowledge, help fellow students succeed, and earn while making a difference in their academic journey.
+          </p>
+          <div className="grid md:grid-cols-3 gap-8 mt-12">
+            <div className="bg-gray-800/50 p-6 rounded-lg backdrop-blur-sm">
+              <div className="text-3xl mb-4">📚</div>
+              <h3 className="text-lg font-semibold text-white mb-2">Share Knowledge</h3>
+              <p className="text-gray-300">Help students master subjects you excel in</p>
             </div>
-            <div>
-              <Label htmlFor="studentId" className="text-gray-300">Student ID</Label>
-              <Input
-                id="studentId"
-                type="text"
-                value={studentId}
-                onChange={(e) => setStudentId(e.target.value)}
-                required
-                className="mt-1 bg-gray-800 border-gray-700 text-white placeholder-gray-500 focus:ring-blue-500 focus:border-blue-500"
-              />
+            <div className="bg-gray-800/50 p-6 rounded-lg backdrop-blur-sm">
+              <div className="text-3xl mb-4">💰</div>
+              <h3 className="text-lg font-semibold text-white mb-2">Earn Income</h3>
+              <p className="text-gray-300">Set your rates and earn while teaching</p>
             </div>
-            <div>
-              <Label htmlFor="university" className="text-gray-300">University</Label>
-              <Input
-                id="university"
-                type="text"
-                value={university}
-                onChange={(e) => setUniversity(e.target.value)}
-                required
-                className="mt-1 bg-gray-800 border-gray-700 text-white placeholder-gray-500 focus:ring-blue-500 focus:border-blue-500"
-              />
+            <div className="bg-gray-800/50 p-6 rounded-lg backdrop-blur-sm">
+              <div className="text-3xl mb-4">🎯</div>
+              <h3 className="text-lg font-semibold text-white mb-2">Flexible Schedule</h3>
+              <p className="text-gray-300">Teach when it works for your schedule</p>
             </div>
-            <div>
-              <Label htmlFor="major" className="text-gray-300">Major</Label>
-              <Input
-                id="major"
-                type="text"
-                value={major}
-                onChange={(e) => setMajor(e.target.value)}
-                required
-                className="mt-1 bg-gray-800 border-gray-700 text-white placeholder-gray-500 focus:ring-blue-500 focus:border-blue-500"
-              />
+          </div>
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div className="max-w-6xl mx-auto px-4 py-16">
+        <div className="grid lg:grid-cols-2 gap-12 items-start">
+          {/* Left Side - Information */}
+          <div>
+            <h2 className="text-3xl font-bold text-white mb-6">Requirements to Become a Tutor</h2>
+            <div className="space-y-6">
+              <div className="flex items-start space-x-4">
+                <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                  <span className="text-white text-sm font-bold">1</span>
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-white mb-2">Valid Student Status</h3>
+                  <p className="text-gray-400">Must be currently enrolled in an accredited university or college with good academic standing.</p>
+                </div>
+              </div>
+              <div className="flex items-start space-x-4">
+                <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                  <span className="text-white text-sm font-bold">2</span>
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-white mb-2">Subject Expertise</h3>
+                  <p className="text-gray-400">Demonstrate strong knowledge in your chosen subject areas with relevant coursework or experience.</p>
+                </div>
+              </div>
+              <div className="flex items-start space-x-4">
+                <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                  <span className="text-white text-sm font-bold">3</span>
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-white mb-2">Documentation</h3>
+                  <p className="text-gray-400">Provide valid student ID, transcripts, and any relevant certifications or achievements.</p>
+                </div>
+              </div>
             </div>
-            <div>
-              <Label htmlFor="documents" className="text-gray-300">Supporting Documents (e.g., Student ID Card, Transcripts)</Label>
-              <Input
-                id="documents"
-                type="file"
-                multiple
-                onChange={handleFileChange}
-                required
-                className="mt-1 bg-gray-800 border-gray-700 text-white file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700"
-              />
-              <p className="text-sm text-gray-500 mt-1">Upload at least one document.</p>
+
+            <div className="mt-10 p-6 bg-gray-800/50 rounded-lg">
+              <h3 className="text-xl font-semibold text-white mb-4">Application Process</h3>
+              <div className="space-y-3 text-gray-400">
+                <p>• Submit your application with required documents</p>
+                <p>• Our team reviews your qualifications (2-5 business days)</p>
+                <p>• Once approved, complete your tutor profile</p>
+                <p>• Start accepting tutoring sessions!</p>
+              </div>
             </div>
-            {error && <p className="text-red-400 text-sm">{error}</p>}
-            <Button type="submit" className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white" disabled={isLoading}>
-              {isLoading ? 'Submitting...' : 'Submit Application'}
-            </Button>
-          </form>
-        </CardContent>
-        <CardFooter className="text-center text-sm text-gray-400">
-          Your application will be reviewed by an administrator.
-        </CardFooter>
-      </Card>
+          </div>
+
+          {/* Right Side - Application Form */}
+          <div>
+            <Card className="bg-gray-900 border-gray-800 shadow-2xl">
+              <CardHeader>
+                <CardTitle className="text-2xl font-bold text-center text-white">Tutor Application</CardTitle>
+                <CardDescription className="text-center text-gray-400">
+                  Complete the form below to start your application
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <form onSubmit={handleSubmit} className="space-y-4">
+                  <div>
+                    <Label htmlFor="citizenId" className="text-gray-300">Citizen ID</Label>
+                    <Input
+                      id="citizenId"
+                      type="text"
+                      value={citizenId}
+                      onChange={(e) => setCitizenId(e.target.value)}
+                      required
+                      className="mt-1 bg-gray-800 border-gray-700 text-white placeholder-gray-500 focus:ring-blue-500 focus:border-blue-500"
+                      placeholder="Enter your citizen ID number"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="studentId" className="text-gray-300">Student ID</Label>
+                    <Input
+                      id="studentId"
+                      type="text"
+                      value={studentId}
+                      onChange={(e) => setStudentId(e.target.value)}
+                      required
+                      className="mt-1 bg-gray-800 border-gray-700 text-white placeholder-gray-500 focus:ring-blue-500 focus:border-blue-500"
+                      placeholder="Enter your university student ID"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="university" className="text-gray-300">University</Label>
+                    <Input
+                      id="university"
+                      type="text"
+                      value={university}
+                      onChange={(e) => setUniversity(e.target.value)}
+                      required
+                      className="mt-1 bg-gray-800 border-gray-700 text-white placeholder-gray-500 focus:ring-blue-500 focus:border-blue-500"
+                      placeholder="e.g., University of Science and Technology"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="major" className="text-gray-300">Major/Field of Study</Label>
+                    <Input
+                      id="major"
+                      type="text"
+                      value={major}
+                      onChange={(e) => setMajor(e.target.value)}
+                      required
+                      className="mt-1 bg-gray-800 border-gray-700 text-white placeholder-gray-500 focus:ring-blue-500 focus:border-blue-500"
+                      placeholder="e.g., Computer Science, Mathematics"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="documents" className="text-gray-300">Supporting Documents</Label>
+                    <Input
+                      id="documents"
+                      type="file"
+                      multiple
+                      accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
+                      onChange={handleFileChange}
+                      required
+                      className="mt-1 bg-gray-800 border-gray-700 text-white file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-600 file:text-white file:text-center file:flex file:items-center file:justify-center hover:file:bg-blue-700"
+                    />
+                    <p className="text-sm text-gray-500 mt-1">
+                      Upload: Student ID, Transcripts, Certificates (PDF, JPG, PNG, DOC)
+                    </p>
+                    
+                    {/* File Upload Feedback */}
+                    {files.length > 0 && (
+                      <div className="mt-3 p-3 bg-gray-800 rounded-lg">
+                        <p className="text-sm font-medium text-green-400 mb-2">
+                          ✓ {files.length} file{files.length > 1 ? 's' : ''} selected:
+                        </p>
+                        <ul className="space-y-1">
+                          {files.map((file, index) => (
+                            <li key={index} className="text-sm text-gray-300 flex items-center">
+                              <span className="mr-2">📄</span>
+                              <span className="truncate">{file.name}</span>
+                              <span className="ml-auto text-gray-500">
+                                ({(file.size / 1024 / 1024).toFixed(2)} MB)
+                              </span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </div>
+                  {error && <p className="text-red-400 text-sm">{error}</p>}
+                  <Button
+                    type="submit"
+                    className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-3"
+                    disabled={isLoading}
+                  >
+                    {isLoading ? 'Submitting Application...' : 'Submit Application'}
+                  </Button>
+                </form>
+              </CardContent>
+              <CardFooter className="text-center text-sm text-gray-400">
+                <div className="w-full">
+                  <p className="mb-2">🔒 Your information is secure and will only be used for verification purposes.</p>
+                  <p>Questions? Contact our support team for assistance.</p>
+                </div>
+              </CardFooter>
+            </Card>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
