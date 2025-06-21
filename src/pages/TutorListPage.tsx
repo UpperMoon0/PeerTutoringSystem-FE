@@ -1,17 +1,66 @@
 import React, { useEffect, useState } from 'react';
 import type { User } from '../types/user.types';
+import type { TutorProfileDto } from '../types/TutorProfile';
+import type { UserSkill, Skill, SkillLevel } from '../types/skill.types';
 import { TutorService } from '../services/TutorService';
 import { TutorProfileService } from '../services/TutorProfileService';
+import { UserSkillService } from '../services/UserSkillService';
+import { AdminSkillService } from '../services/AdminSkillService';
+import { ReviewService } from '../services/ReviewService';
 import TutorCard from '@/components/tutor/TutorCard';
 import { useAuth } from '@/contexts/AuthContext';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
+import { X, Filter, ChevronDown, ChevronUp } from 'lucide-react';
+
+interface TutorWithData extends User {
+  profile?: TutorProfileDto;
+  skills?: UserSkill[];
+  rating?: { averageRating: number; reviewCount: number };
+}
 
 const TutorListPage: React.FC = () => {
   const { currentUser } = useAuth();
-  const [allTutors, setAllTutors] = useState<User[]>([]);
-  const [filteredTutors, setFilteredTutors] = useState<User[]>([]);
+  const [allTutors, setAllTutors] = useState<TutorWithData[]>([]);
+  const [filteredTutors, setFilteredTutors] = useState<TutorWithData[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState<string>('');
+  const [availableSkills, setAvailableSkills] = useState<Skill[]>([]);
+  const [skillsLoading, setSkillsLoading] = useState<boolean>(false);
+  
+  // Filter states
+  const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
+  const [minHourlyRate, setMinHourlyRate] = useState<string>('');
+  const [maxHourlyRate, setMaxHourlyRate] = useState<string>('');
+  const [selectedSkillLevels, setSelectedSkillLevels] = useState<SkillLevel[]>([]);
+  const [minRating, setMinRating] = useState<string>('');
+  const [sortBy, setSortBy] = useState<string>('name');
+  const [showFilters, setShowFilters] = useState<boolean>(false);
+
+  // Fetch all available skills for filtering
+  useEffect(() => {
+    const fetchSkills = async () => {
+      setSkillsLoading(true);
+      try {
+        const result = await AdminSkillService.getAllSkills();
+        if (result.success && result.data) {
+          setAvailableSkills(result.data);
+        }
+      } catch (err) {
+        console.error('Error fetching skills:', err);
+      } finally {
+        setSkillsLoading(false);
+      }
+    };
+
+    fetchSkills();
+  }, []);
 
   useEffect(() => {
     const fetchTutors = async () => {
@@ -19,10 +68,10 @@ const TutorListPage: React.FC = () => {
         setLoading(true);
         const result = await TutorService.getAllTutors();
         if (result.success && result.data) {
-          // Filter tutors to only include those with user bios
-          const tutorsWithBios = await filterTutorsWithBios(result.data);
-          setAllTutors(tutorsWithBios);
-          setFilteredTutors(tutorsWithBios);
+          // Filter tutors to only include those with user bios and fetch additional data
+          const tutorsWithData = await enrichTutorsWithData(result.data);
+          setAllTutors(tutorsWithData);
+          setFilteredTutors(tutorsWithData);
         } else {
           if (typeof result.error === 'string') {
             setError(result.error || 'Failed to fetch tutors');
@@ -40,36 +89,54 @@ const TutorListPage: React.FC = () => {
       }
     };
 
-    const filterTutorsWithBios = async (tutors: User[]): Promise<User[]> => {
-      // Create concurrent bio check promises for all tutors
-      const bioCheckPromises = tutors.map(async (tutor) => {
+    const enrichTutorsWithData = async (tutors: User[]): Promise<TutorWithData[]> => {
+      // Create concurrent promises for all tutor data
+      const tutorDataPromises = tutors.map(async (tutor): Promise<TutorWithData | null> => {
         try {
-          // Use suppressErrors=true to avoid console errors during filtering
-          const bioResult = await TutorProfileService.getTutorProfileByUserId(tutor.userID, true);
-          // Return tutor if bio exists and is successful
-          if (bioResult.success && bioResult.data) {
-            return tutor;
+          // Fetch bio, skills, and rating data concurrently
+          const [bioResult, skillsResult, ratingResult, reviewsResult] = await Promise.all([
+            TutorProfileService.getTutorProfileByUserId(tutor.userID, true),
+            UserSkillService.getUserSkills(tutor.userID),
+            ReviewService.getAverageRatingByTutorId(tutor.userID),
+            ReviewService.getReviewsByTutorId(tutor.userID)
+          ]);
+
+          // Only include tutors with bio data
+          if (!bioResult.success || !bioResult.data) {
+            return null;
           }
-          // Return null if no bio found or error
-          return null;
+
+          // Prepare enriched tutor data
+          const enrichedTutor: TutorWithData = {
+            ...tutor,
+            profile: bioResult.data,
+            skills: skillsResult.success && skillsResult.data ? skillsResult.data : [],
+            rating: {
+              averageRating: ratingResult.success && ratingResult.data ? ratingResult.data.averageRating : 0,
+              reviewCount: reviewsResult.success && reviewsResult.data ? reviewsResult.data.length : 0
+            }
+          };
+
+          return enrichedTutor;
         } catch {
-          // Return null for tutors with bio fetch errors
+          // Return null for tutors with data fetch errors
           return null;
         }
       });
       
-      // Wait for all bio checks to complete
-      const bioCheckResults = await Promise.all(bioCheckPromises);
+      // Wait for all data fetches to complete
+      const tutorDataResults = await Promise.all(tutorDataPromises);
       
-      // Filter out null results (tutors without bios)
-      return bioCheckResults.filter((tutor): tutor is User => tutor !== null);
+      // Filter out null results (tutors without bios or with errors)
+      return tutorDataResults.filter((tutor): tutor is TutorWithData => tutor !== null);
     };
 
     fetchTutors();
   }, []);
 
+  // Filter and sort logic
   useEffect(() => {
-    let tutorsToDisplay = allTutors;
+    let tutorsToDisplay = [...allTutors];
 
     // Filter out the current user if they are a tutor
     if (currentUser && currentUser.role === 'Tutor') {
@@ -79,15 +146,101 @@ const TutorListPage: React.FC = () => {
     // Filter by search term
     if (searchTerm) {
       const lowerSearchTerm = searchTerm.toLowerCase();
+      tutorsToDisplay = tutorsToDisplay.filter(tutor => {
+        const nameMatch = tutor.fullName.toLowerCase().includes(lowerSearchTerm);
+        const emailMatch = tutor.email.toLowerCase().includes(lowerSearchTerm);
+        const bioMatch = tutor.profile?.bio?.toLowerCase().includes(lowerSearchTerm) || false;
+        const skillMatch = tutor.skills?.some(skill =>
+          skill.skill.skillName.toLowerCase().includes(lowerSearchTerm)
+        ) || false;
+        return nameMatch || emailMatch || bioMatch || skillMatch;
+      });
+    }
+
+    // Filter by selected skills
+    if (selectedSkills.length > 0) {
       tutorsToDisplay = tutorsToDisplay.filter(tutor =>
-        tutor.fullName.toLowerCase().includes(lowerSearchTerm) ||
-        tutor.email.toLowerCase().includes(lowerSearchTerm)
-        // Add other searchable fields if necessary, e.g., skills
+        tutor.skills?.some(skill => selectedSkills.includes(skill.skill.skillID)) || false
       );
     }
+
+    // Filter by hourly rate range
+    if (minHourlyRate || maxHourlyRate) {
+      tutorsToDisplay = tutorsToDisplay.filter(tutor => {
+        const rate = tutor.profile?.hourlyRate;
+        if (!rate) return false;
+        
+        const minRate = minHourlyRate ? parseFloat(minHourlyRate) : 0;
+        const maxRate = maxHourlyRate ? parseFloat(maxHourlyRate) : Infinity;
+        
+        return rate >= minRate && rate <= maxRate;
+      });
+    }
+
+    // Filter by skill levels
+    if (selectedSkillLevels.length > 0) {
+      tutorsToDisplay = tutorsToDisplay.filter(tutor =>
+        tutor.skills?.some(skill => selectedSkillLevels.includes(skill.skill.skillLevel)) || false
+      );
+    }
+
+    // Filter by minimum rating
+    if (minRating) {
+      const minRatingValue = parseFloat(minRating);
+      tutorsToDisplay = tutorsToDisplay.filter(tutor =>
+        (tutor.rating?.averageRating || 0) >= minRatingValue
+      );
+    }
+
+    // Sort tutors
+    tutorsToDisplay.sort((a, b) => {
+      switch (sortBy) {
+        case 'name':
+          return a.fullName.localeCompare(b.fullName);
+        case 'rating':
+          return (b.rating?.averageRating || 0) - (a.rating?.averageRating || 0);
+        case 'rate-low':
+          return (a.profile?.hourlyRate || 0) - (b.profile?.hourlyRate || 0);
+        case 'rate-high':
+          return (b.profile?.hourlyRate || 0) - (a.profile?.hourlyRate || 0);
+        case 'reviews':
+          return (b.rating?.reviewCount || 0) - (a.rating?.reviewCount || 0);
+        default:
+          return 0;
+      }
+    });
     
     setFilteredTutors(tutorsToDisplay);
-  }, [searchTerm, allTutors, currentUser]);
+  }, [searchTerm, allTutors, currentUser, selectedSkills, minHourlyRate, maxHourlyRate, selectedSkillLevels, minRating, sortBy]);
+
+  // Helper functions for filter management
+  const toggleSkill = (skillId: string) => {
+    setSelectedSkills(prev =>
+      prev.includes(skillId)
+        ? prev.filter(id => id !== skillId)
+        : [...prev, skillId]
+    );
+  };
+
+  const toggleSkillLevel = (level: SkillLevel) => {
+    setSelectedSkillLevels(prev =>
+      prev.includes(level)
+        ? prev.filter(l => l !== level)
+        : [...prev, level]
+    );
+  };
+
+  const clearAllFilters = () => {
+    setSearchTerm('');
+    setSelectedSkills([]);
+    setMinHourlyRate('');
+    setMaxHourlyRate('');
+    setSelectedSkillLevels([]);
+    setMinRating('');
+    setSortBy('name');
+  };
+
+  const skillLevels: SkillLevel[] = ['Beginner', 'Elementary', 'Intermediate', 'Advanced', 'Expert'];
 
   if (loading) {
     return <div className="w-full p-6 bg-gray-950 min-h-screen text-white">Loading tutors...</div>;
@@ -101,22 +254,206 @@ const TutorListPage: React.FC = () => {
     <div className="w-full p-6 bg-gray-950 min-h-screen">
       <h1 className="text-4xl font-bold mb-8 text-center text-white">Available Tutors</h1>
       
-      <div className="mb-8 max-w-xl mx-auto">
-        <input 
-          type="text"
-          placeholder="Search tutors by name or skills..." 
-          className="w-full p-4 bg-gray-900 border border-gray-700 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-white placeholder-gray-500 transition-colors"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-        />
+      {/* Search and Filter Toggle */}
+      <div className="mb-6 max-w-6xl mx-auto">
+        <div className="flex flex-col lg:flex-row gap-4 items-center">
+          <div className="flex-1 w-full">
+            <Input
+              type="text"
+              placeholder="Search tutors by name, email, bio, or skills..."
+              className="w-full p-4 bg-gray-900 border border-gray-700 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-white placeholder-gray-500 transition-colors"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              onClick={() => setShowFilters(!showFilters)}
+              className="bg-gray-800 border-gray-600 text-white hover:bg-gray-700 flex items-center gap-2"
+            >
+              <Filter className="h-4 w-4" />
+              Filters
+              {showFilters ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+            </Button>
+            <Select value={sortBy} onValueChange={setSortBy}>
+              <SelectTrigger className="w-48 bg-gray-800 border-gray-600 text-white">
+                <SelectValue placeholder="Sort by" />
+              </SelectTrigger>
+              <SelectContent className="bg-gray-800 border-gray-600 text-white">
+                <SelectItem value="name">Name (A-Z)</SelectItem>
+                <SelectItem value="rating">Highest Rated</SelectItem>
+                <SelectItem value="rate-low">Price: Low to High</SelectItem>
+                <SelectItem value="rate-high">Price: High to Low</SelectItem>
+                <SelectItem value="reviews">Most Reviews</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
       </div>
 
-      {filteredTutors.length === 0 ? (
-        <p className="text-center text-gray-400 py-6 text-lg">
-          {searchTerm ? `No tutors found matching "${searchTerm}".` : 'No tutors available at the moment.'}
+      {/* Filters Section */}
+      {showFilters && (
+        <Card className="mb-6 max-w-6xl mx-auto bg-gray-900 border-gray-800">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-white flex items-center gap-2">
+                <Filter className="h-5 w-5" />
+                Filter Tutors
+              </CardTitle>
+              <Button
+                variant="ghost"
+                onClick={clearAllFilters}
+                className="text-gray-400 hover:text-white"
+              >
+                Clear All
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {/* Skills Filter */}
+            <div>
+              <Label className="text-white font-medium mb-3 block">Skills</Label>
+              {skillsLoading ? (
+                <p className="text-gray-400">Loading skills...</p>
+              ) : (
+                <div className="flex flex-wrap gap-2 max-h-32 overflow-y-auto">
+                  {availableSkills.map((skill) => (
+                    <div key={skill.skillID} className="flex items-center space-x-2">
+                      <Checkbox
+                        id={`skill-${skill.skillID}`}
+                        checked={selectedSkills.includes(skill.skillID)}
+                        onCheckedChange={() => toggleSkill(skill.skillID)}
+                        className="border-gray-600"
+                      />
+                      <Label
+                        htmlFor={`skill-${skill.skillID}`}
+                        className="text-sm text-gray-300 cursor-pointer"
+                      >
+                        {skill.skillName}
+                      </Label>
+                    </div>
+                  ))}
+                </div>
+              )}
+              {selectedSkills.length > 0 && (
+                <div className="mt-2 flex flex-wrap gap-1">
+                  {selectedSkills.map((skillId) => {
+                    const skill = availableSkills.find(s => s.skillID === skillId);
+                    return skill ? (
+                      <Badge
+                        key={skillId}
+                        variant="secondary"
+                        className="bg-blue-900 text-blue-200 hover:bg-blue-800 cursor-pointer flex items-center gap-1"
+                        onClick={() => toggleSkill(skillId)}
+                      >
+                        {skill.skillName}
+                        <X className="h-3 w-3" />
+                      </Badge>
+                    ) : null;
+                  })}
+                </div>
+              )}
+            </div>
+
+            {/* Hourly Rate Filter */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label className="text-white font-medium mb-2 block">Min Hourly Rate ($)</Label>
+                <Input
+                  type="number"
+                  placeholder="0"
+                  value={minHourlyRate}
+                  onChange={(e) => setMinHourlyRate(e.target.value)}
+                  className="bg-gray-800 border-gray-600 text-white"
+                />
+              </div>
+              <div>
+                <Label className="text-white font-medium mb-2 block">Max Hourly Rate ($)</Label>
+                <Input
+                  type="number"
+                  placeholder="1000"
+                  value={maxHourlyRate}
+                  onChange={(e) => setMaxHourlyRate(e.target.value)}
+                  className="bg-gray-800 border-gray-600 text-white"
+                />
+              </div>
+            </div>
+
+            {/* Skill Levels Filter */}
+            <div>
+              <Label className="text-white font-medium mb-3 block">Skill Levels</Label>
+              <div className="flex flex-wrap gap-2">
+                {skillLevels.map((level) => (
+                  <div key={level} className="flex items-center space-x-2">
+                    <Checkbox
+                      id={`level-${level}`}
+                      checked={selectedSkillLevels.includes(level)}
+                      onCheckedChange={() => toggleSkillLevel(level)}
+                      className="border-gray-600"
+                    />
+                    <Label
+                      htmlFor={`level-${level}`}
+                      className="text-sm text-gray-300 cursor-pointer"
+                    >
+                      {level}
+                    </Label>
+                  </div>
+                ))}
+              </div>
+              {selectedSkillLevels.length > 0 && (
+                <div className="mt-2 flex flex-wrap gap-1">
+                  {selectedSkillLevels.map((level) => (
+                    <Badge
+                      key={level}
+                      variant="secondary"
+                      className="bg-green-900 text-green-200 hover:bg-green-800 cursor-pointer flex items-center gap-1"
+                      onClick={() => toggleSkillLevel(level)}
+                    >
+                      {level}
+                      <X className="h-3 w-3" />
+                    </Badge>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Rating Filter */}
+            <div>
+              <Label className="text-white font-medium mb-2 block">Minimum Rating</Label>
+              <Select value={minRating} onValueChange={setMinRating}>
+                <SelectTrigger className="w-48 bg-gray-800 border-gray-600 text-white">
+                  <SelectValue placeholder="Any rating" />
+                </SelectTrigger>
+                <SelectContent className="bg-gray-800 border-gray-600 text-white">
+                  <SelectItem value="">Any rating</SelectItem>
+                  <SelectItem value="1">1+ stars</SelectItem>
+                  <SelectItem value="2">2+ stars</SelectItem>
+                  <SelectItem value="3">3+ stars</SelectItem>
+                  <SelectItem value="4">4+ stars</SelectItem>
+                  <SelectItem value="4.5">4.5+ stars</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Results Summary */}
+      <div className="mb-6 max-w-6xl mx-auto">
+        <p className="text-gray-400 text-center">
+          {filteredTutors.length === 0
+            ? searchTerm || selectedSkills.length > 0 || minHourlyRate || maxHourlyRate || selectedSkillLevels.length > 0 || minRating
+              ? 'No tutors match your current filters.'
+              : 'No tutors available at the moment.'
+            : `Showing ${filteredTutors.length} tutor${filteredTutors.length !== 1 ? 's' : ''}`
+          }
         </p>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+      </div>
+
+      {/* Tutors Grid */}
+      {filteredTutors.length > 0 && (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 max-w-6xl mx-auto">
           {filteredTutors.map((tutor) => (
             <TutorCard key={tutor.userID} tutor={tutor} />
           ))}
