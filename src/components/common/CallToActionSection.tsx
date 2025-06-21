@@ -1,0 +1,161 @@
+import React from 'react';
+import { UserPlus, GraduationCap, ArrowRight, Star, Clock, DollarSign } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+
+const CallToActionSection: React.FC = () => {
+  const studentBenefits = [
+    { icon: GraduationCap, text: "Expert peer tutors" },
+    { icon: Clock, text: "Flexible scheduling" },
+    { icon: DollarSign, text: "Affordable rates" }
+  ];
+
+  const tutorBenefits = [
+    { icon: DollarSign, text: "Earn extra income" },
+    { icon: Star, text: "Share your knowledge" },
+    { icon: UserPlus, text: "Flexible teaching" }
+  ];
+
+  return (
+    <section className="bg-gray-950 py-16 md:py-24">
+      <div className="container mx-auto px-4">
+        <div className="text-center mb-16">
+          <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
+            Ready to Transform Your Learning Journey?
+          </h2>
+          <p className="text-lg text-gray-300 max-w-2xl mx-auto">
+            Join thousands of students and tutors who are already part of our thriving academic community.
+          </p>
+        </div>
+
+        <div className="grid md:grid-cols-2 gap-8 max-w-6xl mx-auto">
+          {/* Student CTA */}
+          <Card className="bg-gradient-to-br from-blue-900/50 to-blue-800/50 border-blue-700 hover:border-blue-600 transition-all duration-300 group">
+            <CardContent className="p-8">
+              <div className="text-center mb-6">
+                <div className="w-20 h-20 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">
+                  <GraduationCap className="w-10 h-10 text-white" />
+                </div>
+                <h3 className="text-2xl font-bold text-white mb-2">
+                  For Students
+                </h3>
+                <p className="text-blue-200">
+                  Get the academic support you need to succeed
+                </p>
+              </div>
+
+              <div className="space-y-4 mb-8">
+                {studentBenefits.map((benefit, index) => {
+                  const IconComponent = benefit.icon;
+                  return (
+                    <div key={index} className="flex items-center text-blue-100">
+                      <IconComponent className="w-5 h-5 mr-3 text-blue-400" />
+                      <span>{benefit.text}</span>
+                    </div>
+                  );
+                })}
+              </div>
+
+              <div className="space-y-4">
+                <Button 
+                  size="lg" 
+                  className="w-full bg-blue-600 hover:bg-blue-700 text-white group-hover:scale-105 transition-transform duration-300"
+                >
+                  Find a Tutor
+                  <ArrowRight className="w-4 h-4 ml-2" />
+                </Button>
+                <p className="text-center text-blue-200 text-sm">
+                  Start your first session today • No commitment required
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Tutor CTA */}
+          <Card className="bg-gradient-to-br from-purple-900/50 to-purple-800/50 border-purple-700 hover:border-purple-600 transition-all duration-300 group">
+            <CardContent className="p-8">
+              <div className="text-center mb-6">
+                <div className="w-20 h-20 bg-gradient-to-r from-purple-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">
+                  <UserPlus className="w-10 h-10 text-white" />
+                </div>
+                <h3 className="text-2xl font-bold text-white mb-2">
+                  For Tutors
+                </h3>
+                <p className="text-purple-200">
+                  Share your knowledge and earn money teaching
+                </p>
+              </div>
+
+              <div className="space-y-4 mb-8">
+                {tutorBenefits.map((benefit, index) => {
+                  const IconComponent = benefit.icon;
+                  return (
+                    <div key={index} className="flex items-center text-purple-100">
+                      <IconComponent className="w-5 h-5 mr-3 text-purple-400" />
+                      <span>{benefit.text}</span>
+                    </div>
+                  );
+                })}
+              </div>
+
+              <div className="space-y-4">
+                <Button 
+                  size="lg" 
+                  className="w-full bg-purple-600 hover:bg-purple-700 text-white group-hover:scale-105 transition-transform duration-300"
+                >
+                  Become a Tutor
+                  <ArrowRight className="w-4 h-4 ml-2" />
+                </Button>
+                <p className="text-center text-purple-200 text-sm">
+                  Apply now • Earn up to $30/hour
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Bottom Section */}
+        <div className="mt-16 text-center">
+          <div className="bg-gradient-to-r from-gray-800 to-gray-700 rounded-2xl p-8 border border-gray-600">
+            <h3 className="text-xl font-semibold text-white mb-4">
+              Still have questions?
+            </h3>
+            <p className="text-gray-300 mb-6 max-w-2xl mx-auto">
+              Our support team is here to help you get started. Book a free consultation or explore our platform with a guided tour.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Button variant="outline" size="lg" className="border-gray-500 text-gray-300 hover:text-white hover:border-gray-400">
+                Schedule Free Consultation
+              </Button>
+              <Button variant="ghost" size="lg" className="text-gray-300 hover:text-white">
+                Take Platform Tour
+              </Button>
+            </div>
+          </div>
+        </div>
+
+        {/* Trust Indicators */}
+        <div className="mt-12 grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+          <div>
+            <div className="text-2xl font-bold text-white mb-1">10K+</div>
+            <div className="text-gray-400 text-sm">Active Students</div>
+          </div>
+          <div>
+            <div className="text-2xl font-bold text-white mb-1">500+</div>
+            <div className="text-gray-400 text-sm">Qualified Tutors</div>
+          </div>
+          <div>
+            <div className="text-2xl font-bold text-white mb-1">50K+</div>
+            <div className="text-gray-400 text-sm">Sessions Completed</div>
+          </div>
+          <div>
+            <div className="text-2xl font-bold text-white mb-1">4.9/5</div>
+            <div className="text-gray-400 text-sm">Average Rating</div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+};
+
+export default CallToActionSection;

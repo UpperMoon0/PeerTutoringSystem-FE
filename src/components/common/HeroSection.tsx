@@ -25,7 +25,7 @@ const HeroSection: React.FC = () => {
             Find the right tutor for you.
           </h1>
           <p className="text-lg md:text-xl mb-8 text-gray-200" style={{ textShadow: '1px 1px 3px rgba(0, 0, 0, 0.8), 0 0 6px rgba(0, 0, 0, 0.6)' }}>
-            Tội ác xâm chiếm cả bầu trời, tai ương lan khắp vũ trụ, chẳng còn ai có thể hạn chế sự tự do của ngươi. Nhưng số phận ngươi vẫn gắn liền với thế giới này, cũng như một ngày không xa, ngươi sẽ đưa đệ tử của mình đến nơi này.
+            Connect with expert peer tutors who understand your learning style and academic goals. Experience personalized one-on-one sessions that boost your confidence and unlock your full potential in any subject.
           </p>
           <Button size="lg" className="bg-gray-800 border-gray-700 hover:bg-gray-700 text-white">
             Learn More
