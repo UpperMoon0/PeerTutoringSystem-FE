@@ -9,6 +9,7 @@ import type { ProfileDto, User } from '@/types/user.types';
 import type { Skill, UserSkill } from '@/types/skill.types';
 import type { TutorAvailability } from '@/types/tutorAvailability.types';
 import type { CreateBookingDto } from '@/types/booking.types';
+import type { ReviewDto } from '@/types/review.types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -23,6 +24,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import StarRating from '@/components/ui/StarRating';
+import ReviewList from '@/components/reviews/ReviewList';
 
 type TutorProfile = ProfileDto;
 
@@ -37,6 +39,9 @@ const TutorDetailPage: React.FC = () => {
   const [isFetchingSlots, setIsFetchingSlots] = useState(false);
   const [rating, setRating] = useState<{ averageRating: number; reviewCount: number }>({ averageRating: 0, reviewCount: 0 });
   const [ratingLoading, setRatingLoading] = useState<boolean>(true);
+  const [reviews, setReviews] = useState<ReviewDto[]>([]);
+  const [reviewsLoading, setReviewsLoading] = useState<boolean>(true);
+  const [reviewsError, setReviewsError] = useState<string | null>(null);
 
   const [dateRangeStart, setDateRangeStart] = useState<Date | undefined>(undefined);
   const [dateRangeEnd, setDateRangeEnd] = useState<Date | undefined>(undefined);
@@ -194,16 +199,21 @@ const TutorDetailPage: React.FC = () => {
     fetchTutorSkills();
   }, [tutorId]);
 
-  // Fetch tutor rating
+  // Fetch tutor rating and reviews
   useEffect(() => {
-    const fetchTutorRating = async () => {
+    const fetchTutorRatingAndReviews = async () => {
       if (!tutorId) {
         setRating({ averageRating: 0, reviewCount: 0 });
+        setReviews([]);
         setRatingLoading(false);
+        setReviewsLoading(false);
         return;
       }
       
       setRatingLoading(true);
+      setReviewsLoading(true);
+      setReviewsError(null);
+      
       try {
         const [avgRatingResult, reviewsResult] = await Promise.all([
           ReviewService.getAverageRatingByTutorId(tutorId),
@@ -211,18 +221,27 @@ const TutorDetailPage: React.FC = () => {
         ]);
 
         const averageRating = avgRatingResult.success && avgRatingResult.data ? avgRatingResult.data.averageRating : 0;
-        const reviewCount = reviewsResult.success && reviewsResult.data ? reviewsResult.data.length : 0;
         
-        setRating({ averageRating, reviewCount });
+        if (reviewsResult.success && reviewsResult.data) {
+          setReviews(reviewsResult.data);
+          setRating({ averageRating, reviewCount: reviewsResult.data.length });
+        } else {
+          setReviews([]);
+          setRating({ averageRating, reviewCount: 0 });
+          setReviewsError(reviewsResult.error as string || 'Failed to fetch reviews.');
+        }
       } catch (err) {
-        console.warn('Error fetching tutor rating:', err);
+        console.warn('Error fetching tutor rating and reviews:', err);
         setRating({ averageRating: 0, reviewCount: 0 });
+        setReviews([]);
+        setReviewsError(err instanceof Error ? err.message : 'An error occurred while fetching reviews.');
       } finally {
         setRatingLoading(false);
+        setReviewsLoading(false);
       }
     };
     
-    fetchTutorRating();
+    fetchTutorRatingAndReviews();
   }, [tutorId]);
 
   const handleFetchAvailabilities = useCallback(async () => {
@@ -645,6 +664,22 @@ const TutorDetailPage: React.FC = () => {
         </Card>
       )}
 
+      {/* Reviews Section */}
+      <Card className="bg-gray-900 border-gray-800 shadow-xl">
+        <CardHeader className="p-6">
+          <CardTitle className="text-2xl text-white">Reviews</CardTitle>
+          <CardDescription className="text-gray-400">
+            See what students are saying about this tutor
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="p-6">
+          <ReviewList
+            reviews={reviews}
+            isLoading={reviewsLoading}
+            error={reviewsError}
+          />
+        </CardContent>
+      </Card>
 
     </div>
   );

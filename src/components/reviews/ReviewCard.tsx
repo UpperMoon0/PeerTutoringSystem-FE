@@ -24,26 +24,33 @@ const ReviewCard: React.FC<ReviewCardProps> = ({ review }) => {
   };
 
   return (
-    <Card className="mb-4">
+    <Card className="mb-4 bg-gray-800 border-gray-700">
       <CardHeader className="flex flex-row items-center space-x-4 pb-2">
-        <Avatar>
+        <Avatar className="border-2 border-gray-600">
           {/* Placeholder for student avatar - replace with actual data if available */}
           <AvatarImage src={`https://api.dicebear.com/8.x/initials/svg?seed=${review.studentID}`} alt="Student" />
-          <AvatarFallback>ST</AvatarFallback>
+          <AvatarFallback className="bg-gray-700 text-gray-300">ST</AvatarFallback>
         </Avatar>
-        <div>
+        <div className="flex-1">
           {/* Placeholder for student name - replace with actual data if available */}
-          <CardTitle className="text-lg">Student {review.studentID.substring(0, 6)}...</CardTitle>
-          <div className="flex items-center">
+          <CardTitle className="text-lg text-white">Student {review.studentID.substring(0, 6)}...</CardTitle>
+          <div className="flex items-center mt-1">
             {renderStars(review.rating)}
+            <span className="ml-2 text-sm text-gray-400">({review.rating}/5)</span>
           </div>
         </div>
+        <div className="text-right">
+          <p className="text-sm text-gray-400">
+            {new Date(review.reviewDate).toLocaleDateString()}
+          </p>
+        </div>
       </CardHeader>
-      <CardContent>
-        <p className="text-sm text-gray-600 dark:text-gray-300 mb-1">
-          Reviewed on: {new Date(review.reviewDate).toLocaleDateString()}
-        </p>
-        <p className="text-gray-700 dark:text-gray-200">{review.comment || 'No comment provided.'}</p>
+      <CardContent className="pt-2">
+        {review.comment ? (
+          <p className="text-gray-300 leading-relaxed">{review.comment}</p>
+        ) : (
+          <p className="text-gray-500 italic">No comment provided.</p>
+        )}
       </CardContent>
     </Card>
   );
