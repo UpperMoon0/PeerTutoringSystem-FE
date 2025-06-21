@@ -147,34 +147,43 @@ const TutorRegisterPage: React.FC = () => {
     );
   }
 
-  if (pendingStatus?.hasVerificationRequest) {
-    let statusMessage = 'Your application is currently being reviewed.';
-    if (pendingStatus.latestStatus === 'Approved') {
-      statusMessage = 'Congratulations! Your application to become a tutor has been approved. You can now update your tutor profile.';
-      // TODO: Navigate to profile page or show a link to it.
-    } else if (pendingStatus.latestStatus === 'Rejected') {
-      statusMessage = 'We regret to inform you that your application to become a tutor has been rejected. Please check your email for more details or contact support.';
-    }
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-950 text-gray-300">
-        <Card className="w-full max-w-lg bg-gray-900 border-gray-800">
-          <CardHeader>
-            <CardTitle className="text-2xl font-bold text-center text-white">Application Status</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-center text-gray-300">{statusMessage}</p>
-          </CardContent>
-          <CardFooter>
-            <Button onClick={() => navigate('/')} className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white">Back to Home</Button>
-          </CardFooter>
-        </Card>
-      </div>
-    );
+  // Handle different application statuses
+  if (pendingStatus?.hasVerificationRequest && pendingStatus.latestStatus === 'Approved') {
+    // If approved, redirect to home or profile page (this page shouldn't be accessible)
+    navigate('/');
+    return null;
   }
 
-  // If no pending request, show the form
+  // Determine the state for rendering
+  const isRejectedApplication = pendingStatus?.hasVerificationRequest && pendingStatus.latestStatus === 'Rejected';
+  const isPendingApplication = pendingStatus?.hasVerificationRequest && pendingStatus.latestStatus === 'Pending';
+
   return (
     <div className="min-h-screen bg-gray-950 text-gray-300">
+      {/* Rejection Notification Banner */}
+      {isRejectedApplication && (
+        <div className="bg-red-900/20 border-b border-red-800">
+          <div className="max-w-6xl mx-auto px-4 py-4">
+            <div className="flex items-center space-x-3">
+              <div className="w-8 h-8 bg-red-600 rounded-full flex items-center justify-center flex-shrink-0">
+                <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4.5c-.77-.833-2.694-.833-3.464 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                </svg>
+              </div>
+              <div className="flex-1">
+                <h3 className="text-lg font-semibold text-red-300">Previous Application Not Approved</h3>
+                <p className="text-red-200 text-sm">
+                  Your previous tutor application was not approved. Please review the feedback sent to your email and submit a new application addressing the mentioned concerns.
+                </p>
+              </div>
+              <div className="text-red-300 text-sm">
+                You can reapply below
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Header Section */}
       <div className="bg-gradient-to-r from-blue-900 via-purple-900 to-blue-900 py-16">
         <div className="max-w-6xl mx-auto px-4 text-center">
@@ -251,16 +260,93 @@ const TutorRegisterPage: React.FC = () => {
             </div>
           </div>
 
-          {/* Right Side - Application Form */}
+          {/* Right Side - Application Form OR Status Message */}
           <div>
-            <Card className="bg-gray-900 border-gray-800 shadow-2xl">
-              <CardHeader>
-                <CardTitle className="text-2xl font-bold text-center text-white">Tutor Application</CardTitle>
-                <CardDescription className="text-center text-gray-400">
-                  Complete the form below to start your application
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
+            {isPendingApplication ? (
+              /* Status Message Section for Pending Applications */
+              <Card className="bg-gray-900 border-gray-800 shadow-2xl">
+                <CardHeader>
+                  <CardTitle className="text-2xl font-bold text-center text-white">Application Status</CardTitle>
+                  <CardDescription className="text-center text-gray-400">
+                    Your tutor application is being reviewed
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="text-center">
+                  {/* Status Icon */}
+                  <div className="w-20 h-20 bg-yellow-600 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                  </div>
+                  
+                  <h3 className="text-xl font-bold text-white mb-4">Application Under Review</h3>
+                  <p className="text-gray-300 mb-8">
+                    Your tutor application is currently being reviewed by our team. We typically complete reviews within 2-5 business days.
+                  </p>
+
+                  {/* Progress Steps */}
+                  <div className="space-y-4 mb-8 text-left">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-6 h-6 bg-green-600 rounded-full flex items-center justify-center flex-shrink-0">
+                        <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                      </div>
+                      <div>
+                        <h4 className="font-medium text-white">Documents Received</h4>
+                        <p className="text-gray-400 text-sm">Your submitted documents are in our system</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center space-x-3">
+                      <div className="w-6 h-6 bg-yellow-600 rounded-full flex items-center justify-center flex-shrink-0">
+                        <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
+                      </div>
+                      <div>
+                        <h4 className="font-medium text-white">Under Review</h4>
+                        <p className="text-gray-400 text-sm">Our team is evaluating your qualifications</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center space-x-3">
+                      <div className="w-6 h-6 bg-gray-600 rounded-full flex items-center justify-center flex-shrink-0">
+                        <span className="text-white text-xs font-bold">3</span>
+                      </div>
+                      <div>
+                        <h4 className="font-medium text-gray-300">Decision Notification</h4>
+                        <p className="text-gray-400 text-sm">You'll receive an email with our decision</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="bg-blue-900/20 border border-blue-800 rounded-lg p-4">
+                    <div className="flex items-center justify-center space-x-2 text-blue-300">
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                      </svg>
+                      <p className="text-sm font-medium">
+                        Keep an eye on your email for updates on your application status
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+                <CardFooter>
+                  <Button
+                    onClick={() => navigate('/')}
+                    className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white"
+                  >
+                    Back to Home
+                  </Button>
+                </CardFooter>
+              </Card>
+            ) : (
+              /* Application Form for New or Rejected Applications */
+              <Card className="bg-gray-900 border-gray-800 shadow-2xl">
+                <CardHeader>
+                  <CardTitle className="text-2xl font-bold text-center text-white">Tutor Application</CardTitle>
+                  <CardDescription className="text-center text-gray-400">
+                    Complete the form below to start your application
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
                 <form onSubmit={handleSubmit} className="space-y-4">
                   <div>
                     <Label htmlFor="citizenId" className="text-gray-300">Citizen ID</Label>
@@ -362,6 +448,7 @@ const TutorRegisterPage: React.FC = () => {
                 </div>
               </CardFooter>
             </Card>
+            )}
           </div>
         </div>
       </div>
