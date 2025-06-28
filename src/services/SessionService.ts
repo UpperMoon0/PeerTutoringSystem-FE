@@ -5,7 +5,18 @@ import type { Session, CreateSessionDto, UpdateSessionDto } from "@/types/sessio
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 // Helper function to convert backend DTOs to frontend types
-const convertSessionFromBackend = (backendSession: any): Session => {
+interface BackendSessionDto {
+  sessionId: string;
+  bookingId: string;
+  videoCallLink: string;
+  sessionNotes: string;
+  startTime: string;
+  endTime: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+const convertSessionFromBackend = (backendSession: BackendSessionDto): Session => {
   return {
     sessionId: backendSession.sessionId,
     bookingId: backendSession.bookingId,
@@ -38,9 +49,9 @@ export const SessionService = {
       const convertedSession = convertSessionFromBackend(responseData.data);
       
       return { success: true, data: convertedSession };
-    } catch (error: any) {
-      console.error('Error creating session:', error);
-      return { success: false, error: error.message || "Failed to create session." };
+    } catch (error: unknown) {
+      console.error('Error creating session:', error instanceof Error ? error.message : error);
+      return { success: false, error: error instanceof Error ? error.message : "Failed to create session." };
     }
   },
 
@@ -61,9 +72,9 @@ export const SessionService = {
       const convertedSession = convertSessionFromBackend(responseData.data);
       
       return { success: true, data: convertedSession };
-    } catch (error: any) {
-      console.error('Error fetching session:', error);
-      return { success: false, error: error.message || "Failed to fetch session." };
+    } catch (error: unknown) {
+      console.error('Error fetching session:', error instanceof Error ? error.message : error);
+      return { success: false, error: error instanceof Error ? error.message : "Failed to fetch session." };
     }
   },
 
@@ -84,9 +95,9 @@ export const SessionService = {
       const convertedSession = convertSessionFromBackend(responseData.data);
       
       return { success: true, data: convertedSession };
-    } catch (error: any) {
-      console.error('Error fetching session by booking ID:', error);
-      return { success: false, error: error.message || "Failed to fetch session by booking ID." };
+    } catch (error: unknown) {
+      console.error('Error fetching session by booking ID:', error instanceof Error ? error.message : error);
+      return { success: false, error: error instanceof Error ? error.message : "Failed to fetch session by booking ID." };
     }
   },
 
@@ -121,7 +132,7 @@ export const SessionService = {
       const responseData = await response.json();
       
       // Convert backend sessions to frontend format
-      const convertedSessions = responseData.data?.map((session: any) => convertSessionFromBackend(session)) || [];
+      const convertedSessions = responseData.data?.map((session: BackendSessionDto) => convertSessionFromBackend(session)) || [];
       
       return {
         success: true,
@@ -132,9 +143,9 @@ export const SessionService = {
           pageSize: responseData.pageSize || pageSize
         }
       };
-    } catch (error: any) {
-      console.error('Error fetching user sessions:', error);
-      return { success: false, error: error.message || "Failed to fetch user sessions." };
+    } catch (error: unknown) {
+      console.error('Error fetching user sessions:', error instanceof Error ? error.message : error);
+      return { success: false, error: error instanceof Error ? error.message : "Failed to fetch user sessions." };
     }
   },
 
@@ -157,9 +168,9 @@ export const SessionService = {
       const convertedSession = convertSessionFromBackend(responseData.data);
       
       return { success: true, data: convertedSession };
-    } catch (error: any) {
-      console.error('Error updating session:', error);
-      return { success: false, error: error.message || "Failed to update session." };
+    } catch (error: unknown) {
+      console.error('Error updating session:', error instanceof Error ? error.message : error);
+      return { success: false, error: error instanceof Error ? error.message : "Failed to update session." };
     }
   }
 };

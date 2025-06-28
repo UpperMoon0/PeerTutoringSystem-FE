@@ -36,12 +36,24 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
 }) => {
   const { currentUser } = useAuth();
   const [isCancelling, setIsCancelling] = useState(false);
-  const [isCreatingSession, setIsCreatingSession] = useState(false);
   const [isEditingSession, setIsEditingSession] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [currentBooking, setCurrentBooking] = useState<BookingWithSession | null>(booking);
   const [currentSession, setCurrentSession] = useState<Session | undefined>(booking?.session);
   const [isSubmittingSessionUpdate, setIsSubmittingSessionUpdate] = useState(false);
+
+  // Update internal state when the `booking` prop changes
+  React.useEffect(() => {
+    setCurrentBooking(booking);
+    setCurrentSession(booking?.session);
+  }, [booking]);
+
+  // Reset isEditingSession when the modal is opened or the booking prop changes, ensuring a clean state
+  React.useEffect(() => {
+    if (isOpen || booking) { // Trigger reset if modal opens or booking changes
+      setIsEditingSession(false);
+    }
+  }, [isOpen, booking]);
 
   if (!booking) return null;
 
@@ -77,7 +89,6 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
   const handleCreateSession = async (sessionData: CreateSessionDto) => {
     if (!booking) return;
 
-    setIsCreatingSession(true);
     setError(null);
     try {
       const result = await SessionService.createSession(sessionData);
@@ -96,8 +107,6 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
       const errorMessage = (err as Error)?.message || "An unexpected error occurred during session creation.";
       setError(errorMessage);
       toast.error(`Session creation error: ${errorMessage}`);
-    } finally {
-      setIsCreatingSession(false);
     }
   };
 
@@ -155,9 +164,19 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
       if (result.success) {
         if (status === 'Cancelled') {
           onBookingCancelled(); // This will close modal & refresh list via parent
+        } else if (status === 'Confirmed') {
+          // Automatically create session upon confirmation
+          const sessionData: CreateSessionDto = {
+            bookingId: booking.bookingId,
+            videoCallLink: `https://meet.google.com/${booking.bookingId.substring(0, 10)}`, // Placeholder
+            sessionNotes: `Session for booking ${booking.bookingId} on topic: ${booking.topic}.`, // Placeholder
+            startTime: booking.startTime,
+            endTime: booking.endTime,
+          };
+          await handleCreateSession(sessionData);
         } else {
           onUpdateStatus?.(status);
-          onClose(); // Close modal after successful update
+          onClose(); // Close modal after successful update for other statuses
         }
       } else {
         const errorMessage = typeof result.error === 'string' ? result.error : (result.error as { message?: string })?.message || `Failed to update booking to ${status}.`;
@@ -178,11 +197,9 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
   const isSessionCompleted = booking.status === 'Completed';
   const hasSessionInfo = (booking.status === 'Confirmed' || booking.status === 'Completed') && currentSession;
   const canEditSession = isCurrentUserTutor && hasSessionInfo && currentSession;
-  const canCancel = booking.status === 'Pending' || booking.status === 'Confirmed';
   const canAcceptReject = isCurrentUserTutor && booking.status === 'Pending';
   const canComplete = isCurrentUserTutor && booking.status === 'Confirmed' && new Date(booking.endTime) < new Date();
   const showCompleteButton = isCurrentUserTutor && booking.status === 'Confirmed';
-  const canCreateSession = isCurrentUserTutor && !hasSessionInfo && booking.status === 'Confirmed';
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -294,26 +311,14 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
                   )}
                 </div>
                 {isEditingSession && canEditSession ? (
-                  <>
-                    <SessionForm
-                      booking={booking}
-                      session={currentSession}
-                      onSubmit={handleUpdateSession as (data: CreateSessionDto | UpdateSessionDto) => Promise<void>}
-                      isSubmitting={isSubmittingSessionUpdate}
-                      error={error || undefined}
-                    />
-                    <div className="flex justify-end space-x-3 pt-4">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        onClick={() => setIsEditingSession(false)}
-                        disabled={isSubmittingSessionUpdate}
-                        className="border-gray-600 text-gray-300 hover:bg-gray-700"
-                      >
-                        Cancel
-                      </Button>
-                    </div>
-                  </>
+                  <SessionForm
+                    booking={booking}
+                    session={currentSession}
+                    onSubmit={handleUpdateSession as (data: CreateSessionDto | UpdateSessionDto) => Promise<void>}
+                    isSubmitting={isSubmittingSessionUpdate}
+                    error={error || undefined}
+                    onCancel={() => setIsEditingSession(false)}
+                  />
                 ) : (
                   <>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -376,25 +381,13 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
                 )}
               </div>
             ) : (
-              !canCreateSession && (
-                <div className="border-t border-gray-700 pt-4 text-center text-gray-400">
-                  <AlertCircle className="w-6 h-6 mx-auto mb-2 text-yellow-500" />
-                  <p className="text-lg font-semibold">No session created yet</p>
-                  <p className="text-sm">The tutor needs to create a session for this booking.</p>
-                </div>
-              )
-            )}
-
-            {canCreateSession && (
-              <div className="border-t border-gray-700 pt-4">
-                <SessionForm
-                  booking={booking}
-                  onSubmit={handleCreateSession as (data: CreateSessionDto | UpdateSessionDto) => Promise<void>}
-                  isSubmitting={isCreatingSession}
-                  error={error || undefined}
-                />
+              <div className="border-t border-gray-700 pt-4 text-center text-gray-400">
+                <AlertCircle className="w-6 h-6 mx-auto mb-2 text-yellow-500" />
+                <p className="text-lg font-semibold">No session created yet</p>
+                <p className="text-sm">The tutor needs to create a session for this booking.</p>
               </div>
             )}
+
  
              {booking.skillId && (
                <div>
@@ -442,7 +435,7 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
                        className="bg-green-600 hover:bg-green-700"
                      >
                        <CheckCircle2 className="w-4 h-4 mr-2" />
-                       {isCancelling ? 'Processing...' : 'Accept & Create Session'}
+                       {isCancelling ? 'Processing...' : 'Accept Booking'}
                      </Button>
                      <Button
                        onClick={() => handleUpdateStatus('Rejected')}
@@ -467,30 +460,22 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
                    </Button>
                  )}
                  
-                 {canCancel && (userRole === 'student' || userRole === 'admin') && (
-                   <Button
-                     variant="destructive"
-                     onClick={() => handleUpdateStatus('Cancelled')}
-                     disabled={isCancelling}
-                     className="bg-red-600 hover:bg-red-700"
-                   >
-                     {isCancelling ? 'Cancelling...' : 'Cancel Booking'}
-                   </Button>
-                 )}
                </div>
              </div>
            </div>
          </div>
          
-         <DialogFooter className="mt-2 pt-4 border-t border-gray-800">
-           <Button
-             variant="outline"
-             onClick={onClose}
-             className="bg-gray-700 hover:bg-gray-600 border-gray-600"
-           >
-             Close
-           </Button>
-         </DialogFooter>
+         {(!isEditingSession) && (
+           <DialogFooter className="mt-2 pt-4 border-t border-gray-800">
+             <Button
+               variant="outline"
+               onClick={onClose}
+               className="bg-gray-700 hover:bg-gray-600 border-gray-600"
+             >
+               Close
+             </Button>
+           </DialogFooter>
+         )}
       </DialogContent>
     </Dialog>
   );

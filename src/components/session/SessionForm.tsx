@@ -20,6 +20,7 @@ interface SessionFormProps {
   onSubmit: (sessionData: CreateSessionDto | UpdateSessionDto) => Promise<void>;
   isSubmitting: boolean;
   error?: string;
+  onCancel?: () => void;
 }
 
 const SessionForm: React.FC<SessionFormProps> = ({
@@ -27,7 +28,8 @@ const SessionForm: React.FC<SessionFormProps> = ({
   session,
   onSubmit,
   isSubmitting,
-  error
+  error,
+  onCancel
 }) => {
   // Always initialize startTime and endTime as local time with offset string
   const toLocalOffsetString = (date: Date) => {
@@ -66,6 +68,27 @@ const SessionForm: React.FC<SessionFormProps> = ({
       };
     }
   });
+
+  // Effect to update form data when the `session` prop changes
+  React.useEffect(() => {
+    if (session) {
+      setFormData({
+        bookingId: booking.bookingId,
+        videoCallLink: session.videoCallLink,
+        sessionNotes: session.sessionNotes,
+        startTime: toLocalOffsetString(new Date(session.startTime)),
+        endTime: toLocalOffsetString(new Date(session.endTime))
+      });
+    } else {
+      setFormData({
+        bookingId: booking.bookingId,
+        videoCallLink: '',
+        sessionNotes: '',
+        startTime: toLocalOffsetString(new Date(booking.startTime)),
+        endTime: toLocalOffsetString(new Date(booking.endTime))
+      });
+    }
+  }, [session, booking]);
 
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
 
@@ -367,6 +390,17 @@ const SessionForm: React.FC<SessionFormProps> = ({
           </div>
 
           <div className="flex justify-end space-x-3 pt-4">
+            {session && ( // Only show Cancel button if in edit mode (session prop is present)
+              <Button
+                type="button"
+                variant="outline"
+                onClick={onCancel}
+                disabled={isSubmitting}
+                className="border-gray-700 text-gray-300 hover:bg-gray-800"
+              >
+                Cancel
+              </Button>
+            )}
             <Button
               type="submit"
               disabled={isSubmitting}
