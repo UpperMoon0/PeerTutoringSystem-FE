@@ -221,7 +221,7 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
               </div>
             )}
 
-            {hasSessionInfo && (
+            {hasSessionInfo ? (
               <div className="border-t border-gray-700 pt-4">
                 <div className="flex items-center justify-between mb-3">
                   <h3 className="font-semibold text-gray-300 flex items-center">
@@ -293,6 +293,12 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
                     </div>
                   </div>
                 )}
+              </div>
+            ) : (
+              <div className="border-t border-gray-700 pt-4 text-center text-gray-400">
+                <AlertCircle className="w-6 h-6 mx-auto mb-2 text-yellow-500" />
+                <p className="text-lg font-semibold">No session created yet</p>
+                <p className="text-sm">The tutor needs to create a session for this booking.</p>
               </div>
             )}
 
