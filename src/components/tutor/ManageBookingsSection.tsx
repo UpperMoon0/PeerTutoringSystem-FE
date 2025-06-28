@@ -1,9 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { BookingService } from '@/services/BookingService';
 import { SessionService } from '@/services/SessionService';
 import { ReviewService } from '@/services/ReviewService';
 import type { Booking } from '@/types/booking.types';
-import type { CreateSessionDto } from '@/types/session.types';
+import type { CreateSessionDto, UpdateSessionDto } from '@/types/session.types';
 import type { ReviewDto } from '@/types/review.types';
 import type { ApiResult } from '@/types/api.types';
 import { useAuth } from '@/contexts/AuthContext';
@@ -54,7 +54,7 @@ const ManageBookingsSection: React.FC = () => {
   
   const pageSize = 10;
 
-  const fetchBookings = async () => {
+  const fetchBookings = useCallback(async () => {
     if (!currentUser || currentUser.role !== 'Tutor') {
       setError('You are not authorized to view this page.');
       setIsLoading(false);
@@ -96,13 +96,13 @@ const ManageBookingsSection: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [currentUser, selectedStatus, currentPage, pageSize, setBookings, setTotalPages, setError, setIsLoading, setBookingsWithReviews]);
 
   useEffect(() => {
     if (currentUser && currentUser.role === 'Tutor') {
       fetchBookings();
     }
-  }, [currentUser, currentPage, selectedStatus]);
+  }, [currentUser, currentPage, selectedStatus, fetchBookings]);
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
@@ -178,8 +178,11 @@ const ManageBookingsSection: React.FC = () => {
     }
   };
 
-  const handleSessionCreation = async (sessionData: CreateSessionDto) => {
+  const handleSessionCreation = async (sessionData: CreateSessionDto | UpdateSessionDto) => {
     if (!selectedBooking) return;
+
+    // Assert that sessionData is CreateSessionDto, as this form is only for creation
+    const createDto = sessionData as CreateSessionDto;
 
     setIsUpdating(true);
     setSessionError(null);
@@ -191,7 +194,7 @@ const ManageBookingsSection: React.FC = () => {
       }
 
       // Then create the session
-      const sessionResult = await SessionService.createSession(sessionData);
+      const sessionResult = await SessionService.createSession(createDto);
       if (!sessionResult.success) {
         // If session creation fails, we might want to revert the booking status
         // For now, we'll just show the error
