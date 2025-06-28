@@ -7,6 +7,7 @@ import type { ApiResult } from '@/types/api.types';
 import type { DocumentUploadDto, FileUploadResponse } from '@/types/file.types';
 import type { PendingTutorVerificationStatus } from '@/types/TutorVerification';
 import type { User, ProfileDto } from '@/types/user.types';
+import type { EnrichedTutor } from '@/types/enrichedTutor.types';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -294,6 +295,30 @@ const getAllTutors = async (): Promise<ApiResult<User[]>> => {
   }
 };
 
+const getAllEnrichedTutors = async (): Promise<ApiResult<EnrichedTutor[]>> => {
+  const url = `${API_BASE_URL}/tutors/enriched-list`;
+  try {
+    const response = await fetch(url, { method: 'GET' });
+
+    if (!response.ok) {
+      const errorBody = await getErrorBody(response);
+      console.error(`API Error ${response.status} for URL ${url}:`, errorBody);
+      const finalErrorMessageApi = extractErrorMessage(errorBody, response.status);
+      return { success: false, error: finalErrorMessageApi };
+    }
+
+    const data = await response.json() as EnrichedTutor[];
+    return { success: true, data };
+  } catch (networkOrOtherError) {
+    console.error(`Request processing failed for URL ${url}:`, networkOrOtherError);
+    const errorString = networkOrOtherError instanceof Error ? networkOrOtherError.message : String(networkOrOtherError);
+    return {
+      success: false,
+      error: errorString
+    };
+  }
+};
+
 const getTutorById = async (tutorId: string): Promise<ApiResult<ProfileDto>> => {
   const url = `${API_BASE_URL}/UserBio/user/${tutorId}`;
   try {
@@ -337,5 +362,6 @@ export const TutorService = {
   updateTutorVerificationStatus,
   checkPendingTutorVerification,
   getAllTutors,
+  getAllEnrichedTutors, // Add the new method here
   getTutorById,
 };

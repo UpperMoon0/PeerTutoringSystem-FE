@@ -1,12 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import type { User } from '../types/user.types';
-import type { TutorProfileDto } from '../types/TutorProfile';
-import type { UserSkill, Skill, SkillLevel } from '../types/skill.types';
+import type { Skill, SkillLevel } from '../types/skill.types';
+import type { EnrichedTutor } from '../types/enrichedTutor.types';
 import { TutorService } from '../services/TutorService';
-import { TutorProfileService } from '../services/TutorProfileService';
-import { UserSkillService } from '../services/UserSkillService';
 import { AdminSkillService } from '../services/AdminSkillService';
-import { ReviewService } from '../services/ReviewService';
 import TutorCard from '@/components/tutor/TutorCard';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -18,16 +14,11 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { X, Filter, ChevronDown, ChevronUp, Loader2 } from 'lucide-react';
 
-interface TutorWithData extends User {
-  profile?: TutorProfileDto;
-  skills?: UserSkill[];
-  rating?: { averageRating: number; reviewCount: number };
-}
 
 const TutorListPage: React.FC = () => {
   const { currentUser } = useAuth();
-  const [allTutors, setAllTutors] = useState<TutorWithData[]>([]);
-  const [filteredTutors, setFilteredTutors] = useState<TutorWithData[]>([]);
+  const [allTutors, setAllTutors] = useState<EnrichedTutor[]>([]);
+  const [filteredTutors, setFilteredTutors] = useState<EnrichedTutor[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState<string>('');
@@ -66,12 +57,10 @@ const TutorListPage: React.FC = () => {
     const fetchTutors = async () => {
       try {
         setLoading(true);
-        const result = await TutorService.getAllTutors();
+        const result = await TutorService.getAllEnrichedTutors();
         if (result.success && result.data) {
-          // Filter tutors to only include those with user bios and fetch additional data
-          const tutorsWithData = await enrichTutorsWithData(result.data);
-          setAllTutors(tutorsWithData);
-          setFilteredTutors(tutorsWithData);
+          setAllTutors(result.data);
+          setFilteredTutors(result.data);
         } else {
           if (typeof result.error === 'string') {
             setError(result.error || 'Failed to fetch tutors');
@@ -87,48 +76,6 @@ const TutorListPage: React.FC = () => {
       } finally {
         setLoading(false);
       }
-    };
-
-    const enrichTutorsWithData = async (tutors: User[]): Promise<TutorWithData[]> => {
-      // Create concurrent promises for all tutor data
-      const tutorDataPromises = tutors.map(async (tutor): Promise<TutorWithData | null> => {
-        try {
-          // Fetch bio, skills, and rating data concurrently
-          const [bioResult, skillsResult, ratingResult, reviewsResult] = await Promise.all([
-            TutorProfileService.getTutorProfileByUserId(tutor.userID, true),
-            UserSkillService.getUserSkills(tutor.userID),
-            ReviewService.getAverageRatingByTutorId(tutor.userID),
-            ReviewService.getReviewsByTutorId(tutor.userID)
-          ]);
-
-          // Only include tutors with bio data
-          if (!bioResult.success || !bioResult.data) {
-            return null;
-          }
-
-          // Prepare enriched tutor data
-          const enrichedTutor: TutorWithData = {
-            ...tutor,
-            profile: bioResult.data,
-            skills: skillsResult.success && skillsResult.data ? skillsResult.data : [],
-            rating: {
-              averageRating: ratingResult.success && ratingResult.data ? ratingResult.data.averageRating : 0,
-              reviewCount: reviewsResult.success && reviewsResult.data ? reviewsResult.data.length : 0
-            }
-          };
-
-          return enrichedTutor;
-        } catch {
-          // Return null for tutors with data fetch errors
-          return null;
-        }
-      });
-      
-      // Wait for all data fetches to complete
-      const tutorDataResults = await Promise.all(tutorDataPromises);
-      
-      // Filter out null results (tutors without bios or with errors)
-      return tutorDataResults.filter((tutor): tutor is TutorWithData => tutor !== null);
     };
 
     fetchTutors();
@@ -149,9 +96,9 @@ const TutorListPage: React.FC = () => {
       tutorsToDisplay = tutorsToDisplay.filter(tutor => {
         const nameMatch = tutor.fullName.toLowerCase().includes(lowerSearchTerm);
         const emailMatch = tutor.email.toLowerCase().includes(lowerSearchTerm);
-        const bioMatch = tutor.profile?.bio?.toLowerCase().includes(lowerSearchTerm) || false;
-        const skillMatch = tutor.skills?.some(skill =>
-          skill.skill.skillName.toLowerCase().includes(lowerSearchTerm)
+        const bioMatch = tutor.bio?.toLowerCase().includes(lowerSearchTerm) || false;
+        const skillMatch = tutor.skills?.some(userSkill =>
+          userSkill.skill.skillName.toLowerCase().includes(lowerSearchTerm)
         ) || false;
         return nameMatch || emailMatch || bioMatch || skillMatch;
       });
@@ -160,14 +107,14 @@ const TutorListPage: React.FC = () => {
     // Filter by selected skills
     if (selectedSkills.length > 0) {
       tutorsToDisplay = tutorsToDisplay.filter(tutor =>
-        tutor.skills?.some(skill => selectedSkills.includes(skill.skill.skillID)) || false
+        tutor.skills?.some(userSkill => selectedSkills.includes(userSkill.skill.skillID)) || false
       );
     }
 
     // Filter by hourly rate range
     if (minHourlyRate || maxHourlyRate) {
       tutorsToDisplay = tutorsToDisplay.filter(tutor => {
-        const rate = tutor.profile?.hourlyRate;
+        const rate = tutor.hourlyRate;
         if (!rate) return false;
         
         const minRate = minHourlyRate ? parseFloat(minHourlyRate) : 0;
@@ -180,7 +127,7 @@ const TutorListPage: React.FC = () => {
     // Filter by skill levels
     if (selectedSkillLevels.length > 0) {
       tutorsToDisplay = tutorsToDisplay.filter(tutor =>
-        tutor.skills?.some(skill => selectedSkillLevels.includes(skill.skill.skillLevel)) || false
+        tutor.skills?.some(userSkill => selectedSkillLevels.includes(userSkill.skill.skillLevel)) || false
       );
     }
 
@@ -188,7 +135,7 @@ const TutorListPage: React.FC = () => {
     if (minRating && minRating !== 'any') {
       const minRatingValue = parseFloat(minRating);
       tutorsToDisplay = tutorsToDisplay.filter(tutor =>
-        (tutor.rating?.averageRating || 0) >= minRatingValue
+        (tutor.averageRating || 0) >= minRatingValue
       );
     }
 
@@ -198,13 +145,13 @@ const TutorListPage: React.FC = () => {
         case 'name':
           return a.fullName.localeCompare(b.fullName);
         case 'rating':
-          return (b.rating?.averageRating || 0) - (a.rating?.averageRating || 0);
+          return (b.averageRating || 0) - (a.averageRating || 0);
         case 'rate-low':
-          return (a.profile?.hourlyRate || 0) - (b.profile?.hourlyRate || 0);
+          return (a.hourlyRate || 0) - (b.hourlyRate || 0);
         case 'rate-high':
-          return (b.profile?.hourlyRate || 0) - (a.profile?.hourlyRate || 0);
+          return (b.hourlyRate || 0) - (a.hourlyRate || 0);
         case 'reviews':
-          return (b.rating?.reviewCount || 0) - (a.rating?.reviewCount || 0);
+          return (b.reviewCount || 0) - (a.reviewCount || 0);
         default:
           return 0;
       }

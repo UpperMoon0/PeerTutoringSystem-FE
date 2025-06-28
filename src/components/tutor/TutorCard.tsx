@@ -1,92 +1,14 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
-import type { User } from '@/types/user.types';
-import type { TutorProfileDto } from '@/types/TutorProfile';
-import type { UserSkill } from '@/types/skill.types';
-import { TutorProfileService } from '@/services/TutorProfileService';
-import { UserSkillService } from '@/services/UserSkillService';
-import { ReviewService } from '@/services/ReviewService';
+import type { EnrichedTutor } from '@/types/enrichedTutor.types';
 import StarRating from '@/components/ui/StarRating';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 interface TutorCardProps {
-  tutor: User;
+  tutor: EnrichedTutor;
 }
 
 const TutorCard: React.FC<TutorCardProps> = ({ tutor }) => {
-  const [tutorBio, setTutorBio] = useState<TutorProfileDto | null>(null);
-  const [bioLoading, setBioLoading] = useState<boolean>(true);
-  const [skills, setSkills] = useState<UserSkill[]>([]);
-  const [skillsLoading, setSkillsLoading] = useState<boolean>(true);
-  const [skillsError, setSkillsError] = useState<string | null>(null);
-  const [rating, setRating] = useState<{ averageRating: number; reviewCount: number }>({ averageRating: 0, reviewCount: 0 });
-  const [ratingLoading, setRatingLoading] = useState<boolean>(true);
-
-  useEffect(() => {
-    const fetchBio = async () => {
-      if (!tutor.userID) return;
-      setBioLoading(true);
-      try {
-        const result = await TutorProfileService.getTutorProfileByUserId(tutor.userID);
-        if (result.success && result.data) {
-          setTutorBio(result.data);
-        } else if (result.isNotFoundError) {
-          setTutorBio(null);
-        } else {
-          setTutorBio(null);
-        }
-      } catch (err) {
-        console.log('Error fetching tutor bio (expected for pre-filtered tutors):', err);
-        setTutorBio(null);
-      } finally {
-        setBioLoading(false);
-      }
-    };
-
-    const fetchSkills = async () => {
-      if (!tutor.userID) return;
-      setSkillsLoading(true);
-      setSkillsError(null);
-      try {
-        const result = await UserSkillService.getUserSkills(tutor.userID);
-        if (result.success && result.data) {
-          setSkills(result.data);
-        } else {
-          if (result.error instanceof Error) { setSkillsError(result.error.message); } else if (typeof result.error === 'string') { setSkillsError(result.error); } else { setSkillsError('Failed to fetch skills.'); }
-        }
-      } catch (err) {
-        console.error('Error fetching tutor skills:', err);
-        setSkillsError('An unexpected error occurred while fetching skills.');
-      } finally {
-        setSkillsLoading(false);
-      }
-    };
-
-    const fetchRating = async () => {
-      if (!tutor.userID) return;
-      setRatingLoading(true);
-      try {
-        const [avgRatingResult, reviewsResult] = await Promise.all([
-          ReviewService.getAverageRatingByTutorId(tutor.userID),
-          ReviewService.getReviewsByTutorId(tutor.userID)
-        ]);
-
-        const averageRating = avgRatingResult.success && avgRatingResult.data ? avgRatingResult.data.averageRating : 0;
-        const reviewCount = reviewsResult.success && reviewsResult.data ? reviewsResult.data.length : 0;
-        
-        setRating({ averageRating, reviewCount });
-      } catch (err) {
-        console.log('Error fetching tutor rating:', err);
-        setRating({ averageRating: 0, reviewCount: 0 });
-      } finally {
-        setRatingLoading(false);
-      }
-    };
-
-    fetchBio();
-    fetchSkills();
-    fetchRating();
-  }, [tutor.userID]);
 
   // Generate a consistent gradient color based on the tutor's name
   const generateGradient = (name: string) => {
@@ -135,55 +57,41 @@ const TutorCard: React.FC<TutorCardProps> = ({ tutor }) => {
       
       {/* Rating Section */}
       <div className="text-center mb-3">
-        {ratingLoading ? (
-          <p className="text-xs text-gray-400">Loading rating...</p>
-        ) : (
-          <StarRating
-            rating={rating.averageRating}
-            reviewCount={rating.reviewCount}
-            size="sm"
-            className="justify-center"
-          />
-        )}
+        <StarRating
+          rating={tutor.averageRating}
+          reviewCount={tutor.reviewCount}
+          size="sm"
+          className="justify-center"
+        />
       </div>
 
       <div className="flex-grow">
-        {bioLoading && <p className="text-sm text-gray-400 text-center py-2">Loading bio...</p>}
-        
-        {tutorBio && (
-          <div className="text-sm text-gray-400 mt-2 space-y-1">
-            {tutorBio.bio && (
-              <p className="truncate" title={tutorBio.bio}>
-                <strong className="text-gray-300">Bio:</strong> {tutorBio.bio.substring(0, 80)}{tutorBio.bio.length > 80 ? '...' : ''}
-              </p>
-            )}
-            {tutorBio.experience && (
-              <p>
-                <strong className="text-gray-300">Experience:</strong> {tutorBio.experience}
-              </p>
-            )}
-            {tutorBio.hourlyRate !== undefined && (
-              <p>
-                <strong className="text-gray-300">Rate:</strong> ${tutorBio.hourlyRate}/hr
-              </p>
-            )}
-          </div>
-        )}
-        {!bioLoading && !tutorBio && (
-           <p className="text-sm text-gray-500 text-center mt-2 py-2">Loading tutor information...</p>
-        )}
+        <div className="text-sm text-gray-400 mt-2 space-y-1">
+          {tutor.bio && (
+            <p className="truncate" title={tutor.bio}>
+              <strong className="text-gray-300">Bio:</strong> {tutor.bio.substring(0, 80)}{tutor.bio.length > 80 ? '...' : ''}
+            </p>
+          )}
+          {tutor.experience && (
+            <p>
+              <strong className="text-gray-300">Experience:</strong> {tutor.experience}
+            </p>
+          )}
+          {tutor.hourlyRate !== undefined && (
+            <p>
+              <strong className="text-gray-300">Rate:</strong> ${tutor.hourlyRate}/hr
+            </p>
+          )}
+        </div>
 
         <div className="mt-3 pt-3 border-t border-gray-700">
           <h3 className="text-md font-semibold text-white mb-1">Skills:</h3>
-          {skillsLoading && <p className="text-xs text-gray-400">Loading skills...</p>}
-          {skillsError && <p className="text-xs text-red-400">{skillsError}</p>}
-          {!skillsLoading && !skillsError && skills.length === 0 && (
+          {tutor.skills.length === 0 ? (
             <p className="text-xs text-gray-500">No skills listed.</p>
-          )}
-          {!skillsLoading && !skillsError && skills.length > 0 && (
+          ) : (
             <div className="flex flex-wrap gap-1">
-              {skills.map((userSkill) => (
-                <span key={userSkill.userSkillID} className="bg-gray-750 text-blue-300 px-2 py-0.5 rounded-full text-xs">
+              {tutor.skills.map((userSkill) => (
+                <span key={userSkill.skillID} className="bg-gray-750 text-blue-300 px-2 py-0.5 rounded-full text-xs">
                   {userSkill.skill.skillName}
                 </span>
               ))}
