@@ -321,7 +321,6 @@ const SessionForm: React.FC<SessionFormProps> = ({
             
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="startTime" className="text-gray-300">Session Start Time *</Label>
                 <TimePicker
                   label="Session Start Time *"
                   value={formatTimeLocal(formData.startTime)}
@@ -331,7 +330,6 @@ const SessionForm: React.FC<SessionFormProps> = ({
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="endTime" className="text-gray-300">Session End Time *</Label>
                 <TimePicker
                   label="Session End Time *"
                   value={formatTimeLocal(formData.endTime)}
