@@ -10,8 +10,15 @@ export const createSessionSchema = z.object({
     .string()
     .min(10, 'Session notes must be at least 10 characters')
     .max(1000, 'Session notes must not exceed 1000 characters'),
-  startTime: z.string().datetime('Invalid start time format'),
-  endTime: z.string().datetime('Invalid end time format'),
+  // Accepts local datetime with offset, e.g. 2025-06-28T20:00:00+07:00
+  startTime: z.string().refine(
+    val => /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}([+-]\d{2}:\d{2})$/.test(val),
+    { message: 'Invalid start time format' }
+  ),
+  endTime: z.string().refine(
+    val => /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}([+-]\d{2}:\d{2})$/.test(val),
+    { message: 'Invalid end time format' }
+  ),
 }).refine((data) => {
   const startTime = new Date(data.startTime);
   const endTime = new Date(data.endTime);
