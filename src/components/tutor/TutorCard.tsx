@@ -91,7 +91,7 @@ const TutorCard: React.FC<TutorCardProps> = ({ tutor }) => {
           ) : (
             <div className="flex flex-wrap gap-1">
               {tutor.skills.map((userSkill) => (
-                <span key={userSkill.skillID} className="bg-gray-750 text-blue-300 px-2 py-0.5 rounded-full text-xs">
+                <span key={userSkill.userSkillID} className="bg-gray-750 text-blue-300 px-2 py-0.5 rounded-full text-xs">
                   {userSkill.skill.skillName}
                 </span>
               ))}
