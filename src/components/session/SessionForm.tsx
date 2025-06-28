@@ -114,7 +114,7 @@ const SessionForm: React.FC<SessionFormProps> = ({
 
   // Shadcn-style TimePicker component
   const hours = Array.from({ length: 12 }, (_, i) => (i + 1).toString().padStart(2, '0'));
-  const minutes = Array.from({ length: 12 }, (_, i) => (i * 5).toString().padStart(2, '0'));
+  const minutes = Array.from({ length: 60 }, (_, i) => i.toString().padStart(2, '0')); // Generate all minutes from 00 to 59
   const ampm = ['AM', 'PM'];
 
   const TimePicker: React.FC<{
@@ -123,57 +123,80 @@ const SessionForm: React.FC<SessionFormProps> = ({
     onChange: (value: string) => void;
     disabled?: boolean;
     error?: string;
-  }> = ({ label, value, onChange, disabled, error }) => {
-    const match = value.match(/^(\d{1,2}):(\d{2})\s?(AM|PM)$/i) || [];
-    const [, h = '12', m = '00', ap = 'AM'] = match;
+    className?: string; // Add className prop here
+  }> = ({ label, value, onChange, disabled, error, className }) => {
+    const parseValue = (timeString: string) => {
+      const match = timeString.match(/^(\d{1,2}):(\d{2})\s?(AM|PM)$/i) || [];
+      return {
+        h: match[1] || '12',
+        m: match[2] || '00',
+        ap: match[3] || 'AM'
+      };
+    };
+
     const [open, setOpen] = React.useState(false);
+    const [tempTime, setTempTime] = React.useState(() => parseValue(value));
+
+    React.useEffect(() => {
+      setTempTime(parseValue(value));
+    }, [value]);
+
+    const handleSave = () => {
+      onChange(`${tempTime.h}:${tempTime.m} ${tempTime.ap}`);
+      setOpen(false);
+    };
 
     return (
-      <div>
-        <Label className="text-gray-300">{label}</Label>
+      <div className={className}>
+        <Label className="text-gray-300 mb-1">{label}</Label>
         <Popover open={open} onOpenChange={setOpen}>
           <PopoverTrigger asChild>
             <Button
               type="button"
               variant="outline"
-              className="w-full justify-between bg-gray-800 border-gray-700 text-white"
+              className={`w-full justify-between bg-gray-800 border-gray-700 text-white ${className}`}
               disabled={disabled}
             >
               {value || 'Select time'}
             </Button>
           </PopoverTrigger>
-          <PopoverContent className="flex gap-2 p-2 bg-gray-900 border-gray-700">
-            <Select value={h} onValueChange={(val: string) => onChange(`${val}:${m} ${ap}`)} disabled={disabled}>
-              <SelectTrigger className="w-16">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {hours.map(hr => (
-                  <SelectItem key={hr} value={hr}>{hr}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <span>:</span>
-            <Select value={m} onValueChange={(val: string) => onChange(`${h}:${val} ${ap}`)} disabled={disabled}>
-              <SelectTrigger className="w-16">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {minutes.map(min => (
-                  <SelectItem key={min} value={min}>{min}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Select value={ap} onValueChange={(val: string) => onChange(`${h}:${m} ${val}`)} disabled={disabled}>
-              <SelectTrigger className="w-16">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {ampm.map(a => (
-                  <SelectItem key={a} value={a}>{a}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+          <PopoverContent className="flex flex-col gap-2 p-2 bg-gray-900 border-gray-700">
+            <div className="flex gap-2">
+              <Select value={tempTime.h} onValueChange={(val: string) => setTempTime(prev => ({ ...prev, h: val }))} disabled={disabled}>
+                <SelectTrigger className="w-20">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {hours.map(hr => (
+                    <SelectItem key={hr} value={hr}>{hr}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <span>:</span>
+              <Select value={tempTime.m} onValueChange={(val: string) => setTempTime(prev => ({ ...prev, m: val }))} disabled={disabled}>
+                <SelectTrigger className="w-20">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {minutes.map(min => (
+                    <SelectItem key={min} value={min}>{min}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Select value={tempTime.ap} onValueChange={(val: string) => setTempTime(prev => ({ ...prev, ap: val }))} disabled={disabled}>
+                <SelectTrigger className="w-20">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {ampm.map(a => (
+                    <SelectItem key={a} value={a}>{a}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <Button onClick={handleSave} className="mt-2 bg-blue-600 hover:bg-blue-700" disabled={disabled}>
+              Save
+            </Button>
           </PopoverContent>
         </Popover>
         {error && <p className="text-red-400 text-sm">{error}</p>}
@@ -320,22 +343,24 @@ const SessionForm: React.FC<SessionFormProps> = ({
             </p>
             
             <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
+              <div className="flex flex-col gap-2 mb-2">
                 <TimePicker
                   label="Session Start Time *"
                   value={formatTimeLocal(formData.startTime)}
                   onChange={val => handleTimeChange('startTime', to24Hour(val))}
                   disabled={isSubmitting}
                   error={formErrors.startTime}
+                  className="border border-gray-300 rounded-md p-2"
                 />
               </div>
-              <div className="space-y-2">
+              <div className="flex flex-col gap-2 mb-2">
                 <TimePicker
                   label="Session End Time *"
                   value={formatTimeLocal(formData.endTime)}
                   onChange={val => handleTimeChange('endTime', to24Hour(val))}
                   disabled={isSubmitting}
                   error={formErrors.endTime}
+                  className="border border-gray-300 rounded-md p-2"
                 />
               </div>
             </div>
