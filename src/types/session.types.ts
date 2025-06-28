@@ -18,8 +18,11 @@ export interface CreateSessionDto {
 }
 
 export interface UpdateSessionDto {
+  sessionId: string;
   videoCallLink: string;
   sessionNotes: string;
+  startTime: string;
+  endTime: string;
 }
 
 export interface SessionResponse {

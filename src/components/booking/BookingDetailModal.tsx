@@ -1,15 +1,17 @@
 import React, { useState } from 'react';
 import type { Booking } from '@/types/booking.types';
-import type { Session } from '@/types/session.types';
+import type { Session, CreateSessionDto, UpdateSessionDto } from '@/types/session.types';
 import { BookingService } from '@/services/BookingService';
+import { SessionService } from '@/services/SessionService';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { AlertCircle, ListChecks, CalendarDays, Clock, User, Tag, FileText, CheckCircle2, Video, MessageCircle, Timer, ExternalLink } from 'lucide-react';
+import { AlertCircle, ListChecks, CalendarDays, Clock, User, Tag, FileText, CheckCircle2, Video, MessageCircle, Timer, ExternalLink, Pencil } from 'lucide-react';
 import { format, isAfter, differenceInHours, differenceInMinutes } from 'date-fns';
-import { EditSessionForm } from '@/components/session/EditSessionForm';
 import { toast } from 'sonner';
+import { useAuth } from '@/contexts/AuthContext';
+import SessionForm from '@/components/session/SessionForm';
 
 interface BookingWithSession extends Booking {
   session?: Session;
@@ -32,22 +34,71 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
   userRole = 'student',
   onUpdateStatus
 }) => {
+  const { currentUser } = useAuth();
   const [isCancelling, setIsCancelling] = useState(false);
+  const [isCreatingSession, setIsCreatingSession] = useState(false);
+  const [isEditingSession, setIsEditingSession] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [currentBooking, setCurrentBooking] = useState<BookingWithSession | null>(booking);
   const [currentSession, setCurrentSession] = useState<Session | undefined>(booking?.session);
+  const [isSubmittingSessionUpdate, setIsSubmittingSessionUpdate] = useState(false);
 
   if (!booking) return null;
 
-  const handleSessionUpdated = (updatedSession: Session) => {
-    setCurrentSession(updatedSession);
-    if (currentBooking) {
-      setCurrentBooking({
-        ...currentBooking,
-        session: updatedSession
-      });
+  const handleUpdateSession = async (sessionData: UpdateSessionDto) => {
+    setIsSubmittingSessionUpdate(true);
+    try {
+      const result = await SessionService.updateSession(sessionData.sessionId, sessionData);
+
+      if (result.success && result.data) {
+        toast.success('Session updated successfully');
+        setCurrentSession(result.data);
+        if (currentBooking) {
+          setCurrentBooking({
+            ...currentBooking,
+            session: result.data
+          });
+        }
+        setIsEditingSession(false);
+      } else {
+        const errorMessage = typeof result.error === 'string'
+          ? result.error
+          : result.error?.message || 'Failed to update session';
+        toast.error(errorMessage);
+      }
+    } catch (error) {
+      console.error('Error updating session:', error);
+      toast.error('Failed to update session');
+    } finally {
+      setIsSubmittingSessionUpdate(false);
     }
-    toast.success('Session details updated successfully');
+  };
+
+  const handleCreateSession = async (sessionData: CreateSessionDto) => {
+    if (!booking) return;
+
+    setIsCreatingSession(true);
+    setError(null);
+    try {
+      const result = await SessionService.createSession(sessionData);
+      if (result.success && result.data) {
+        setCurrentSession(result.data);
+        setCurrentBooking(prev => prev ? { ...prev, session: result.data } : null);
+        toast.success('Session created successfully!');
+        onUpdateStatus?.('Confirmed'); // Assuming creating a session implies confirming the booking
+        onClose(); // Close modal after successful creation
+      } else {
+        const errorMessage = typeof result.error === 'string' ? result.error : (result.error as { message?: string })?.message || 'Failed to create session.';
+        setError(errorMessage);
+        toast.error(`Session creation failed: ${errorMessage}`);
+      }
+    } catch (err: unknown) {
+      const errorMessage = (err as Error)?.message || "An unexpected error occurred during session creation.";
+      setError(errorMessage);
+      toast.error(`Session creation error: ${errorMessage}`);
+    } finally {
+      setIsCreatingSession(false);
+    }
   };
 
   const getStatusBadgeVariant = (status: Booking['status']) => {
@@ -122,18 +173,20 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
     }
   };
 
+  const isCurrentUserTutor = currentUser?.userId === booking.tutorId;
   const isSessionUpcoming = booking.status === 'Confirmed' && isAfter(new Date(booking.startTime), new Date());
   const isSessionCompleted = booking.status === 'Completed';
   const hasSessionInfo = (booking.status === 'Confirmed' || booking.status === 'Completed') && currentSession;
-  const canEditSession = userRole === 'tutor' && hasSessionInfo && currentSession;
+  const canEditSession = isCurrentUserTutor && hasSessionInfo && currentSession;
   const canCancel = booking.status === 'Pending' || booking.status === 'Confirmed';
-  const canAcceptReject = userRole === 'tutor' && booking.status === 'Pending';
-  const canComplete = userRole === 'tutor' && booking.status === 'Confirmed' && new Date(booking.endTime) < new Date();
-  const showCompleteButton = userRole === 'tutor' && booking.status === 'Confirmed';
+  const canAcceptReject = isCurrentUserTutor && booking.status === 'Pending';
+  const canComplete = isCurrentUserTutor && booking.status === 'Confirmed' && new Date(booking.endTime) < new Date();
+  const showCompleteButton = isCurrentUserTutor && booking.status === 'Confirmed';
+  const canCreateSession = isCurrentUserTutor && !hasSessionInfo && booking.status === 'Confirmed';
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="bg-gray-900 border-gray-800 text-white max-w-lg md:max-w-xl">
+      <DialogContent className="bg-gray-900 border-gray-800 text-white max-w-2xl md:max-w-3xl">
         <DialogHeader>
           <DialogTitle className="text-white text-2xl flex items-center">
             <ListChecks className="w-6 h-6 mr-2 text-blue-400" />
@@ -228,175 +281,216 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
                     <Video className="w-4 h-4 mr-1.5 text-blue-400" />
                     Session Information
                   </h3>
-                  {canEditSession && (
-                    <EditSessionForm
+                  {canEditSession && !isEditingSession && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="border-gray-600 text-gray-300 hover:bg-gray-700"
+                      onClick={() => setIsEditingSession(true)}
+                    >
+                      <Pencil className="w-4 h-4 mr-2" />
+                      Edit Session
+                    </Button>
+                  )}
+                </div>
+                {isEditingSession && canEditSession ? (
+                  <>
+                    <SessionForm
+                      booking={booking}
                       session={currentSession}
-                      onSessionUpdated={handleSessionUpdated}
+                      onSubmit={handleUpdateSession as (data: CreateSessionDto | UpdateSessionDto) => Promise<void>}
+                      isSubmitting={isSubmittingSessionUpdate}
+                      error={error || undefined}
                     />
-                  )}
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <h4 className="text-sm font-medium text-gray-400 mb-1">Duration</h4>
-                    <p className="text-white">
-                      {Math.round((new Date(booking.endTime).getTime() - new Date(booking.startTime).getTime()) / (1000 * 60))} minutes
-                    </p>
-                  </div>
-                  <div>
-                    <h4 className="text-sm font-medium text-gray-400 mb-1">Session Type</h4>
-                    <p className="text-white">Online Tutoring</p>
-                  </div>
-                  <div>
-                    <h4 className="text-sm font-medium text-gray-400 mb-1">
-                      {userRole === 'student' ? 'Tutor Contact' : 'Student Contact'}
-                    </h4>
-                    <p className="text-white">
-                      {userRole === 'student' ? booking.tutorName : booking.studentName}
-                    </p>
-                  </div>
-                  {isSessionUpcoming && (
-                    <div>
-                      <h4 className="text-sm font-medium text-gray-400 mb-1">Session Access</h4>
-                      <p className="text-sm text-blue-400">
-                        {currentSession?.videoCallLink
-                          ? 'Ready to join'
-                          : 'Link pending from tutor'}
-                      </p>
-                    </div>
-                  )}
-                </div>
-                
-                {currentSession?.sessionNotes && (
-                  <div className="mt-4">
-                    <h4 className="text-sm font-medium text-gray-400 mb-2">Session Preparation Notes</h4>
-                    <p className="text-gray-300 bg-gray-800 p-3 rounded-md whitespace-pre-wrap">
-                      {currentSession.sessionNotes}
-                    </p>
-                  </div>
-                )}
-                
-                {currentSession?.videoCallLink && (
-                  <div className="mt-4">
-                    <h4 className="text-sm font-medium text-gray-400 mb-2">Meeting Link</h4>
-                    <div className="flex items-center space-x-2">
-                      <p className="text-blue-400 text-sm break-all">
-                        {currentSession.videoCallLink}
-                      </p>
+                    <div className="flex justify-end space-x-3 pt-4">
                       <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => window.open(currentSession?.videoCallLink, '_blank')}
-                        className="text-blue-400 hover:text-blue-300"
+                        type="button"
+                        variant="outline"
+                        onClick={() => setIsEditingSession(false)}
+                        disabled={isSubmittingSessionUpdate}
+                        className="border-gray-600 text-gray-300 hover:bg-gray-700"
                       >
-                        <ExternalLink className="w-4 h-4" />
+                        Cancel
                       </Button>
                     </div>
-                  </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <h4 className="text-sm font-medium text-gray-400 mb-1">Duration</h4>
+                        <p className="text-white">
+                          {Math.round((new Date(booking.endTime).getTime() - new Date(booking.startTime).getTime()) / (1000 * 60))} minutes
+                        </p>
+                      </div>
+                      <div>
+                        <h4 className="text-sm font-medium text-gray-400 mb-1">Session Type</h4>
+                        <p className="text-white">Online Tutoring</p>
+                      </div>
+                      <div>
+                        <h4 className="text-sm font-medium text-gray-400 mb-1">
+                          {userRole === 'student' ? 'Tutor Contact' : 'Student Contact'}
+                        </h4>
+                        <p className="text-white">
+                          {userRole === 'student' ? booking.tutorName : booking.studentName}
+                        </p>
+                      </div>
+                      {isSessionUpcoming && (
+                        <div>
+                          <h4 className="text-sm font-medium text-gray-400 mb-1">Session Access</h4>
+                          <p className="text-sm text-blue-400">
+                            {currentSession?.videoCallLink
+                              ? 'Ready to join'
+                              : 'Link pending from tutor'}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                    {currentSession?.sessionNotes && (
+                      <div className="mt-4">
+                        <h4 className="text-sm font-medium text-gray-400 mb-2">Session Preparation Notes</h4>
+                        <p className="text-gray-300 bg-gray-800 p-3 rounded-md whitespace-pre-wrap">
+                          {currentSession.sessionNotes}
+                        </p>
+                      </div>
+                    )}
+                    {currentSession?.videoCallLink && (
+                      <div className="mt-4">
+                        <h4 className="text-sm font-medium text-gray-400 mb-2">Meeting Link</h4>
+                        <div className="flex items-center space-x-2">
+                          <p className="text-blue-400 text-sm break-all">
+                            {currentSession.videoCallLink}
+                          </p>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => window.open(currentSession?.videoCallLink, '_blank')}
+                            className="text-blue-400 hover:text-blue-300"
+                          >
+                            <ExternalLink className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+                  </>
                 )}
               </div>
             ) : (
-              <div className="border-t border-gray-700 pt-4 text-center text-gray-400">
-                <AlertCircle className="w-6 h-6 mx-auto mb-2 text-yellow-500" />
-                <p className="text-lg font-semibold">No session created yet</p>
-                <p className="text-sm">The tutor needs to create a session for this booking.</p>
-              </div>
+              !canCreateSession && (
+                <div className="border-t border-gray-700 pt-4 text-center text-gray-400">
+                  <AlertCircle className="w-6 h-6 mx-auto mb-2 text-yellow-500" />
+                  <p className="text-lg font-semibold">No session created yet</p>
+                  <p className="text-sm">The tutor needs to create a session for this booking.</p>
+                </div>
+              )
             )}
 
-            {booking.skillId && (
-              <div>
-                <h3 className="font-semibold text-gray-300 mb-1">Skill ID:</h3>
-                <p className="text-white">{booking.skillId}</p>
+            {canCreateSession && (
+              <div className="border-t border-gray-700 pt-4">
+                <SessionForm
+                  booking={booking}
+                  onSubmit={handleCreateSession as (data: CreateSessionDto | UpdateSessionDto) => Promise<void>}
+                  isSubmitting={isCreatingSession}
+                  error={error || undefined}
+                />
               </div>
             )}
-            
-            <div>
-              <h3 className="font-semibold text-gray-300 mb-1">Booking ID:</h3>
-              <p className="text-xs text-gray-500">{booking.bookingId}</p>
-            </div>
-
-            <div className="border-t border-gray-700 pt-4">
-              <div className="flex flex-wrap gap-2">
-                {isSessionUpcoming && (
-                  <>
-                    <Button
-                      variant="default"
-                      onClick={handleJoinSession}
-                      className={`${currentSession?.videoCallLink
-                        ? 'bg-blue-600 hover:bg-blue-700'
-                        : 'bg-gray-600 hover:bg-gray-700'} text-white`}
-                      disabled={!currentSession?.videoCallLink}
-                    >
-                      <Video className="w-4 h-4 mr-2" />
-                      {currentSession?.videoCallLink ? 'Join Session' : 'Link Pending'}
-                    </Button>
-                    <Button
-                      variant="outline"
-                      onClick={handleContactUser}
-                      className="border-gray-600 text-gray-300 hover:bg-gray-700"
-                    >
-                      <MessageCircle className="w-4 h-4 mr-2" />
-                      Contact {userRole === 'student' ? 'Tutor' : 'Student'}
-                    </Button>
-                  </>
-                )}
-                
-                {canAcceptReject && (
-                  <>
-                    <Button
-                      onClick={() => handleUpdateStatus('Confirmed')}
-                      disabled={isCancelling}
-                      className="bg-green-600 hover:bg-green-700"
-                    >
-                      <CheckCircle2 className="w-4 h-4 mr-2" />
-                      {isCancelling ? 'Processing...' : 'Accept & Create Session'}
-                    </Button>
-                    <Button
-                      onClick={() => handleUpdateStatus('Rejected')}
-                      disabled={isCancelling}
-                      variant="destructive"
-                    >
-                      {isCancelling ? 'Rejecting...' : 'Reject Booking'}
-                    </Button>
-                  </>
-                )}
-
-                {showCompleteButton && (
-                  <Button
-                    onClick={() => handleUpdateStatus('Completed')}
-                    disabled={isCancelling || !canComplete}
-                    className={`${canComplete
-                      ? 'bg-green-600 hover:bg-green-700'
-                      : 'bg-gray-500 cursor-not-allowed'} text-white`}
-                  >
-                    <CheckCircle2 className="w-4 h-4 mr-2" />
-                    {isCancelling ? 'Completing...' : canComplete ? 'Mark as Completed' : 'Session Not Ended'}
-                  </Button>
-                )}
-                
-                {canCancel && (userRole === 'student' || userRole === 'admin') && (
-                  <Button
-                    variant="destructive"
-                    onClick={() => handleUpdateStatus('Cancelled')}
-                    disabled={isCancelling}
-                    className="bg-red-600 hover:bg-red-700"
-                  >
-                    {isCancelling ? 'Cancelling...' : 'Cancel Booking'}
-                  </Button>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-        
-        <DialogFooter className="mt-2 pt-4 border-t border-gray-800">
-          <Button
-            variant="outline"
-            onClick={onClose}
-            className="bg-gray-700 hover:bg-gray-600 border-gray-600"
-          >
-            Close
-          </Button>
-        </DialogFooter>
+ 
+             {booking.skillId && (
+               <div>
+                 <h3 className="font-semibold text-gray-300 mb-1">Skill ID:</h3>
+                 <p className="text-white">{booking.skillId}</p>
+               </div>
+             )}
+             
+             <div>
+               <h3 className="font-semibold text-gray-300 mb-1">Booking ID:</h3>
+               <p className="text-xs text-gray-500">{booking.bookingId}</p>
+             </div>
+ 
+             <div className="border-t border-gray-700 pt-4">
+               <div className="flex flex-wrap gap-2">
+                 {isSessionUpcoming && (
+                   <>
+                     <Button
+                       variant="default"
+                       onClick={handleJoinSession}
+                       className={`${currentSession?.videoCallLink
+                         ? 'bg-blue-600 hover:bg-blue-700'
+                         : 'bg-gray-600 hover:bg-gray-700'} text-white`}
+                       disabled={!currentSession?.videoCallLink}
+                     >
+                       <Video className="w-4 h-4 mr-2" />
+                       {currentSession?.videoCallLink ? 'Join Session' : 'Link Pending'}
+                     </Button>
+                     <Button
+                       variant="outline"
+                       onClick={handleContactUser}
+                       className="border-gray-600 text-gray-300 hover:bg-gray-700"
+                     >
+                       <MessageCircle className="w-4 h-4 mr-2" />
+                       Contact {userRole === 'student' ? 'Tutor' : 'Student'}
+                     </Button>
+                   </>
+                 )}
+                 
+                 {canAcceptReject && (
+                   <>
+                     <Button
+                       onClick={() => handleUpdateStatus('Confirmed')}
+                       disabled={isCancelling}
+                       className="bg-green-600 hover:bg-green-700"
+                     >
+                       <CheckCircle2 className="w-4 h-4 mr-2" />
+                       {isCancelling ? 'Processing...' : 'Accept & Create Session'}
+                     </Button>
+                     <Button
+                       onClick={() => handleUpdateStatus('Rejected')}
+                       disabled={isCancelling}
+                       variant="destructive"
+                     >
+                       {isCancelling ? 'Rejecting...' : 'Reject Booking'}
+                     </Button>
+                   </>
+                 )}
+ 
+                 {showCompleteButton && (
+                   <Button
+                     onClick={() => handleUpdateStatus('Completed')}
+                     disabled={isCancelling || !canComplete}
+                     className={`${canComplete
+                       ? 'bg-green-600 hover:bg-green-700'
+                       : 'bg-gray-500 cursor-not-allowed'} text-white`}
+                   >
+                     <CheckCircle2 className="w-4 h-4 mr-2" />
+                     {isCancelling ? 'Completing...' : canComplete ? 'Mark as Completed' : 'Session Not Ended'}
+                   </Button>
+                 )}
+                 
+                 {canCancel && (userRole === 'student' || userRole === 'admin') && (
+                   <Button
+                     variant="destructive"
+                     onClick={() => handleUpdateStatus('Cancelled')}
+                     disabled={isCancelling}
+                     className="bg-red-600 hover:bg-red-700"
+                   >
+                     {isCancelling ? 'Cancelling...' : 'Cancel Booking'}
+                   </Button>
+                 )}
+               </div>
+             </div>
+           </div>
+         </div>
+         
+         <DialogFooter className="mt-2 pt-4 border-t border-gray-800">
+           <Button
+             variant="outline"
+             onClick={onClose}
+             className="bg-gray-700 hover:bg-gray-600 border-gray-600"
+           >
+             Close
+           </Button>
+         </DialogFooter>
       </DialogContent>
     </Dialog>
   );

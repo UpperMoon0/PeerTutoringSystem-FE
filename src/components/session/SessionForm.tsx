@@ -7,30 +7,44 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { VideoIcon, FileText, Calendar, Clock, AlertCircle } from 'lucide-react';
 import type { Booking } from '@/types/booking.types';
-import type { CreateSessionDto } from '@/types/session.types';
-import { createSessionWithConstraintsSchema, type CreateSessionFormData } from '@/schemas/session.schemas';
+import type { CreateSessionDto, UpdateSessionDto, Session } from '@/types/session.types';
+import { createSessionWithConstraintsSchema, type SessionFormData } from '@/schemas/session.schemas';
 import { format } from 'date-fns';
 import { z } from 'zod';
 
-interface CreateSessionFormProps {
+interface SessionFormProps {
   booking: Booking;
-  onSubmit: (sessionData: CreateSessionDto) => Promise<void>;
+  session?: Session;
+  onSubmit: (sessionData: CreateSessionDto | UpdateSessionDto) => Promise<void>;
   isSubmitting: boolean;
   error?: string;
 }
 
-const CreateSessionForm: React.FC<CreateSessionFormProps> = ({
+const SessionForm: React.FC<SessionFormProps> = ({
   booking,
+  session,
   onSubmit,
   isSubmitting,
   error
 }) => {
-  const [formData, setFormData] = useState<CreateSessionFormData>({
-    bookingId: booking.bookingId,
-    videoCallLink: '',
-    sessionNotes: '',
-    startTime: booking.startTime,
-    endTime: booking.endTime
+  const [formData, setFormData] = useState<SessionFormData>(() => {
+    if (session) {
+      return {
+        bookingId: booking.bookingId, 
+        videoCallLink: session.videoCallLink,
+        sessionNotes: session.sessionNotes,
+        startTime: session.startTime,
+        endTime: session.endTime
+      };
+    } else {
+      return {
+        bookingId: booking.bookingId,
+        videoCallLink: '',
+        sessionNotes: '',
+        startTime: booking.startTime,
+        endTime: booking.endTime
+      };
+    }
   });
 
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
@@ -67,7 +81,7 @@ const CreateSessionForm: React.FC<CreateSessionFormProps> = ({
     return new Date(dateTimeLocal).toISOString();
   };
 
-  const handleInputChange = (field: keyof CreateSessionFormData, value: string) => {
+  const handleInputChange = (field: keyof SessionFormData, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
     // Clear field error when user starts typing
     if (formErrors[field]) {
@@ -88,15 +102,25 @@ const CreateSessionForm: React.FC<CreateSessionFormProps> = ({
     }
 
     // Convert to CreateSessionDto format expected by the API
-    const sessionDto: CreateSessionDto = {
-      bookingId: formData.bookingId,
-      videoCallLink: formData.videoCallLink,
-      sessionNotes: formData.sessionNotes,
-      startTime: formData.startTime,
-      endTime: formData.endTime
-    };
-
-    await onSubmit(sessionDto);
+    if (session) {
+      const sessionDto: UpdateSessionDto = {
+        sessionId: session.sessionId,
+        videoCallLink: formData.videoCallLink,
+        sessionNotes: formData.sessionNotes,
+        startTime: formData.startTime,
+        endTime: formData.endTime
+      };
+      await onSubmit(sessionDto);
+    } else {
+      const sessionDto: CreateSessionDto = {
+        bookingId: formData.bookingId,
+        videoCallLink: formData.videoCallLink,
+        sessionNotes: formData.sessionNotes,
+        startTime: formData.startTime,
+        endTime: formData.endTime
+      };
+      await onSubmit(sessionDto);
+    }
   };
 
   return (
@@ -104,7 +128,7 @@ const CreateSessionForm: React.FC<CreateSessionFormProps> = ({
       <CardHeader>
         <CardTitle className="text-white flex items-center">
           <VideoIcon className="w-5 h-5 mr-2 text-blue-400" />
-          Create Session Details
+          Session Details
         </CardTitle>
         <div className="text-sm text-gray-400">
           <div className="flex items-center space-x-4 mt-2">
@@ -221,7 +245,13 @@ const CreateSessionForm: React.FC<CreateSessionFormProps> = ({
               disabled={isSubmitting}
               className="bg-green-600 hover:bg-green-700"
             >
-              {isSubmitting ? 'Creating Session...' : 'Accept Booking & Create Session'}
+              {isSubmitting
+                ? session
+                  ? 'Saving Changes...'
+                  : 'Creating Session...'
+                : session
+                  ? 'Save Changes'
+                  : 'Accept Booking & Create Session'}
             </Button>
           </div>
         </form>
@@ -230,4 +260,4 @@ const CreateSessionForm: React.FC<CreateSessionFormProps> = ({
   );
 };
 
-export default CreateSessionForm;
+export default SessionForm;

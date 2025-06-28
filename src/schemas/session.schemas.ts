@@ -47,5 +47,5 @@ export const updateSessionSchema = z.object({
     .max(1000, 'Session notes must not exceed 1000 characters'),
 });
 
-export type CreateSessionFormData = z.infer<typeof createSessionSchema>;
+export type SessionFormData = z.infer<typeof createSessionSchema>;
 export type UpdateSessionFormData = z.infer<typeof updateSessionSchema>;

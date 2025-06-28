@@ -14,7 +14,7 @@ import { Button } from '@/components/ui/button';
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import CreateSessionForm from '@/components/session/CreateSessionForm';
+import SessionForm from '@/components/session/SessionForm';
 import { BookingDetailModal } from '@/components/booking/BookingDetailModal';
 import {
   BookOpen,
@@ -545,7 +545,7 @@ const ManageBookingsSection: React.FC = () => {
           </DialogHeader>
           
           {selectedBooking && (
-            <CreateSessionForm
+            <SessionForm
               booking={selectedBooking}
               onSubmit={handleSessionCreation}
               isSubmitting={isUpdating}
