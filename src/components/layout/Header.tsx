@@ -2,7 +2,8 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import HeaderUserProfile from './HeaderUserProfile'; 
+import HeaderUserProfile from './HeaderUserProfile';
+import { MessageSquare } from 'lucide-react';
 
 const Header: React.FC = () => {
   const { currentUser, logout, loading } = useAuth();
@@ -117,6 +118,16 @@ const Header: React.FC = () => {
               <div className="text-muted-foreground">Loading...</div>
             ) : currentUser ? (
               <>
+                {(currentUser.role === 'Tutor' || currentUser.role === 'Student') && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => navigate('/chat')}
+                    className="text-muted-foreground hover:text-primary"
+                  >
+                    <MessageSquare className="h-5 w-5" />
+                  </Button>
+                )}
                 <HeaderUserProfile />
                 <Button
                   variant="destructive"

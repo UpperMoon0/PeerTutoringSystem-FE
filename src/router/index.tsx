@@ -13,6 +13,7 @@ import TutorDetailPage from '@/pages/TutorDetailPage';
 import TutorDashboardPage from '@/pages/tutor/TutorDashboardPage';
 import StudentBookingHistoryPage from '@/pages/StudentBookingHistoryPage';
 import StudentUpcomingSessionsPage from '@/pages/StudentUpcomingSessionsPage';
+import ChatPage from '../pages/ChatPage';
 
 const router = createBrowserRouter([
   {
@@ -57,6 +58,10 @@ const router = createBrowserRouter([
           {
             path: 'booking-history',
             element: <StudentBookingHistoryPage />,
+          },
+          {
+            path: 'chat',
+            element: <ChatPage />,
           },
         ],
       },

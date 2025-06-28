@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import TutorProfileDisplay from '@/components/profile/TutorProfileDisplay';
@@ -11,7 +12,8 @@ import {
   Briefcase,
   Edit,
   PlusCircle,
-  Loader2
+  Loader2,
+  MessageCircle
 } from 'lucide-react';
 
 interface ProfileSectionProps {
@@ -20,6 +22,7 @@ interface ProfileSectionProps {
 
 const ProfileSection: React.FC<ProfileSectionProps> = ({ onBioStatusChange }) => {
   const { currentUser } = useAuth();
+  const navigate = useNavigate();
   const [tutorDisplayProfile, setTutorDisplayProfile] = useState<TutorProfileDto | null>(null);
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [isSavingProfile, setIsSavingProfile] = useState(false);
@@ -185,11 +188,23 @@ const ProfileSection: React.FC<ProfileSectionProps> = ({ onBioStatusChange }) =>
               {isEditingProfile ? "Update your details below." : "View and manage your public tutor information."}
             </CardDescription>
           </div>
-          {!isEditingProfile && tutorDisplayProfile && (
-            <Button onClick={handleEditProfile} variant="outline" size="sm" className="bg-gray-800 border-gray-700 hover:bg-gray-700 text-white">
-              <Edit className="w-4 h-4 mr-2" /> Edit Profile
-            </Button>
-          )}
+          <div className="flex items-center space-x-2">
+            {!isEditingProfile && currentUser?.role === 'Student' && tutorDisplayProfile && (
+              <Button
+                onClick={() => navigate('/chat', { state: { receiverId: tutorDisplayProfile.userID } })}
+                variant="outline"
+                size="sm"
+                className="bg-blue-600 hover:bg-blue-700 text-white"
+              >
+                <MessageCircle className="w-4 h-4 mr-2" /> Chat
+              </Button>
+            )}
+            {!isEditingProfile && tutorDisplayProfile && (
+              <Button onClick={handleEditProfile} variant="outline" size="sm" className="bg-gray-800 border-gray-700 hover:bg-gray-700 text-white">
+                <Edit className="w-4 h-4 mr-2" /> Edit Profile
+              </Button>
+            )}
+          </div>
         </CardHeader>
         <CardContent className="p-6">
           {loading && !tutorDisplayProfile && !isEditingProfile ? (
