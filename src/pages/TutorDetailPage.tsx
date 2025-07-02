@@ -401,27 +401,27 @@ const TutorDetailPage: React.FC = () => {
     }
   };
 
-  if (isLoading && !tutor) return <div className="min-h-screen bg-gray-950 text-white flex items-center justify-center p-6"><p>Loading tutor profile...</p></div>;
-  if (error) return <div className="min-h-screen bg-gray-950 text-white p-6"><Alert variant="destructive" className="bg-red-900 border-red-700 text-red-200"><AlertDescription>{error}</AlertDescription></Alert></div>;
-  if (!tutor) return <div className="min-h-screen bg-gray-950 text-white flex items-center justify-center p-6"><p>Tutor not found.</p></div>;
+  if (isLoading && !tutor) return <div className="min-h-screen bg-background text-foreground flex items-center justify-center p-6"><p>Loading tutor profile...</p></div>;
+  if (error) return <div className="min-h-screen bg-background text-foreground p-6"><Alert variant="destructive" className="bg-destructive border-destructive text-destructive-foreground"><AlertDescription>{error}</AlertDescription></Alert></div>;
+  if (!tutor) return <div className="min-h-screen bg-background text-foreground flex items-center justify-center p-6"><p>Tutor not found.</p></div>;
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-4 md:p-6 space-y-6">
-      <Card className="bg-gray-900 border-gray-800 shadow-xl">
+    <div className="min-h-screen bg-background text-foreground p-4 md:p-6 space-y-6">
+      <Card className="bg-card border-border shadow-xl">
         <CardHeader className="flex flex-col md:flex-row items-center space-y-4 md:space-y-0 md:space-x-6 p-6">
-          <Avatar className="h-28 w-28 border-2 border-gray-700">
+          <Avatar className="h-28 w-28 border-2 border-accent">
             <AvatarImage src={tutor.avatarUrl} alt={tutor.tutorName || tutorAccount?.fullName || "Tutor avatar"} />
-            <AvatarFallback className="bg-gray-700 text-gray-300 text-4xl">{(tutor.tutorName || tutorAccount?.fullName)?.charAt(0) || 'T'}</AvatarFallback>
+            <AvatarFallback className="bg-accent text-muted-foreground text-4xl">{(tutor.tutorName || tutorAccount?.fullName)?.charAt(0) || 'T'}</AvatarFallback>
           </Avatar>
           <div className="text-center md:text-left">
-            <CardTitle className="text-3xl text-white">{tutor.tutorName || tutorAccount?.fullName || "Tutor"}</CardTitle>
-            {tutorAccount && tutorAccount.email && <CardDescription className="text-gray-400">Email: {tutorAccount.email}</CardDescription>}
-            {tutor.school && <CardDescription className="text-gray-400">School: {tutor.school}</CardDescription>}
+            <CardTitle className="text-3xl text-foreground">{tutor.tutorName || tutorAccount?.fullName || "Tutor"}</CardTitle>
+            {tutorAccount && tutorAccount.email && <CardDescription className="text-muted-foreground">Email: {tutorAccount.email}</CardDescription>}
+            {tutor.school && <CardDescription className="text-muted-foreground">School: {tutor.school}</CardDescription>}
             
             {/* Rating Section */}
             <div className="mt-3">
               {ratingLoading ? (
-                <p className="text-sm text-gray-400">Loading rating...</p>
+                <p className="text-sm text-muted-foreground">Loading rating...</p>
               ) : (
                 <StarRating
                   rating={rating.averageRating}
@@ -436,7 +436,7 @@ const TutorDetailPage: React.FC = () => {
                 onClick={() => navigate('/student/chat', { state: { receiverId: tutorId } })}
                 variant="outline"
                 size="sm"
-                className="bg-blue-600 hover:bg-blue-700 text-white ml-auto"
+                className="bg-primary hover:bg-ring text-primary-foreground ml-auto"
               >
                 <MessageCircle className="w-4 h-4 mr-2" /> Chat
               </Button>
@@ -444,34 +444,34 @@ const TutorDetailPage: React.FC = () => {
           </div>
         </CardHeader>
         <CardContent className="p-6 space-y-3">
-          {tutor.bio && <p className="text-gray-300"><strong className="text-gray-100">Bio:</strong> {tutor.bio}</p>}
-          {tutor.hourlyRate !== undefined && <p className="text-gray-300"><strong className="text-gray-100">Hourly Rate:</strong> ${tutor.hourlyRate.toFixed(2)}</p>}
-          {tutor.experience && <p className="text-gray-300"><strong className="text-gray-100">Experience:</strong> {tutor.experience}</p>}
-          {tutor.availability && <p className="text-gray-300 mb-3"><strong className="text-gray-100">General Availability:</strong> {tutor.availability}</p>}
+          {tutor.bio && <p className="text-muted-foreground"><strong className="text-foreground">Bio:</strong> {tutor.bio}</p>}
+          {tutor.hourlyRate !== undefined && <p className="text-muted-foreground"><strong className="text-foreground">Hourly Rate:</strong> ${tutor.hourlyRate.toFixed(2)}</p>}
+          {tutor.experience && <p className="text-muted-foreground"><strong className="text-foreground">Experience:</strong> {tutor.experience}</p>}
+          {tutor.availability && <p className="text-muted-foreground mb-3"><strong className="text-foreground">General Availability:</strong> {tutor.availability}</p>}
           
-          <h3 className="text-xl font-semibold text-white pt-3 border-t border-gray-800">Skills</h3>
+          <h3 className="text-xl font-semibold text-foreground pt-3 border-t border-border">Skills</h3>
           {skills.length > 0 ? (
             <div className="flex flex-wrap gap-2">
               {skills.map(skill => (
-                <Badge key={skill.skillID} variant="secondary" className="bg-gray-750 text-blue-300 hover:bg-gray-700 text-sm px-3 py-1">{skill.skillName}</Badge>
+                <Badge key={skill.skillID} variant="secondary" className="bg-secondary text-primary hover:bg-accent text-sm px-3 py-1">{skill.skillName}</Badge>
               ))}
             </div>
           ) : (
-            <p className="text-gray-500">No skills listed for this tutor.</p>
+            <p className="text-muted-foreground">No skills listed for this tutor.</p>
           )}
         </CardContent>
       </Card>
 
       {/* Only show booking section for authenticated users who are not admins */}
       {currentUser && currentUser.role !== 'Admin' && (
-        <Card className="bg-gray-900 border-gray-800 shadow-xl">
+        <Card className="bg-card border-border shadow-xl">
           <CardHeader className="p-6">
-            <CardTitle className="text-2xl text-white">Book a Session</CardTitle>
+            <CardTitle className="text-2xl text-foreground">Book a Session</CardTitle>
           </CardHeader>
           <CardContent className="p-6 space-y-6">
             <div className="flex flex-col sm:flex-row gap-4 items-end">
               <div className="flex-1 space-y-1">
-                <Label htmlFor="startDate" className="block text-sm font-medium text-gray-300">
+                <Label htmlFor="startDate" className="block text-sm font-medium text-muted-foreground">
                   Start Date
                 </Label>
                 <Popover>
@@ -479,15 +479,15 @@ const TutorDetailPage: React.FC = () => {
                     <Button
                       variant={"outline"}
                       className={cn(
-                        "w-full justify-start text-left font-normal bg-gray-800 border-gray-700 hover:bg-gray-750 text-white",
-                        !dateRangeStart && "text-gray-500"
+                        "w-full justify-start text-left font-normal bg-input border-border hover:bg-secondary text-foreground",
+                        !dateRangeStart && "text-muted-foreground"
                       )}
                     >
-                      <CalendarIcon className="mr-2 size-4 text-gray-400" />
+                      <CalendarIcon className="mr-2 size-4 text-muted-foreground" />
                       {dateRangeStart ? format(dateRangeStart, "PPP") : <span>Pick a start date</span>}
                     </Button>
                   </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0 bg-gray-900 border-gray-700 text-white" align="start">
+                  <PopoverContent className="w-auto p-0 bg-popover border-border text-popover-foreground" align="start">
                     <Calendar
                       mode="single"
                       selected={dateRangeStart}
@@ -508,13 +508,13 @@ const TutorDetailPage: React.FC = () => {
                         return date < today;
                       }}
                       initialFocus
-                      className="bg-gray-900 text-white [&_button]:text-white [&_button:hover]:bg-gray-800 [&_button[aria-selected]]:bg-blue-600"
+                      className="bg-popover text-popover-foreground [&_button]:text-popover-foreground [&_button:hover]:bg-secondary [&_button[aria-selected]]:bg-primary"
                     />
                   </PopoverContent>
                 </Popover>
               </div>
               <div className="flex-1 space-y-1">
-                <Label htmlFor="endDate" className="block text-sm font-medium text-gray-300">
+                <Label htmlFor="endDate" className="block text-sm font-medium text-muted-foreground">
                   End Date
                 </Label>
                 <Popover>
@@ -522,15 +522,15 @@ const TutorDetailPage: React.FC = () => {
                     <Button
                       variant={"outline"}
                       className={cn(
-                        "w-full justify-start text-left font-normal bg-gray-800 border-gray-700 hover:bg-gray-750 text-white",
-                        !dateRangeEnd && "text-gray-500"
+                        "w-full justify-start text-left font-normal bg-input border-border hover:bg-secondary text-foreground",
+                        !dateRangeEnd && "text-muted-foreground"
                       )}
                     >
-                      <CalendarIcon className="mr-2 size-4 text-gray-400" />
+                      <CalendarIcon className="mr-2 size-4 text-muted-foreground" />
                       {dateRangeEnd ? format(dateRangeEnd, "PPP") : <span>Pick an end date</span>}
                     </Button>
                   </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0 bg-gray-900 border-gray-700 text-white" align="start">
+                  <PopoverContent className="w-auto p-0 bg-popover border-border text-popover-foreground" align="start">
                     <Calendar
                       mode="single"
                       selected={dateRangeEnd}
@@ -544,7 +544,7 @@ const TutorDetailPage: React.FC = () => {
                         dateRangeStart ? date < dateRangeStart : false // Can't be before start date
                       }
                       initialFocus
-                      className="bg-gray-900 text-white [&_button]:text-white [&_button:hover]:bg-gray-800 [&_button[aria-selected]]:bg-blue-600"
+                      className="bg-popover text-popover-foreground [&_button]:text-popover-foreground [&_button:hover]:bg-secondary [&_button[aria-selected]]:bg-primary"
                     />
                   </PopoverContent>
                 </Popover>
@@ -552,14 +552,14 @@ const TutorDetailPage: React.FC = () => {
               {/* Removed the "View Slots" button as slots fetch automatically */}
             </div>
 
-            {bookingError && <Alert variant="destructive" className="bg-red-900 border-red-700 !text-white"><AlertDescription className="!text-white">{bookingError}</AlertDescription></Alert>}
-            {bookingSuccess && <Alert variant="default" className="bg-green-800 border-green-700 text-green-200"><AlertDescription>{bookingSuccess}</AlertDescription></Alert>}
+            {bookingError && <Alert variant="destructive" className="bg-destructive border-destructive !text-destructive-foreground"><AlertDescription className="!text-destructive-foreground">{bookingError}</AlertDescription></Alert>}
+            {bookingSuccess && <Alert variant="default" className="bg-primary border-primary text-primary-foreground"><AlertDescription>{bookingSuccess}</AlertDescription></Alert>}
             
-            {isFetchingSlots && <p className="text-center text-gray-400 py-3">Fetching available slots...</p>}
+            {isFetchingSlots && <p className="text-center text-muted-foreground py-3">Fetching available slots...</p>}
 
             {!isFetchingSlots && availabilities.length > 0 && (
               <div className="space-y-3 pt-4">
-                <h4 className="font-semibold text-lg text-white">Available Slots:</h4>
+                <h4 className="font-semibold text-lg text-foreground">Available Slots:</h4>
                 <ul className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
                   {displaySlots.map(avail => (
                     <li key={`${avail.availabilityId}-${avail.startTime}`}>
@@ -573,8 +573,8 @@ const TutorDetailPage: React.FC = () => {
                         className={cn(
                           "w-full text-left justify-start h-auto py-3 px-3 transition-all min-h-[4rem]",
                           selectedAvailability?.availabilityId === avail.availabilityId && selectedAvailability?.startTime === avail.startTime
-                            ? "bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white border-transparent"
-                            : "bg-gray-800 border-gray-700 hover:bg-gray-750 text-gray-300 hover:text-white"
+                          ? "bg-gradient-to-r from-primary to-ring hover:from-ring hover:to-ring text-primary-foreground border-transparent"
+                          : "bg-input border-border hover:bg-secondary text-muted-foreground hover:text-foreground"
                         )}
                         onClick={() => setSelectedAvailability(avail)}
                       >
@@ -585,7 +585,7 @@ const TutorDetailPage: React.FC = () => {
                                 <span className="font-medium">
                                   {avail.recurringDay ? avail.recurringDay.charAt(0).toUpperCase() + avail.recurringDay.slice(1).toLowerCase() : 'Daily'}
                                 </span>
-                                <span className="text-xs bg-blue-600/20 text-blue-300 px-2 py-0.5 rounded-full">
+                                <span className="text-xs bg-primary/20 text-primary-foreground px-2 py-0.5 rounded-full">
                                   Recurring
                                 </span>
                               </div>
@@ -593,7 +593,7 @@ const TutorDetailPage: React.FC = () => {
                                 {`${format(new Date(avail.startTime), "p")} - ${format(new Date(avail.endTime), "p")}`}
                               </span>
                               {avail.recurrenceEndDate && (
-                                <span className="text-xs text-gray-400">
+                                <span className="text-xs text-muted-foreground">
                                   Until {format(new Date(avail.recurrenceEndDate), "PPP")}
                                 </span>
                               )}
@@ -613,37 +613,37 @@ const TutorDetailPage: React.FC = () => {
             )}
             
             {!isFetchingSlots && availabilities.length === 0 && !bookingError && dateRangeStart && dateRangeEnd && (
-               <p className="text-center text-gray-500 py-3">No slots available for the selected criteria. Try adjusting the dates.</p>
+               <p className="text-center text-muted-foreground py-3">No slots available for the selected criteria. Try adjusting the dates.</p>
             )}
 
 
             {selectedAvailability && (
-              <div className="mt-6 pt-6 border-t border-gray-800 space-y-4">
-                <h4 className="text-lg font-semibold text-white">Confirm Booking Details:</h4>
+              <div className="mt-6 pt-6 border-t border-border space-y-4">
+                <h4 className="text-lg font-semibold text-foreground">Confirm Booking Details:</h4>
                 <div>
-                  <Label htmlFor="topic" className="text-gray-300">Topic</Label>
+                  <Label htmlFor="topic" className="text-muted-foreground">Topic</Label>
                   <Input
                     id="topic"
                     value={topic}
                     onChange={(e) => setTopic(e.target.value)}
                     placeholder="e.g., Algebra Basics, React Hooks"
-                    className="bg-gray-800 border-gray-700 text-white placeholder-gray-500 focus:ring-blue-500 focus:border-blue-500"
+                    className="bg-input border-border text-foreground placeholder-muted-foreground focus:ring-ring focus:border-ring"
                   />
                 </div>
                 <div>
-                  <Label htmlFor="description" className="text-gray-300">Description</Label>
+                  <Label htmlFor="description" className="text-muted-foreground">Description</Label>
                   <Textarea
                     id="description"
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
                     placeholder="Briefly describe what you want to learn or discuss."
-                    className="bg-gray-800 border-gray-700 text-white placeholder-gray-500 focus:ring-blue-500 focus:border-blue-500 min-h-[100px]"
+                    className="bg-input border-border text-foreground placeholder-muted-foreground focus:ring-ring focus:border-ring min-h-[100px]"
                   />
                 </div>
                 <Button
                   onClick={handleBookSession}
                   disabled={isLoading || !selectedAvailability}
-                  className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-3 text-base"
+                  className="w-full bg-gradient-to-r from-primary to-ring hover:from-ring hover:to-ring text-primary-foreground font-semibold py-3 text-base"
                 >
                   {isLoading ? 'Booking...' : 'Confirm & Book Session'}
                 </Button>
@@ -655,16 +655,16 @@ const TutorDetailPage: React.FC = () => {
 
       {/* Show message for guest users and admins */}
       {(!currentUser || currentUser.role === 'Admin') && (
-        <Card className="bg-gray-900 border-gray-800 shadow-xl">
+        <Card className="bg-card border-border shadow-xl">
           <CardContent className="p-6 text-center">
-            <p className="text-gray-300 text-lg mb-4">
+            <p className="text-muted-foreground text-lg mb-4">
               {!currentUser ? (
-                <>Please <a href="/login" className="text-blue-400 hover:text-blue-300 underline">log in</a> to book a session with this tutor.</>
+                <>Please <a href="/login" className="text-primary hover:text-primary/80 underline">log in</a> to book a session with this tutor.</>
               ) : (
                 <>Admins cannot book sessions with tutors.</>
               )}
             </p>
-            <p className="text-gray-500 text-sm">
+            <p className="text-muted-foreground text-sm">
               {!currentUser ? (
                 <>You need to be authenticated to view availability and make bookings.</>
               ) : (
@@ -676,10 +676,10 @@ const TutorDetailPage: React.FC = () => {
       )}
 
       {/* Reviews Section */}
-      <Card className="bg-gray-900 border-gray-800 shadow-xl">
+      <Card className="bg-card border-border shadow-xl">
         <CardHeader className="p-6">
-          <CardTitle className="text-2xl text-white">Reviews</CardTitle>
-          <CardDescription className="text-gray-400">
+          <CardTitle className="text-2xl text-foreground">Reviews</CardTitle>
+          <CardDescription className="text-muted-foreground">
             See what students are saying about this tutor
           </CardDescription>
         </CardHeader>
