@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import { AdminUserService } from '@/services/AdminUserService';
 import type { User } from '@/types/user.types';
 import { Button } from '@/components/ui/button';
@@ -18,7 +18,7 @@ const ManageUsersPage: React.FC = () => {
 
   const { accessToken: token } = useAuth();
 
-  const fetchUsers = async () => {
+  const fetchUsers = useCallback(async () => {
     if (!token) {
       setError('Authentication token not found.');
       setLoading(false);
@@ -26,7 +26,7 @@ const ManageUsersPage: React.FC = () => {
     }
     setLoading(true);
     setError(null);
-    const result = await AdminUserService.getAllUsers(); 
+    const result = await AdminUserService.getAllUsers();
     if (result.success && result.data) {
       setAllUsers(result.data);
     } else {
@@ -34,11 +34,11 @@ const ManageUsersPage: React.FC = () => {
       setError(errorMessage);
     }
     setLoading(false);
-  };
+  }, [token]);
 
   useEffect(() => {
     fetchUsers();
-  }, [token]);
+  }, [token, fetchUsers]);
 
   const filteredUsers = useMemo(() => {
     if (selectedRoleFilter === 'All') {

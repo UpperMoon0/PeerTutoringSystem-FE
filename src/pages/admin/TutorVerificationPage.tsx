@@ -71,8 +71,8 @@ const TutorVerificationPage: React.FC = () => {
         const errorMessage = typeof result.error === 'string' ? result.error : result.error?.message || 'Failed to fetch tutor verifications.';
         setError(errorMessage);
       }
-    } catch (err: any) {
-      setError(err.message || 'An unexpected error occurred.');
+    } catch (err: unknown) {
+      setError((err instanceof Error) ? err.message : 'An unexpected error occurred.');
       console.error(err);
     } finally {
       setLoading(false);
@@ -88,7 +88,7 @@ const TutorVerificationPage: React.FC = () => {
       } else {
         alert(result.error || `Failed to update status for ${verificationID}`);
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       alert(`An unexpected error occurred while updating status for ${verificationID}`);
       console.error(err);
     }
