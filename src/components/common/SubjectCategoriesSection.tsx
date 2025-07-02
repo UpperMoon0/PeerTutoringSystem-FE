@@ -8,49 +8,41 @@ const SubjectCategoriesSection: React.FC = () => {
       icon: Calculator,
       title: "Mathematics",
       description: "Algebra, Calculus, Statistics, Geometry",
-      color: "from-blue-500 to-blue-600"
     },
     {
       icon: Beaker,
       title: "Science",
       description: "Physics, Chemistry, Biology, Earth Science",
-      color: "from-green-500 to-green-600"
     },
     {
       icon: Globe,
       title: "Languages",
       description: "English, Spanish, French, Mandarin",
-      color: "from-purple-500 to-purple-600"
     },
     {
       icon: Monitor,
       title: "Computer Science",
       description: "Programming, Web Development, Data Science",
-      color: "from-orange-500 to-orange-600"
     },
     {
       icon: TrendingUp,
       title: "Business",
       description: "Economics, Finance, Marketing, Management",
-      color: "from-red-500 to-red-600"
     },
     {
       icon: Palette,
       title: "Arts & Design",
       description: "Graphic Design, Fine Arts, Digital Media",
-      color: "from-pink-500 to-pink-600"
     },
     {
       icon: Music,
       title: "Music",
       description: "Theory, Composition, Instruments, Production",
-      color: "from-indigo-500 to-indigo-600"
     },
     {
       icon: Microscope,
       title: "Research",
       description: "Academic Writing, Research Methods, Analysis",
-      color: "from-teal-500 to-teal-600"
     }
   ];
 
@@ -72,7 +64,7 @@ const SubjectCategoriesSection: React.FC = () => {
             return (
               <Card key={index} className="bg-card border-border hover:bg-card-tertiary transition-all duration-300 cursor-pointer group hover:scale-105">
                 <CardContent className="p-6 text-center">
-                  <div className={`w-16 h-16 bg-gradient-to-r ${subject.color} rounded-full flex items-center justify-center mx-auto mb-4 group-hover:shadow-lg transition-all duration-300`}>
+                  <div className="w-16 h-16 bg-gradient-to-r from-primary to-primary/90 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:shadow-lg transition-all duration-300">
                     <IconComponent className="w-8 h-8 text-primary-foreground" />
                   </div>
                   <h3 className="text-lg font-semibold text-foreground mb-2">

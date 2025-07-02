@@ -41,7 +41,7 @@ const SocialLoginButtons: React.FC<SocialLoginButtonsProps> = ({
   return (
     <div className="space-y-2 mb-6">
       <Button
-        className="w-full flex items-center justify-center text-primary-foreground bg-gradient-to-r from-primary to-purple-600 hover:from-blue-600 hover:to-purple-700"
+        className="w-full flex items-center justify-center text-primary-foreground bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary/80"
         onClick={handleGoogleAuthClick}
         disabled={parentLoading || auth.loading}
       >

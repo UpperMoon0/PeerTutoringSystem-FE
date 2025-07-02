@@ -58,13 +58,13 @@ const CallToActionSection: React.FC = () => {
 
               <div className="space-y-4">
                 <Button 
-                  size="lg" 
-                  className="w-full bg-blue-600 hover:bg-blue-700 text-white group-hover:scale-105 transition-transform duration-300"
+                  size="lg"
+                  className="w-full bg-primary hover:bg-primary/90 text-primary-foreground group-hover:scale-105 transition-transform duration-300"
                 >
                   Find a Tutor
                   <ArrowRight className="w-4 h-4 ml-2" />
                 </Button>
-                <p className="text-center text-blue-200 text-sm">
+                <p className="text-center text-primary/80 text-sm">
                   Start your first session today • No commitment required
                 </p>
               </div>
@@ -72,16 +72,16 @@ const CallToActionSection: React.FC = () => {
           </Card>
 
           {/* Tutor CTA */}
-          <Card className="bg-gradient-to-br from-purple-900/50 to-purple-800/50 border-purple-700 hover:border-purple-600 transition-all duration-300 group">
+          <Card className="bg-gradient-to-br from-primary/50 to-primary/40 border-primary/70 hover:border-primary/60 transition-all duration-300 group">
             <CardContent className="p-8">
               <div className="text-center mb-6">
-                <div className="w-20 h-20 bg-gradient-to-r from-purple-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">
-                  <UserPlus className="w-10 h-10 text-white" />
+                <div className="w-20 h-20 bg-gradient-to-r from-primary to-primary/90 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">
+                  <UserPlus className="w-10 h-10 text-primary-foreground" />
                 </div>
                 <h3 className="text-2xl font-bold text-foreground mb-2">
                   For Tutors
                 </h3>
-                <p className="text-purple-200">
+                <p className="text-primary/80">
                   Share your knowledge and earn money teaching
                 </p>
               </div>
@@ -90,8 +90,8 @@ const CallToActionSection: React.FC = () => {
                 {tutorBenefits.map((benefit, index) => {
                   const IconComponent = benefit.icon;
                   return (
-                    <div key={index} className="flex items-center text-purple-100">
-                      <IconComponent className="w-5 h-5 mr-3 text-purple-400" />
+                    <div key={index} className="flex items-center text-primary/90">
+                      <IconComponent className="w-5 h-5 mr-3 text-primary" />
                       <span>{benefit.text}</span>
                     </div>
                   );
@@ -101,12 +101,12 @@ const CallToActionSection: React.FC = () => {
               <div className="space-y-4">
                 <Button
                   size="lg"
-                  className="w-full bg-purple-600 hover:bg-purple-700 text-white group-hover:scale-105 transition-transform duration-300"
+                  className="w-full bg-primary hover:bg-primary/90 text-primary-foreground group-hover:scale-105 transition-transform duration-300"
                 >
                   Become a Tutor
                   <ArrowRight className="w-4 h-4 ml-2" />
                 </Button>
-                <p className="text-center text-purple-200 text-sm">
+                <p className="text-center text-primary/80 text-sm">
                   Apply now • Earn up to $30/hour
                 </p>
               </div>

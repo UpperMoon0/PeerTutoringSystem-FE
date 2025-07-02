@@ -38,7 +38,7 @@ const HowItWorksSection: React.FC = () => {
             return (
               <div key={index} className="text-center group">
                 <div className="relative mb-6">
-                  <div className="w-20 h-20 bg-gradient-to-r from-primary to-purple-600 rounded-full flex items-center justify-center mx-auto group-hover:scale-110 transition-transform duration-300">
+                  <div className="w-20 h-20 bg-gradient-to-r from-primary to-primary/90 rounded-full flex items-center justify-center mx-auto group-hover:scale-110 transition-transform duration-300">
                     <IconComponent className="w-10 h-10 text-primary-foreground" />
                   </div>
                   <div className="absolute -top-2 -right-2 w-8 h-8 bg-background rounded-full flex items-center justify-center text-foreground font-bold text-sm">

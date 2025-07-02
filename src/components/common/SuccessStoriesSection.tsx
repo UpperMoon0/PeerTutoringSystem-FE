@@ -75,7 +75,7 @@ const SuccessStoriesSection: React.FC = () => {
             const IconComponent = stat.icon;
             return (
               <div key={index} className="text-center group">
-                <div className="w-16 h-16 bg-gradient-to-r from-primary to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">
+                <div className="w-16 h-16 bg-gradient-to-r from-primary to-primary/90 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">
                   <IconComponent className="w-8 h-8 text-primary-foreground" />
                 </div>
                 <div className="text-3xl md:text-4xl font-bold text-foreground mb-2">
@@ -98,7 +98,7 @@ const SuccessStoriesSection: React.FC = () => {
             <Card key={index} className="bg-card border-border hover:bg-card-tertiary transition-all duration-300">
               <CardContent className="p-6">
                 <div className="flex items-center mb-4">
-                  <div className="w-12 h-12 bg-gradient-to-r from-primary to-purple-500 rounded-full flex items-center justify-center text-primary-foreground font-bold text-sm mr-4">
+                  <div className="w-12 h-12 bg-gradient-to-r from-primary to-primary/90 rounded-full flex items-center justify-center text-primary-foreground font-bold text-sm mr-4">
                     {testimonial.avatar}
                   </div>
                   <div>
@@ -109,7 +109,7 @@ const SuccessStoriesSection: React.FC = () => {
                 
                 <div className="flex items-center mb-4">
                   {[...Array(5)].map((_, i) => (
-                    <Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                    <Star key={i} className="w-4 h-4 fill-primary text-primary" />
                   ))}
                   <span className="ml-2 text-sm text-muted-foreground">5.0</span>
                 </div>
@@ -125,7 +125,7 @@ const SuccessStoriesSection: React.FC = () => {
                   </div>
                   <div className="text-muted-foreground">→</div>
                   <div className="text-center">
-                    <div className="text-green-400 font-semibold text-lg">{testimonial.grade}</div>
+                    <div className="text-primary font-semibold text-lg">{testimonial.grade}</div>
                     <div className="text-xs text-muted-foreground">After</div>
                   </div>
                 </div>

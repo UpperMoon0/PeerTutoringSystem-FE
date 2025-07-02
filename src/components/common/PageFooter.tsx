@@ -59,7 +59,7 @@ const PageFooter: React.FC = () => {
               />
               <button
                 type="submit"
-                className="bg-gradient-to-r from-primary to-purple-600 hover:from-blue-700 hover:to-purple-700 text-primary-foreground px-4 py-2 rounded-md text-sm"
+                className="bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary/80 text-primary-foreground px-4 py-2 rounded-md text-sm"
               >
                 Subscribe
               </button>

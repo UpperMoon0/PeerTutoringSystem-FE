@@ -235,7 +235,7 @@ const FeaturedTutorsCarousel: React.FC = () => {
                       {/* View Profile Button */}
                       <div className="mt-auto pt-4">
                         <Link to={`/tutors/${tutor.tutorId}`}>
-                          <Button className="w-full bg-gradient-to-r from-primary to-purple-600 hover:from-primary/90 hover:to-purple-700 text-primary-foreground">
+                          <Button className="w-full bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary/80 text-primary-foreground">
                             View Profile
                           </Button>
                         </Link>

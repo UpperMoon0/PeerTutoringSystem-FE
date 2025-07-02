@@ -83,13 +83,13 @@ const FeaturedTutorsSection: React.FC = () => {
             </CardHeader>
             <CardContent className="flex-grow pt-4">
               <div className="flex items-center mb-1">
-                <Star className="h-5 w-5 text-yellow-400 fill-yellow-400 mr-1" />
+                <Star className="h-5 w-5 text-primary fill-primary mr-1" />
                 <span className="font-semibold text-foreground">{tutor.rating.toFixed(1)}</span>
                 <span className="text-sm text-muted-foreground ml-1">({tutor.reviews} reviews)</span>
               </div>
               <CardTitle className="text-xl mb-1 mt-1 text-foreground">{tutor.name}</CardTitle>
               <p className="text-sm text-muted-foreground mb-1">Teaches: <span className="font-medium text-primary">{tutor.courses}</span></p>
-              <p className="text-sm text-muted-foreground mb-3">Price: <span className="font-semibold text-green-500">{tutor.price}</span></p>
+              <p className="text-sm text-muted-foreground mb-3">Price: <span className="font-semibold text-primary">{tutor.price}</span></p>
               <h4 className="font-semibold mb-1 text-sm text-foreground">Details:</h4>
               <ul className="list-disc list-inside text-sm text-muted-foreground space-y-1 max-h-24 overflow-y-auto">
                 {tutor.tutoringInfo.map((info: string, index: number) => (
@@ -98,7 +98,7 @@ const FeaturedTutorsSection: React.FC = () => {
               </ul>
             </CardContent>
             <CardFooter className="flex gap-2 pt-4 border-t border-border mt-auto">
-              <Button className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-primary-foreground">Register</Button>
+              <Button className="flex-1 bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary/80 text-primary-foreground">Register</Button>
               <Button variant="outline" className="flex-1 bg-secondary border-accent hover:bg-accent text-secondary-foreground">Message</Button>
             </CardFooter>
           </Card>
