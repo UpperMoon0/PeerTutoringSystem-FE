@@ -189,7 +189,7 @@ const ProfileSection: React.FC<ProfileSectionProps> = ({ onBioStatusChange }) =>
             </CardDescription>
           </div>
           <div className="flex items-center space-x-2">
-            {!isEditingProfile && currentUser?.role === 'Student' && tutorDisplayProfile && (
+            {!isEditingProfile && (currentUser?.role === 'Student' || currentUser?.role === 'Tutor') && tutorDisplayProfile && (
               <Button
                 onClick={() => navigate('/chat', { state: { receiverId: tutorDisplayProfile.userID } })}
                 variant="outline"
