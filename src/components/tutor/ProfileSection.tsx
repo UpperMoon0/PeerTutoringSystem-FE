@@ -165,7 +165,7 @@ const ProfileSection: React.FC<ProfileSectionProps> = ({ onBioStatusChange }) =>
   if (!currentUser) {
     return (
       <div className="text-center py-8">
-        <p className="text-gray-400">Please log in to manage your profile.</p>
+        <p className="text-muted-foreground">Please log in to manage your profile.</p>
       </div>
     );
   }
@@ -173,18 +173,18 @@ const ProfileSection: React.FC<ProfileSectionProps> = ({ onBioStatusChange }) =>
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-xl font-bold text-white mb-2">Tutor Profile Management</h2>
-        <p className="text-gray-400">Update your tutor profile and skills to attract more students.</p>
+        <h2 className="text-xl font-bold text-foreground mb-2">Tutor Profile Management</h2>
+        <p className="text-muted-foreground">Update your tutor profile and skills to attract more students.</p>
       </div>
 
-      <Card className="bg-gray-900 border-gray-800">
+      <Card className="bg-card border-border">
         <CardHeader className="flex flex-row items-center justify-between">
           <div>
-            <CardTitle className="text-white flex items-center">
-              <Briefcase className="w-5 h-5 mr-2 text-blue-400" />
+            <CardTitle className="text-foreground flex items-center">
+              <Briefcase className="w-5 h-5 mr-2 text-primary" />
               Your Tutor Profile
             </CardTitle>
-            <CardDescription className="text-gray-400">
+            <CardDescription className="text-muted-foreground">
               {isEditingProfile ? "Update your details below." : "View and manage your public tutor information."}
             </CardDescription>
           </div>
@@ -194,13 +194,13 @@ const ProfileSection: React.FC<ProfileSectionProps> = ({ onBioStatusChange }) =>
                 onClick={() => navigate('/chat', { state: { receiverId: tutorDisplayProfile.userID } })}
                 variant="outline"
                 size="sm"
-                className="bg-blue-600 hover:bg-blue-700 text-white"
+                className="bg-primary/90 hover:bg-primary text-primary-foreground"
               >
                 <MessageCircle className="w-4 h-4 mr-2" /> Chat
               </Button>
             )}
             {!isEditingProfile && tutorDisplayProfile && (
-              <Button onClick={handleEditProfile} variant="outline" size="sm" className="bg-gray-800 border-gray-700 hover:bg-gray-700 text-white">
+              <Button onClick={handleEditProfile} variant="outline" size="sm" className="bg-muted border-border hover:bg-muted text-foreground">
                 <Edit className="w-4 h-4 mr-2" /> Edit Profile
               </Button>
             )}
@@ -210,7 +210,7 @@ const ProfileSection: React.FC<ProfileSectionProps> = ({ onBioStatusChange }) =>
           {loading && !tutorDisplayProfile && !isEditingProfile ? (
             <div className="flex justify-center items-center h-40">
               <Loader2 className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
-              <p className="ml-3 text-gray-400">Loading profile...</p>
+              <p className="ml-3 text-muted-foreground">Loading profile...</p>
             </div>
           ) : isEditingProfile ? (
             <TutorProfileForm
@@ -224,11 +224,11 @@ const ProfileSection: React.FC<ProfileSectionProps> = ({ onBioStatusChange }) =>
           ) : (
             // Not loading, not editing, and no profile data
             <div className="text-center py-12 space-y-4">
-              <div className="w-16 h-16 mx-auto bg-gray-800 rounded-full flex items-center justify-center">
-                <Briefcase className="h-8 w-8 text-gray-500" />
+              <div className="w-16 h-16 mx-auto bg-muted rounded-full flex items-center justify-center">
+                <Briefcase className="h-8 w-8 text-muted-foreground" />
               </div>
-              <h3 className="text-xl font-semibold text-white">Tutor Profile Not Found</h3>
-              <p className="text-gray-400 max-w-md mx-auto">
+              <h3 className="text-xl font-semibold text-foreground">Tutor Profile Not Found</h3>
+              <p className="text-muted-foreground max-w-md mx-auto">
                 It seems you haven't set up your tutor profile yet. Create one to start attracting students.
               </p>
               <Button onClick={handleEditProfile} size="lg" className="mt-4">

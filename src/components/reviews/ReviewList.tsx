@@ -14,14 +14,14 @@ const ReviewList: React.FC<ReviewListProps> = ({ reviews, isLoading, error }) =>
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-8">
-        <p className="text-gray-400">Loading reviews...</p>
+        <p className="text-muted-foreground">Loading reviews...</p>
       </div>
     );
   }
 
   if (error) {
     return (
-      <Alert variant="destructive" className="bg-red-900 border-red-700 text-red-200">
+      <Alert variant="destructive" className="bg-destructive border-destructive text-destructive-foreground">
         <Terminal className="h-4 w-4" />
         <AlertTitle>Error</AlertTitle>
         <AlertDescription>{error}</AlertDescription>
@@ -32,8 +32,8 @@ const ReviewList: React.FC<ReviewListProps> = ({ reviews, isLoading, error }) =>
   if (reviews.length === 0) {
     return (
       <div className="text-center py-8">
-        <p className="text-gray-400 text-lg">No reviews yet for this tutor.</p>
-        <p className="text-gray-500 text-sm mt-2">Be the first to book a session and leave a review!</p>
+        <p className="text-muted-foreground text-lg">No reviews yet for this tutor.</p>
+        <p className="text-muted-foreground text-sm mt-2">Be the first to book a session and leave a review!</p>
       </div>
     );
   }
@@ -41,7 +41,7 @@ const ReviewList: React.FC<ReviewListProps> = ({ reviews, isLoading, error }) =>
   return (
     <div className="space-y-4">
       <div className="mb-4">
-        <p className="text-gray-400 text-sm">
+        <p className="text-muted-foreground text-sm">
           {reviews.length} review{reviews.length !== 1 ? 's' : ''}
         </p>
       </div>

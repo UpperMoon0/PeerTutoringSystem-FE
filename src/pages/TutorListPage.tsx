@@ -191,22 +191,22 @@ const TutorListPage: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="w-full bg-gray-950 min-h-screen flex items-center justify-center">
+      <div className="w-full bg-background min-h-screen flex items-center justify-center">
         <div className="flex flex-col items-center space-y-4">
-          <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
-          <p className="text-white text-lg font-medium">Loading tutors...</p>
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <p className="text-foreground text-lg font-medium">Loading tutors...</p>
         </div>
       </div>
     );
   }
 
   if (error) {
-    return <div className="w-full p-6 bg-gray-950 min-h-screen text-red-400">Error: {error}</div>;
+    return <div className="w-full p-6 bg-background min-h-screen text-destructive">Error: {error}</div>;
   }
 
   return (
-    <div className="w-full p-6 bg-gray-950 min-h-screen">
-      <h1 className="text-4xl font-bold mb-8 text-center text-white">Available Tutors</h1>
+    <div className="w-full p-6 bg-background min-h-screen">
+      <h1 className="text-4xl font-bold mb-8 text-center text-foreground">Available Tutors</h1>
       
       {/* Search and Filter Toggle */}
       <div className="mb-6 max-w-6xl mx-auto">
@@ -215,7 +215,7 @@ const TutorListPage: React.FC = () => {
             <Input
               type="text"
               placeholder="Search tutors by name, email, bio, or skills..."
-              className="w-full p-4 bg-gray-900 border border-gray-700 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-white placeholder-gray-500 transition-colors"
+              className="w-full p-4 bg-card border border-input rounded-lg shadow-sm focus:ring-2 focus:ring-primary focus:border-primary text-foreground placeholder-muted-foreground transition-colors"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
@@ -224,17 +224,17 @@ const TutorListPage: React.FC = () => {
             <Button
               variant="outline"
               onClick={() => setShowFilters(!showFilters)}
-              className="bg-gray-800 border-gray-600 text-white hover:bg-gray-700 flex items-center gap-2"
+              className="bg-popover border-border text-foreground hover:bg-accent flex items-center gap-2"
             >
               <Filter className="h-4 w-4" />
               Filters
               {showFilters ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
             </Button>
             <Select value={sortBy} onValueChange={setSortBy}>
-              <SelectTrigger className="w-48 bg-gray-800 border-gray-600 text-white">
+              <SelectTrigger className="w-48 bg-popover border-border text-foreground">
                 <SelectValue placeholder="Sort by" />
               </SelectTrigger>
-              <SelectContent className="bg-gray-800 border-gray-600 text-white">
+              <SelectContent className="bg-popover border-border text-foreground">
                 <SelectItem value="name">Name (A-Z)</SelectItem>
                 <SelectItem value="rating">Highest Rated</SelectItem>
                 <SelectItem value="rate-low">Price: Low to High</SelectItem>
@@ -248,17 +248,17 @@ const TutorListPage: React.FC = () => {
 
       {/* Filters Section */}
       {showFilters && (
-        <Card className="mb-6 max-w-6xl mx-auto bg-gray-900 border-gray-800">
+        <Card className="mb-6 max-w-6xl mx-auto bg-card border-border">
           <CardHeader>
             <div className="flex items-center justify-between">
-              <CardTitle className="text-white flex items-center gap-2">
+              <CardTitle className="text-foreground flex items-center gap-2">
                 <Filter className="h-5 w-5" />
                 Filter Tutors
               </CardTitle>
               <Button
                 variant="ghost"
                 onClick={clearAllFilters}
-                className="text-gray-400 hover:text-white"
+                className="text-muted-foreground hover:text-foreground"
               >
                 Clear All
               </Button>
@@ -267,9 +267,9 @@ const TutorListPage: React.FC = () => {
           <CardContent className="space-y-6">
             {/* Skills Filter */}
             <div>
-              <Label className="text-white font-medium mb-3 block">Skills</Label>
+              <Label className="text-foreground font-medium mb-3 block">Skills</Label>
               {skillsLoading ? (
-                <p className="text-gray-400">Loading skills...</p>
+                <p className="text-muted-foreground">Loading skills...</p>
               ) : (
                 <div className="flex flex-wrap gap-2 max-h-32 overflow-y-auto">
                   {availableSkills.map((skill) => (
@@ -278,11 +278,11 @@ const TutorListPage: React.FC = () => {
                         id={`skill-${skill.skillID}`}
                         checked={selectedSkills.includes(skill.skillID)}
                         onCheckedChange={() => toggleSkill(skill.skillID)}
-                        className="border-gray-600"
+                        className="border-border"
                       />
                       <Label
                         htmlFor={`skill-${skill.skillID}`}
-                        className="text-sm text-gray-300 cursor-pointer"
+                        className="text-sm text-muted-foreground cursor-pointer"
                       >
                         {skill.skillName}
                       </Label>
@@ -298,7 +298,7 @@ const TutorListPage: React.FC = () => {
                       <Badge
                         key={skillId}
                         variant="secondary"
-                        className="bg-blue-900 text-blue-200 hover:bg-blue-800 cursor-pointer flex items-center gap-1"
+                        className="bg-primary text-primary-foreground hover:bg-primary cursor-pointer flex items-center gap-1"
                         onClick={() => toggleSkill(skillId)}
                       >
                         {skill.skillName}
@@ -313,30 +313,30 @@ const TutorListPage: React.FC = () => {
             {/* Hourly Rate Filter */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <Label className="text-white font-medium mb-2 block">Min Hourly Rate ($)</Label>
+                <Label className="text-foreground font-medium mb-2 block">Min Hourly Rate ($)</Label>
                 <Input
                   type="number"
                   placeholder="0"
                   value={minHourlyRate}
                   onChange={(e) => setMinHourlyRate(e.target.value)}
-                  className="bg-gray-800 border-gray-600 text-white"
+                  className="bg-popover border-border text-foreground"
                 />
               </div>
               <div>
-                <Label className="text-white font-medium mb-2 block">Max Hourly Rate ($)</Label>
+                <Label className="text-foreground font-medium mb-2 block">Max Hourly Rate ($)</Label>
                 <Input
                   type="number"
                   placeholder="1000"
                   value={maxHourlyRate}
                   onChange={(e) => setMaxHourlyRate(e.target.value)}
-                  className="bg-gray-800 border-gray-600 text-white"
+                  className="bg-popover border-border text-foreground"
                 />
               </div>
             </div>
 
             {/* Skill Levels Filter */}
             <div>
-              <Label className="text-white font-medium mb-3 block">Skill Levels</Label>
+              <Label className="text-foreground font-medium mb-3 block">Skill Levels</Label>
               <div className="flex flex-wrap gap-2">
                 {skillLevels.map((level) => (
                   <div key={level} className="flex items-center space-x-2">
@@ -344,11 +344,11 @@ const TutorListPage: React.FC = () => {
                       id={`level-${level}`}
                       checked={selectedSkillLevels.includes(level)}
                       onCheckedChange={() => toggleSkillLevel(level)}
-                      className="border-gray-600"
+                      className="border-border"
                     />
                     <Label
                       htmlFor={`level-${level}`}
-                      className="text-sm text-gray-300 cursor-pointer"
+                      className="text-sm text-muted-foreground cursor-pointer"
                     >
                       {level}
                     </Label>
@@ -361,7 +361,7 @@ const TutorListPage: React.FC = () => {
                     <Badge
                       key={level}
                       variant="secondary"
-                      className="bg-green-900 text-green-200 hover:bg-green-800 cursor-pointer flex items-center gap-1"
+                      className="bg-primary text-primary-foreground hover:bg-primary cursor-pointer flex items-center gap-1"
                       onClick={() => toggleSkillLevel(level)}
                     >
                       {level}
@@ -374,12 +374,12 @@ const TutorListPage: React.FC = () => {
 
             {/* Rating Filter */}
             <div>
-              <Label className="text-white font-medium mb-2 block">Minimum Rating</Label>
+              <Label className="text-foreground font-medium mb-2 block">Minimum Rating</Label>
               <Select value={minRating} onValueChange={setMinRating}>
-                <SelectTrigger className="w-48 bg-gray-800 border-gray-600 text-white">
+                <SelectTrigger className="w-48 bg-popover border-border text-foreground">
                   <SelectValue placeholder="Any rating" />
                 </SelectTrigger>
-                <SelectContent className="bg-gray-800 border-gray-600 text-white">
+                <SelectContent className="bg-popover border-border text-foreground">
                   <SelectItem value="any">Any rating</SelectItem>
                   <SelectItem value="1">1+ stars</SelectItem>
                   <SelectItem value="2">2+ stars</SelectItem>
@@ -395,7 +395,7 @@ const TutorListPage: React.FC = () => {
 
       {/* Results Summary */}
       <div className="mb-6 max-w-6xl mx-auto">
-        <p className="text-gray-400 text-center">
+        <p className="text-muted-foreground text-center">
           {filteredTutors.length === 0
             ? searchTerm || selectedSkills.length > 0 || minHourlyRate || maxHourlyRate || selectedSkillLevels.length > 0 || (minRating && minRating !== 'any')
               ? 'No tutors match your current filters.'

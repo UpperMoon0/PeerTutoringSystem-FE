@@ -31,7 +31,7 @@ import {
 } from 'lucide-react';
 import { format } from 'date-fns';
 import type { DateRange } from 'react-day-picker';
-import { toast } from 'sonner'; // For notifications
+import { toast } from 'sonner';
 
 type BookingStatusFilter = 'All' | 'Pending' | 'Confirmed' | 'Cancelled' | 'Completed' | 'Rejected';
 
@@ -229,23 +229,23 @@ const StudentBookingHistoryPage: React.FC = () => {
   return (
     <div className="container mx-auto p-4 md:p-6 space-y-6">
       <header className="mb-6">
-        <h1 className="text-3xl font-bold text-white flex items-center">
-          <ListChecks className="w-8 h-8 mr-3 text-blue-400" />
+        <h1 className="text-3xl font-bold text-foreground flex items-center">
+          <ListChecks className="w-8 h-8 mr-3 text-primary" />
           My Booking History
         </h1>
-        <p className="text-gray-400 mt-1">Review your past and upcoming tutoring sessions.</p>
+        <p className="text-muted-foreground mt-1">Review your past and upcoming tutoring sessions.</p>
       </header>
 
       {/* Pending Reviews Notification */}
       {!isLoading && pendingReviewsCount > 0 && (
-        <Alert className="bg-gradient-to-r from-yellow-900/50 to-orange-900/50 border-yellow-500/50 mb-6">
-          <Bell className="h-5 w-5 text-yellow-400" />
-          <AlertTitle className="text-yellow-400 font-semibold flex items-center">
+        <Alert className="bg-accent/20 border-accent/50 mb-6">
+          <Bell className="h-5 w-5 text-accent-foreground" />
+          <AlertTitle className="text-accent-foreground font-semibold flex items-center">
             <MessageSquareHeart className="w-4 h-4 mr-1" />
             Review Pending Sessions
           </AlertTitle>
-          <AlertDescription className="text-yellow-200">
-            You have <span className="font-bold text-yellow-300">{pendingReviewsCount}</span> completed session{pendingReviewsCount !== 1 ? 's' : ''} waiting for your review.
+          <AlertDescription className="text-muted-foreground">
+            You have <span className="font-bold text-primary">{pendingReviewsCount}</span> completed session{pendingReviewsCount !== 1 ? 's' : ''} waiting for your review.
             <span className="block mt-1 text-sm">
               Help other students by sharing your experience with your tutors! ⭐
             </span>
@@ -253,29 +253,29 @@ const StudentBookingHistoryPage: React.FC = () => {
         </Alert>
       )}
 
-      <Card className="bg-gray-900 border-gray-800">
+      <Card className="bg-card border-border">
         <CardHeader>
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-            <CardTitle className="text-white flex items-center">
-              <Filter className="w-5 h-5 mr-2 text-blue-400" />
+            <CardTitle className="text-foreground flex items-center">
+              <Filter className="w-5 h-5 mr-2 text-primary" />
               Filters
             </CardTitle>
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 w-full md:w-auto">
               <Select value={statusFilter} onValueChange={handleStatusFilterChange}>
-                <SelectTrigger className="w-full sm:w-48 bg-gray-800 border-gray-700 text-white">
+                <SelectTrigger className="w-full sm:w-48 bg-input border-border text-foreground">
                   <SelectValue placeholder="Filter by status" />
                 </SelectTrigger>
-                <SelectContent className="bg-gray-800 border-gray-700">
-                  <SelectItem value="All" className="text-white hover:bg-gray-700">All Statuses</SelectItem>
-                  <SelectItem value="Pending" className="text-white hover:bg-gray-700">Pending</SelectItem>
-                  <SelectItem value="Confirmed" className="text-white hover:bg-gray-700">Confirmed</SelectItem>
-                  <SelectItem value="Completed" className="text-white hover:bg-gray-700">Completed</SelectItem>
-                  <SelectItem value="Cancelled" className="text-white hover:bg-gray-700">Cancelled</SelectItem>
-                  <SelectItem value="Rejected" className="text-white hover:bg-gray-700">Rejected</SelectItem>
+                <SelectContent className="bg-popover border-border">
+                  <SelectItem value="All" className="text-popover-foreground hover:bg-accent">All Statuses</SelectItem>
+                  <SelectItem value="Pending" className="text-popover-foreground hover:bg-accent">Pending</SelectItem>
+                  <SelectItem value="Confirmed" className="text-popover-foreground hover:bg-accent">Confirmed</SelectItem>
+                  <SelectItem value="Completed" className="text-popover-foreground hover:bg-accent">Completed</SelectItem>
+                  <SelectItem value="Cancelled" className="text-popover-foreground hover:bg-accent">Cancelled</SelectItem>
+                  <SelectItem value="Rejected" className="text-popover-foreground hover:bg-accent">Rejected</SelectItem>
                 </SelectContent>
               </Select>
-              <DatePickerWithRange 
-                date={dateRangeFilter} 
+              <DatePickerWithRange
+                date={dateRangeFilter}
                 onDateChange={handleDateRangeFilterChange}
                 className="w-full sm:w-auto"
               />
@@ -295,86 +295,86 @@ const StudentBookingHistoryPage: React.FC = () => {
             <div className="space-y-4">
               {[...Array(5)].map((_, i) => (
                 <div key={i} className="animate-pulse">
-                  <div className="h-20 bg-gray-800 rounded-lg"></div>
+                  <div className="h-20 bg-accent rounded-lg"></div>
                 </div>
               ))}
             </div>
           ) : bookings.length === 0 ? (
             <div className="text-center py-10">
-              <BookOpen className="w-16 h-16 text-gray-600 mx-auto mb-4" />
-              <p className="text-xl text-gray-400">No bookings found.</p>
-              <p className="text-gray-500 mt-1">
-                {statusFilter === 'All' && !dateRangeFilter 
-                  ? 'You haven’t made any bookings yet.' 
+              <BookOpen className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+              <p className="text-xl text-muted-foreground">No bookings found.</p>
+              <p className="text-muted-foreground mt-1">
+                {statusFilter === 'All' && !dateRangeFilter
+                  ? 'You haven’t made any bookings yet.'
                   : 'No bookings match your current filters.'}
               </p>
             </div>
           ) : (
             <>
-              <p className="text-sm text-gray-400 mb-3">Showing {bookings.length} of {totalBookings} bookings.</p>
+              <p className="text-sm text-muted-foreground mb-3">Showing {bookings.length} of {totalBookings} bookings.</p>
               <Table>
                 <TableHeader>
-                  <TableRow className="border-gray-800 hover:bg-gray-800/50">
-                    <TableHead className="text-gray-300">Tutor</TableHead>
-                    <TableHead className="text-gray-300">Topic/Skill</TableHead>
-                    <TableHead className="text-gray-300">Date</TableHead>
-                    <TableHead className="text-gray-300">Time</TableHead>
-                    <TableHead className="text-gray-300">Status</TableHead>
-                    <TableHead className="text-gray-300 text-right">Actions</TableHead>
+                  <TableRow className="border-border hover:bg-accent/50">
+                    <TableHead className="text-muted-foreground">Tutor</TableHead>
+                    <TableHead className="text-muted-foreground">Topic/Skill</TableHead>
+                    <TableHead className="text-muted-foreground">Date</TableHead>
+                    <TableHead className="text-muted-foreground">Time</TableHead>
+                    <TableHead className="text-muted-foreground">Status</TableHead>
+                    <TableHead className="text-muted-foreground text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {bookings.map((booking) => (
                     <TableRow
                       key={booking.bookingId}
-                      className={`border-gray-800 hover:bg-gray-800/50 cursor-pointer transition-colors ${
+                      className={`border-border hover:bg-accent/50 cursor-pointer transition-colors ${
                         canLeaveReview(booking)
-                          ? 'bg-gradient-to-r from-yellow-900/20 to-transparent border-l-4 border-l-yellow-500'
+                          ? 'bg-gradient-to-r from-chart-1/20 to-transparent border-l-4 border-l-chart-1'
                           : ''
                       }`}
                       onClick={() => handleViewDetails(booking)}
                     >
-                      <TableCell className="text-white font-medium">
+                      <TableCell className="text-foreground font-medium">
                         <div className="flex items-center">
-                          <User className="w-4 h-4 mr-2 text-gray-400" />
+                          <User className="w-4 h-4 mr-2 text-muted-foreground" />
                           <div>
                             <div>{booking.tutorName || 'N/A'}</div>
                             {(booking.status === 'Confirmed' || booking.status === 'Completed') && (
-                              <div className="text-xs text-gray-400 mt-1">
+                              <div className="text-xs text-muted-foreground mt-1">
                                 Session with {booking.tutorName}
                               </div>
                             )}
                           </div>
                         </div>
                       </TableCell>
-                      <TableCell className="text-white">
+                      <TableCell className="text-foreground">
                         <div>
                           <div>{booking.topic}</div>
                           {(booking.status === 'Confirmed' || booking.status === 'Completed') && booking.description && (
-                            <div className="text-xs text-gray-400 mt-1 line-clamp-1">
+                            <div className="text-xs text-muted-foreground mt-1 line-clamp-1">
                               {booking.description}
                             </div>
                           )}
                         </div>
                       </TableCell>
-                      <TableCell className="text-gray-300">
+                      <TableCell className="text-muted-foreground">
                         <div className="flex items-center">
-                          <CalendarDays className="w-4 h-4 mr-1.5 text-gray-400" />
+                          <CalendarDays className="w-4 h-4 mr-1.5 text-muted-foreground" />
                           {format(new Date(booking.sessionDate || booking.startTime), 'MMM dd, yyyy')}
                         </div>
                         {(booking.status === 'Confirmed' || booking.status === 'Completed') && (
-                          <div className="text-xs text-gray-400 mt-1">
+                          <div className="text-xs text-muted-foreground mt-1">
                             Session Date
                           </div>
                         )}
                       </TableCell>
-                      <TableCell className="text-gray-300">
+                      <TableCell className="text-muted-foreground">
                         <div className="flex items-center">
-                          <Clock className="w-4 h-4 mr-1.5 text-gray-400" />
+                          <Clock className="w-4 h-4 mr-1.5 text-muted-foreground" />
                           {format(new Date(booking.startTime), 'HH:mm')} - {format(new Date(booking.endTime), 'HH:mm')}
                         </div>
                         {(booking.status === 'Confirmed' || booking.status === 'Completed') && (
-                          <div className="text-xs text-gray-400 mt-1">
+                          <div className="text-xs text-muted-foreground mt-1">
                             Duration: {Math.round((new Date(booking.endTime).getTime() - new Date(booking.startTime).getTime()) / (1000 * 60))} min
                           </div>
                         )}
@@ -386,19 +386,19 @@ const StudentBookingHistoryPage: React.FC = () => {
                               {booking.status}
                             </Badge>
                             {canLeaveReview(booking) && (
-                              <Badge variant="outline" className="text-yellow-400 border-yellow-400 animate-pulse">
+                              <Badge variant="outline" className="text-chart-1 border-chart-1 animate-pulse">
                                 <Star className="w-3 h-3 mr-1" />
                                 Review Needed
                               </Badge>
                             )}
                           </div>
                           {(booking.status === 'Confirmed' || booking.status === 'Completed') && (
-                            <div className="text-xs text-gray-400">
+                            <div className="text-xs text-muted-foreground">
                               {booking.status === 'Confirmed' ? 'Ready to start' : 'Session ended'}
                             </div>
                           )}
                           {canLeaveReview(booking) && (
-                            <div className="text-xs text-yellow-400 font-medium">
+                            <div className="text-xs text-chart-1 font-medium">
                               📝 Click to leave a review
                             </div>
                           )}
@@ -409,7 +409,7 @@ const StudentBookingHistoryPage: React.FC = () => {
                           <Button
                             variant="ghost"
                             size="sm"
-                            className="text-blue-400 hover:text-blue-300 hover:bg-gray-700/50"
+                            className="text-primary hover:text-primary/80 hover:bg-accent/50"
                             onClick={(e) => { e.stopPropagation(); handleViewDetails(booking); }}
                           >
                             <Eye className="w-4 h-4 mr-1" />
@@ -419,7 +419,7 @@ const StudentBookingHistoryPage: React.FC = () => {
                             <Button
                               variant="ghost"
                               size="sm"
-                              className="text-yellow-400 hover:text-yellow-300 hover:bg-yellow-500/20 border border-yellow-500/30 animate-pulse hover:animate-none"
+                              className="text-chart-1 hover:text-chart-1/80 hover:bg-chart-1/20 border border-chart-1/30 animate-pulse hover:animate-none"
                               onClick={(e) => {
                                 e.stopPropagation();
                                 handleLeaveReview(booking);
@@ -443,7 +443,7 @@ const StudentBookingHistoryPage: React.FC = () => {
                       <PaginationPrevious
                         href="#"
                         onClick={(e) => { e.preventDefault(); if (currentPage > 1) handlePageChange(currentPage - 1); }}
-                        className={`${currentPage === 1 ? 'pointer-events-none opacity-50' : ''} text-gray-300 hover:text-white hover:bg-gray-800 border-gray-700`}
+                        className={`${currentPage === 1 ? 'pointer-events-none opacity-50' : ''} text-muted-foreground hover:text-foreground hover:bg-accent border-border`}
                       />
                     </PaginationItem>
                     {[...Array(totalPages)].map((_, i) => (
@@ -452,7 +452,7 @@ const StudentBookingHistoryPage: React.FC = () => {
                           href="#"
                           onClick={(e) => { e.preventDefault(); handlePageChange(i + 1); }}
                           isActive={currentPage === i + 1}
-                          className="text-gray-300 hover:text-white hover:bg-gray-800 border-gray-700 data-[active=true]:bg-blue-600 data-[active=true]:text-white"
+                          className="text-muted-foreground hover:text-foreground hover:bg-accent border-border data-[active=true]:bg-primary data-[active=true]:text-primary-foreground"
                         >
                           {i + 1}
                         </PaginationLink>
@@ -462,7 +462,7 @@ const StudentBookingHistoryPage: React.FC = () => {
                       <PaginationNext
                         href="#"
                         onClick={(e) => { e.preventDefault(); if (currentPage < totalPages) handlePageChange(currentPage + 1); }}
-                        className={`${currentPage === totalPages ? 'pointer-events-none opacity-50' : ''} text-gray-300 hover:text-white hover:bg-gray-800 border-gray-700`}
+                        className={`${currentPage === totalPages ? 'pointer-events-none opacity-50' : ''} text-muted-foreground hover:text-foreground hover:bg-accent border-border`}
                       />
                     </PaginationItem>
                   </PaginationContent>
@@ -485,10 +485,10 @@ const StudentBookingHistoryPage: React.FC = () => {
       {/* Review Modal */}
       {selectedBookingForReview && (
         <Dialog open={isReviewModalOpen} onOpenChange={setIsReviewModalOpen}>
-          <DialogContent className="bg-gray-900 border-gray-800 text-white max-w-md">
+          <DialogContent className="bg-card border-border text-foreground max-w-md">
             <DialogHeader>
-              <DialogTitle className="text-white">Leave a Review</DialogTitle>
-              <DialogDescription className="text-gray-400">
+              <DialogTitle className="text-foreground">Leave a Review</DialogTitle>
+              <DialogDescription className="text-muted-foreground">
                 Share your experience with {selectedBookingForReview.tutorName} for the session on {format(new Date(selectedBookingForReview.sessionDate || selectedBookingForReview.startTime), 'MMM dd, yyyy')}.
               </DialogDescription>
             </DialogHeader>

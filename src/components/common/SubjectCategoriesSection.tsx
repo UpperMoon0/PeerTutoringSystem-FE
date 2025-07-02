@@ -8,60 +8,52 @@ const SubjectCategoriesSection: React.FC = () => {
       icon: Calculator,
       title: "Mathematics",
       description: "Algebra, Calculus, Statistics, Geometry",
-      color: "from-blue-500 to-blue-600"
     },
     {
       icon: Beaker,
       title: "Science",
       description: "Physics, Chemistry, Biology, Earth Science",
-      color: "from-green-500 to-green-600"
     },
     {
       icon: Globe,
       title: "Languages",
       description: "English, Spanish, French, Mandarin",
-      color: "from-purple-500 to-purple-600"
     },
     {
       icon: Monitor,
       title: "Computer Science",
       description: "Programming, Web Development, Data Science",
-      color: "from-orange-500 to-orange-600"
     },
     {
       icon: TrendingUp,
       title: "Business",
       description: "Economics, Finance, Marketing, Management",
-      color: "from-red-500 to-red-600"
     },
     {
       icon: Palette,
       title: "Arts & Design",
       description: "Graphic Design, Fine Arts, Digital Media",
-      color: "from-pink-500 to-pink-600"
     },
     {
       icon: Music,
       title: "Music",
       description: "Theory, Composition, Instruments, Production",
-      color: "from-indigo-500 to-indigo-600"
     },
     {
       icon: Microscope,
       title: "Research",
       description: "Academic Writing, Research Methods, Analysis",
-      color: "from-teal-500 to-teal-600"
     }
   ];
 
   return (
-    <section className="bg-gray-900 py-16 md:py-24">
+    <section className="bg-card-secondary py-16 md:py-24">
       <div className="container mx-auto px-4">
         <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
+          <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
             Popular Subject Categories
           </h2>
-          <p className="text-lg text-gray-300 max-w-2xl mx-auto">
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
             Explore our wide range of subjects taught by experienced peer tutors who excel in their fields.
           </p>
         </div>
@@ -70,15 +62,15 @@ const SubjectCategoriesSection: React.FC = () => {
           {subjects.map((subject, index) => {
             const IconComponent = subject.icon;
             return (
-              <Card key={index} className="bg-gray-800 border-gray-700 hover:bg-gray-750 transition-all duration-300 cursor-pointer group hover:scale-105">
+              <Card key={index} className="bg-card border-border hover:bg-card-tertiary transition-all duration-300 cursor-pointer group hover:scale-105">
                 <CardContent className="p-6 text-center">
-                  <div className={`w-16 h-16 bg-gradient-to-r ${subject.color} rounded-full flex items-center justify-center mx-auto mb-4 group-hover:shadow-lg transition-all duration-300`}>
-                    <IconComponent className="w-8 h-8 text-white" />
+                  <div className="w-16 h-16 bg-gradient-to-r from-primary to-primary/90 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:shadow-lg transition-all duration-300">
+                    <IconComponent className="w-8 h-8 text-primary-foreground" />
                   </div>
-                  <h3 className="text-lg font-semibold text-white mb-2">
+                  <h3 className="text-lg font-semibold text-foreground mb-2">
                     {subject.title}
                   </h3>
-                  <p className="text-sm text-gray-400 leading-relaxed">
+                  <p className="text-sm text-muted-foreground leading-relaxed">
                     {subject.description}
                   </p>
                 </CardContent>
@@ -88,10 +80,10 @@ const SubjectCategoriesSection: React.FC = () => {
         </div>
 
         <div className="text-center mt-12">
-          <p className="text-gray-300 mb-6">
+          <p className="text-muted-foreground mb-6">
             Don't see your subject? We have tutors for many more areas of study.
           </p>
-          <button className="text-blue-400 hover:text-blue-300 font-medium underline underline-offset-4 hover:underline-offset-2 transition-all duration-200">
+          <button className="text-primary hover:text-primary/80 font-medium underline underline-offset-4 hover:underline-offset-2 transition-all duration-200">
             View All Subjects →
           </button>
         </div>

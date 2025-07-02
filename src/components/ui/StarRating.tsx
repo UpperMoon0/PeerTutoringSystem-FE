@@ -55,7 +55,7 @@ const StarRating: React.FC<StarRatingProps> = ({
               <Star 
                 className={cn(
                   sizeClasses[size],
-                  "text-yellow-400 fill-yellow-400 stroke-yellow-400"
+                  "text-primary fill-primary stroke-primary"
                 )}
               />
             </div>

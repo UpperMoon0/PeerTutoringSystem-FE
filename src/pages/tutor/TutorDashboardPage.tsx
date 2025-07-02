@@ -2,6 +2,11 @@ import React from 'react';
 import Dashboard from '@/components/dashboard/Dashboard';
 import { createDashboardConfig } from '@/config/dashboards';
 import { useTutorBioStatus } from '@/hooks/useTutorBioStatus';
+import type { SectionComponentProps } from '@/types/dashboard.types';
+
+interface ProfileSectionProps extends SectionComponentProps {
+  onBioStatusChange: () => void;
+}
 
 const TutorDashboardPage: React.FC = () => {
   const { hasBio, loading, refresh } = useTutorBioStatus();
@@ -22,10 +27,10 @@ const TutorDashboardPage: React.FC = () => {
   
   if (!config) {
     return (
-      <div className="h-screen bg-gray-950 flex items-center justify-center">
+      <div className="h-screen bg-background flex items-center justify-center">
         <div className="text-center">
-          <h2 className="text-2xl font-bold text-white mb-2">Configuration Error</h2>
-          <p className="text-gray-400">Unable to load tutor dashboard configuration.</p>
+          <h2 className="text-2xl font-bold text-foreground mb-2">Configuration Error</h2>
+          <p className="text-muted-foreground">Unable to load tutor dashboard configuration.</p>
         </div>
       </div>
     );
@@ -34,8 +39,10 @@ const TutorDashboardPage: React.FC = () => {
   // Pass the refresh function to the profile section
   if (config.sections.profile?.component) {
     const OriginalProfileComponent = config.sections.profile.component;
-    config.sections.profile.component = (props: Record<string, unknown>) =>
-      React.createElement(OriginalProfileComponent, { ...props, onBioStatusChange: refresh });
+    config.sections.profile.component = (props: SectionComponentProps) => {
+      const ProfileComponent = OriginalProfileComponent as React.ComponentType<ProfileSectionProps>;
+      return React.createElement(ProfileComponent, { ...props, onBioStatusChange: refresh });
+    };
   }
 
   return <Dashboard config={config} />;

@@ -31,8 +31,8 @@ const SocialLoginButtons: React.FC<SocialLoginButtonsProps> = ({
       } else {
         setError(`Google ${pageType} failed. Please try again.`);
       }
-    } catch (err: any) {
-      setError(err.message || 'An unexpected error occurred during Google login.');
+    } catch (err: unknown) {
+      setError((err as Error).message || 'An unexpected error occurred during Google login.');
     } finally {
       setParentLoading(false);
     }
@@ -41,12 +41,12 @@ const SocialLoginButtons: React.FC<SocialLoginButtonsProps> = ({
   return (
     <div className="space-y-2 mb-6">
       <Button
-        className="w-full flex items-center justify-center text-white bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"
+        className="w-full flex items-center justify-center text-primary-foreground bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary/80"
         onClick={handleGoogleAuthClick}
         disabled={parentLoading || auth.loading}
       >
         <img src="https://img.icons8.com/color/16/000000/google-logo.png" alt="Google" className="mr-2 h-4 w-4" />
-        <span className="text-white">Continue with Google</span>
+        <span className="text-primary-foreground">Continue with Google</span>
       </Button>
     </div>
   );

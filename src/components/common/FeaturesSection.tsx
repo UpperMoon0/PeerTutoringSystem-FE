@@ -55,13 +55,13 @@ const FeaturesSection: React.FC = () => {
   ];
 
   return (
-    <section className="bg-gray-900 py-16 md:py-24">
+    <section className="bg-card-secondary py-16 md:py-24">
       <div className="container mx-auto px-4">
         <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
+          <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
             Platform Features & Benefits
           </h2>
-          <p className="text-lg text-gray-300 max-w-3xl mx-auto">
+          <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
             Discover the powerful features that make our peer tutoring platform the preferred choice for students worldwide.
           </p>
         </div>
@@ -70,22 +70,22 @@ const FeaturesSection: React.FC = () => {
           {features.map((feature, index) => {
             const IconComponent = feature.icon;
             return (
-              <Card key={index} className="bg-gray-800 border-gray-700 hover:bg-gray-750 transition-all duration-300 group hover:scale-105">
+              <Card key={index} className="bg-card border-border hover:bg-card-tertiary transition-all duration-300 group hover:scale-105">
                 <CardHeader className="pb-4">
                   <div className="flex items-center justify-between mb-3">
-                    <div className="w-12 h-12 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center group-hover:shadow-lg transition-all duration-300">
-                      <IconComponent className="w-6 h-6 text-white" />
+                    <div className="w-12 h-12 bg-gradient-to-r from-primary to-primary/90 rounded-lg flex items-center justify-center group-hover:shadow-lg transition-all duration-300">
+                      <IconComponent className="w-6 h-6 text-primary-foreground" />
                     </div>
-                    <span className="text-xs font-semibold bg-blue-600 text-white px-2 py-1 rounded-full">
+                    <span className="text-xs font-semibold bg-primary text-primary-foreground px-2 py-1 rounded-full">
                       {feature.highlight}
                     </span>
                   </div>
-                  <CardTitle className="text-lg text-white">
+                  <CardTitle className="text-lg text-foreground">
                     {feature.title}
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="pt-0">
-                  <p className="text-gray-300 text-sm leading-relaxed">
+                  <p className="text-muted-foreground text-sm leading-relaxed">
                     {feature.description}
                   </p>
                 </CardContent>
@@ -95,32 +95,32 @@ const FeaturesSection: React.FC = () => {
         </div>
 
         {/* Additional Benefits Section */}
-        <div className="mt-16 bg-gradient-to-r from-blue-900/30 to-purple-900/30 rounded-2xl p-8 border border-gray-700">
+        <div className="mt-16 bg-gradient-to-r from-primary/30 to-primary/20 rounded-2xl p-8 border border-border">
           <div className="grid md:grid-cols-3 gap-8 text-center">
             <div>
-              <div className="text-3xl font-bold text-white mb-2">50K+</div>
-              <div className="text-gray-300">Successful Sessions</div>
+              <div className="text-3xl font-bold text-foreground mb-2">50K+</div>
+              <div className="text-muted-foreground">Successful Sessions</div>
             </div>
             <div>
-              <div className="text-3xl font-bold text-white mb-2">500+</div>
-              <div className="text-gray-300">Expert Tutors</div>
+              <div className="text-3xl font-bold text-foreground mb-2">500+</div>
+              <div className="text-muted-foreground">Expert Tutors</div>
             </div>
             <div>
-              <div className="text-3xl font-bold text-white mb-2">98%</div>
-              <div className="text-gray-300">Success Rate</div>
+              <div className="text-3xl font-bold text-foreground mb-2">98%</div>
+              <div className="text-muted-foreground">Success Rate</div>
             </div>
           </div>
         </div>
 
         <div className="text-center mt-12">
-          <p className="text-gray-300 mb-6">
+          <p className="text-muted-foreground mb-6">
             Ready to experience the future of peer tutoring?
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-3 rounded-lg font-semibold transition-all duration-300 hover:scale-105">
+            <button className="bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary/80 text-primary-foreground px-8 py-3 rounded-lg font-semibold transition-all duration-300 hover:scale-105">
               Start Learning Today
             </button>
-            <button className="border border-gray-600 text-gray-300 hover:text-white hover:border-gray-500 px-8 py-3 rounded-lg font-semibold transition-all duration-300">
+            <button className="border border-border text-muted-foreground hover:text-foreground hover:border-accent px-8 py-3 rounded-lg font-semibold transition-all duration-300">
               Take a Tour
             </button>
           </div>

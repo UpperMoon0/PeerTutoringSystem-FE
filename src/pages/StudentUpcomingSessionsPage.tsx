@@ -17,7 +17,6 @@ import {
   AlertCircle,
   CalendarClock,
   Timer,
-  ExternalLink,
   MessageCircle,
   Video
 } from 'lucide-react';
@@ -89,12 +88,12 @@ const StudentUpcomingSessionsPage: React.FC = () => {
 
         setUpcomingSessions(sessionsWithDetails);
       } else {
-        const errorMessage = typeof response.error === 'string' ? response.error : (response.error as any)?.message || 'Failed to fetch upcoming sessions.';
+        const errorMessage = typeof response.error === 'string' ? response.error : (response.error as { message?: string })?.message || 'Failed to fetch upcoming sessions.';
         setError(errorMessage);
         setUpcomingSessions([]);
       }
-    } catch (err: any) {
-      setError(err.message || 'An unexpected error occurred.');
+    } catch (err: unknown) {
+      setError((err instanceof Error) ? err.message : 'An unexpected error occurred.');
       setUpcomingSessions([]);
     } finally {
       setIsLoading(false);
@@ -180,17 +179,17 @@ const StudentUpcomingSessionsPage: React.FC = () => {
   return (
     <div className="container mx-auto p-4 md:p-6 space-y-6">
       <header className="mb-6">
-        <h1 className="text-3xl font-bold text-white flex items-center">
-          <CalendarClock className="w-8 h-8 mr-3 text-blue-400" />
+        <h1 className="text-3xl font-bold text-foreground flex items-center">
+          <CalendarClock className="w-8 h-8 mr-3 text-primary" />
           Upcoming Sessions
         </h1>
-        <p className="text-gray-400 mt-1">Your confirmed tutoring sessions scheduled for the future.</p>
+        <p className="text-muted-foreground mt-1">Your confirmed tutoring sessions scheduled for the future.</p>
       </header>
 
-      <Card className="bg-gray-900 border-gray-800">
+      <Card className="bg-card border-border">
         <CardHeader>
-          <CardTitle className="text-white flex items-center">
-            <Timer className="w-5 h-5 mr-2 text-blue-400" />
+          <CardTitle className="text-foreground flex items-center">
+            <Timer className="w-5 h-5 mr-2 text-primary" />
             Your Scheduled Sessions
           </CardTitle>
         </CardHeader>
@@ -207,73 +206,73 @@ const StudentUpcomingSessionsPage: React.FC = () => {
             <div className="space-y-4">
               {[...Array(3)].map((_, i) => (
                 <div key={i} className="animate-pulse">
-                  <div className="h-32 bg-gray-800 rounded-lg"></div>
+                  <div className="h-32 bg-accent rounded-lg"></div>
                 </div>
               ))}
             </div>
           ) : upcomingSessions.length === 0 ? (
             <div className="text-center py-10">
-              <CalendarClock className="w-16 h-16 text-gray-600 mx-auto mb-4" />
-              <p className="text-xl text-gray-400">No upcoming sessions.</p>
-              <p className="text-gray-500 mt-1">
+              <CalendarClock className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+              <p className="text-xl text-muted-foreground">No upcoming sessions.</p>
+              <p className="text-muted-foreground mt-1">
                 You don't have any confirmed sessions scheduled for the future.
               </p>
             </div>
           ) : (
             <div className="space-y-4">
               {upcomingSessions.map((session) => (
-                <Card key={session.bookingId} className="bg-gray-800 border-gray-700 hover:bg-gray-700/50 transition-colors">
+                <Card key={session.bookingId} className="bg-card border-border hover:bg-accent/50 transition-colors">
                   <CardContent className="p-6">
                     <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
                       <div className="flex-1 space-y-3">
                         <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-                          <h3 className="text-lg font-semibold text-white">{session.topic}</h3>
-                          <Badge variant="outline" className="w-fit text-green-400 border-green-400">
+                          <h3 className="text-lg font-semibold text-foreground">{session.topic}</h3>
+                          <Badge variant="outline" className="w-fit text-chart-2 border-chart-2">
                             Confirmed
                           </Badge>
                         </div>
                         
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
-                          <div className="flex items-center text-gray-300">
-                            <User className="w-4 h-4 mr-2 text-gray-400" />
+                          <div className="flex items-center text-muted-foreground">
+                            <User className="w-4 h-4 mr-2 text-muted-foreground" />
                             <span className="font-medium">Tutor:</span>
                             <span className="ml-1">{session.tutorName || 'N/A'}</span>
                           </div>
                           
-                          <div className="flex items-center text-gray-300">
-                            <CalendarDays className="w-4 h-4 mr-2 text-gray-400" />
+                          <div className="flex items-center text-muted-foreground">
+                            <CalendarDays className="w-4 h-4 mr-2 text-muted-foreground" />
                             <span className="font-medium">Date:</span>
                             <span className="ml-1">{format(new Date(session.startTime), 'MMM dd, yyyy')}</span>
                           </div>
                           
-                          <div className="flex items-center text-gray-300">
-                            <Clock className="w-4 h-4 mr-2 text-gray-400" />
+                          <div className="flex items-center text-muted-foreground">
+                            <Clock className="w-4 h-4 mr-2 text-muted-foreground" />
                             <span className="font-medium">Time:</span>
                             <span className="ml-1">
-                              {format(new Date(session.startTime), 'HH:mm')} - {format(new Date(session.endTime), 'HH:mm')}
+                               {format(new Date(session.startTime), 'HH:mm')} - {format(new Date(session.endTime), 'HH:mm')}
                             </span>
                           </div>
                           
                           <div className="flex items-center">
-                            <Timer className="w-4 h-4 mr-2 text-gray-400" />
-                            <span className="font-medium text-gray-300 mr-1">Starts in:</span>
+                            <Timer className="w-4 h-4 mr-2 text-muted-foreground" />
+                            <span className="font-medium text-muted-foreground mr-1">Starts in:</span>
                             <Badge variant={getTimeUntilBadgeVariant(session.startTime)} className="text-xs">
-                              {getTimeUntilSession(session.startTime)}
+                               {getTimeUntilSession(session.startTime)}
                             </Badge>
                           </div>
                         </div>
 
                         {session.description && (
                           <div className="text-sm">
-                            <span className="font-medium text-gray-300">Booking Notes:</span>
-                            <p className="text-gray-400 mt-1 line-clamp-2">{session.description}</p>
+                            <span className="font-medium text-muted-foreground">Booking Notes:</span>
+                            <p className="text-muted-foreground mt-1 line-clamp-2">{session.description}</p>
                           </div>
                         )}
 
                         {session.session?.sessionNotes && (
                           <div className="text-sm">
-                            <span className="font-medium text-gray-300">Session Preparation:</span>
-                            <p className="text-gray-400 mt-1 line-clamp-2">{session.session.sessionNotes}</p>
+                            <span className="font-medium text-muted-foreground">Session Preparation:</span>
+                            <p className="text-muted-foreground mt-1 line-clamp-2">{session.session.sessionNotes}</p>
                           </div>
                         )}
                       </div>
@@ -283,8 +282,8 @@ const StudentUpcomingSessionsPage: React.FC = () => {
                           variant="default"
                           size="sm"
                           className={`${session.session?.videoCallLink
-                            ? 'bg-blue-600 hover:bg-blue-700'
-                            : 'bg-gray-600 hover:bg-gray-700'} text-white`}
+                            ? 'bg-primary hover:bg-primary/90'
+                            : 'bg-secondary text-secondary-foreground'} text-primary-foreground`}
                           onClick={() => handleJoinSession(session)}
                           disabled={!session.session?.videoCallLink}
                         >
@@ -295,7 +294,7 @@ const StudentUpcomingSessionsPage: React.FC = () => {
                         <Button
                           variant="outline"
                           size="sm"
-                          className="border-gray-600 text-gray-300 hover:bg-gray-700"
+                          className="border-border text-muted-foreground hover:bg-accent"
                           onClick={() => handleContactTutor(session)}
                         >
                           <MessageCircle className="w-4 h-4 mr-1" />
@@ -305,7 +304,7 @@ const StudentUpcomingSessionsPage: React.FC = () => {
                         <Button
                           variant="ghost"
                           size="sm"
-                          className="text-gray-400 hover:text-white hover:bg-gray-700"
+                          className="text-muted-foreground hover:text-foreground hover:bg-accent"
                           onClick={() => handleViewDetails(session)}
                         >
                           <Eye className="w-4 h-4 mr-1" />
