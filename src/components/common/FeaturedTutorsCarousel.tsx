@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -81,13 +81,13 @@ const FeaturedTutorsCarousel: React.FC = () => {
     fetchFeaturedTutors();
   }, []);
 
-  const nextSlide = () => {
+  const nextSlide = useCallback(() => {
     setCurrentIndex((prev) => (prev + 1) % totalSlides);
-  };
+  }, [totalSlides]);
 
-  const prevSlide = () => {
+  const prevSlide = useCallback(() => {
     setCurrentIndex((prev) => (prev - 1 + totalSlides) % totalSlides);
-  };
+  }, [totalSlides]);
 
   useEffect(() => {
     if (tutors.length <= itemsPerView) return;
@@ -97,7 +97,7 @@ const FeaturedTutorsCarousel: React.FC = () => {
     }, 5000); // Auto-slide every 5 seconds
 
     return () => clearInterval(interval);
-  }, [tutors.length, totalSlides]);
+  }, [tutors.length, totalSlides, nextSlide]);
 
   if (isLoading) {
     return (
