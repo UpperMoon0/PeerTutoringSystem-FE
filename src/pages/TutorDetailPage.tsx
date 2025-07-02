@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback, useMemo } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { BookingService } from '@/services/BookingService';
 import { TutorService } from '@/services/TutorService';
@@ -16,7 +16,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { CalendarIcon } from 'lucide-react';
+import { CalendarIcon, MessageCircle } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import { cn } from '@/lib/utils';
@@ -30,6 +30,7 @@ type TutorProfile = ProfileDto;
 
 const TutorDetailPage: React.FC = () => {
   const { tutorId } = useParams<{ tutorId: string }>();
+  const navigate = useNavigate(); 
   const { currentUser } = useAuth();
   const [tutor, setTutor] = useState<TutorProfile | null>(null);
   const [tutorAccount] = useState<User | null>(null);
@@ -430,6 +431,16 @@ const TutorDetailPage: React.FC = () => {
                 />
               )}
             </div>
+            {currentUser && currentUser.userId !== tutorId && (
+              <Button
+                onClick={() => navigate('/student/chat', { state: { receiverId: tutorId } })}
+                variant="outline"
+                size="sm"
+                className="bg-blue-600 hover:bg-blue-700 text-white ml-auto"
+              >
+                <MessageCircle className="w-4 h-4 mr-2" /> Chat
+              </Button>
+            )}
           </div>
         </CardHeader>
         <CardContent className="p-6 space-y-3">

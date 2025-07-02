@@ -122,7 +122,7 @@ const Header: React.FC = () => {
                   <Button
                     variant="ghost"
                     size="icon"
-                    onClick={() => navigate('/chat')}
+                    onClick={() => navigate('/student/chat')}
                     className="text-muted-foreground hover:text-primary"
                   >
                     <MessageSquare className="h-5 w-5" />

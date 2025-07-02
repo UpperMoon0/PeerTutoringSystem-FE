@@ -22,6 +22,7 @@ export type SkillLevel = 'Beginner' | 'Elementary' | 'Intermediate' | 'Advanced'
 export interface UserSkillDto {
   userSkillID?: string;
   userID: string;
+  skillID: string;
   isTutor: boolean;
 }
 
