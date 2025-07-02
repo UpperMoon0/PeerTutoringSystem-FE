@@ -178,7 +178,7 @@ const ManageSkillsSection: React.FC = () => {
           setNewSkillName('');
           setNewSkillDescription('');
           setNewSkillLevel('');
-        }} className="bg-primary text-primary-foreground">
+        }} className="bg-gradient-to-r from-primary to-ring hover:from-primary/90 hover:to-ring/90 text-primary-foreground">
           <PlusCircle className="mr-2 h-5 w-5" /> Add New Skill
         </Button>
       </div>
@@ -191,7 +191,7 @@ const ManageSkillsSection: React.FC = () => {
         </Alert>
       )}
       {actionSuccess && (
-        <Alert variant="default" className="mb-4 bg-success/30 border-success text-success">
+        <Alert variant="default" className="mb-4 bg-primary/10 border-primary text-primary">
           <CheckCircle className="h-4 w-4 text-success" />
           <AlertTitle>Success</AlertTitle>
           <AlertDescription>{actionSuccess}</AlertDescription>
@@ -295,8 +295,8 @@ const ManageSkillsSection: React.FC = () => {
               </Select>
             </div>
             <DialogFooter>
-              <Button variant="outline" onClick={() => setIsAddModalOpen(false)} className="border-border hover:bg-muted hover:text-muted-foreground text-foreground">Cancel</Button>
-              <Button onClick={handleAddSkill} className="bg-primary text-primary-foreground">Add Skill</Button>
+              <Button variant="outline" onClick={() => setIsAddModalOpen(false)} className="border-border hover:bg-muted hover:text-muted-foreground">Cancel</Button>
+              <Button onClick={handleAddSkill} className="bg-gradient-to-r from-primary to-ring hover:from-primary/90 hover:to-ring/90 text-primary-foreground">Add Skill</Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
@@ -341,8 +341,8 @@ const ManageSkillsSection: React.FC = () => {
               </Select>
             </div>
             <DialogFooter>
-              <Button variant="outline" onClick={() => { setIsEditModalOpen(false); setEditingSkill(null); }} className="border-border hover:bg-muted hover:text-muted-foreground text-foreground">Cancel</Button>
-              <Button onClick={handleEditSkill} className="bg-primary text-primary-foreground">Save Changes</Button>
+              <Button variant="outline" onClick={() => { setIsEditModalOpen(false); setEditingSkill(null); }} className="border-border hover:bg-muted hover:text-muted-foreground">Cancel</Button>
+              <Button onClick={handleEditSkill} className="bg-gradient-to-r from-primary to-ring hover:from-primary/90 hover:to-ring/90 text-primary-foreground">Save Changes</Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
@@ -359,8 +359,8 @@ const ManageSkillsSection: React.FC = () => {
               </DialogDescription>
             </DialogHeader>
             <DialogFooter>
-              <Button variant="outline" onClick={() => { setIsDeleteModalOpen(false); setDeletingSkillId(null); }} className="border-border hover:bg-muted hover:text-muted-foreground text-foreground">Cancel</Button>
-              <Button onClick={handleDeleteSkill} variant="destructive" className="bg-destructive hover:bg-destructive-foreground text-destructive-foreground">Delete Skill</Button>
+              <Button variant="outline" onClick={() => { setIsDeleteModalOpen(false); setDeletingSkillId(null); }} className="border-border hover:bg-muted hover:text-muted-foreground">Cancel</Button>
+              <Button onClick={handleDeleteSkill} variant="destructive" className="bg-destructive hover:bg-destructive/90 text-destructive-foreground">Delete Skill</Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>

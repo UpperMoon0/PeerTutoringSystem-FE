@@ -7,10 +7,10 @@ const AdminDashboardPage: React.FC = () => {
   
   if (!config) {
     return (
-      <div className="h-screen bg-gray-950 flex items-center justify-center">
+      <div className="h-screen bg-background flex items-center justify-center">
         <div className="text-center">
-          <h2 className="text-2xl font-bold text-white mb-2">Configuration Error</h2>
-          <p className="text-gray-400">Unable to load admin dashboard configuration.</p>
+          <h2 className="text-2xl font-bold text-foreground mb-2">Configuration Error</h2>
+          <p className="text-muted-foreground">Unable to load admin dashboard configuration.</p>
         </div>
       </div>
     );

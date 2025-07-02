@@ -119,7 +119,7 @@ const ManageUsersPage: React.FC = () => {
         </Alert>
       )}
       {actionSuccess && (
-        <Alert variant="default" className="mb-4 bg-green-700/30 border-green-500 text-green-400">
+        <Alert variant="default" className="mb-4 bg-primary/10 border-primary text-primary">
           <CheckCircle className="h-4 w-4 text-green-400" />
           <AlertTitle>Action Successful</AlertTitle>
           <AlertDescription>{actionSuccess}</AlertDescription>
@@ -135,7 +135,7 @@ const ManageUsersPage: React.FC = () => {
       {filteredUsers.length > 0 && (
         <div className="overflow-x-auto bg-card border border-border shadow-lg rounded-lg">
           <table className="min-w-full">
-            <thead className="bg-gray-900 text-muted-foreground">
+            <thead className="bg-card text-muted-foreground">
               <tr>
                 <th className="text-left py-3 px-4 uppercase font-semibold text-sm">Full Name</th>
                 <th className="text-left py-3 px-4 uppercase font-semibold text-sm">Email</th>
@@ -146,16 +146,16 @@ const ManageUsersPage: React.FC = () => {
             </thead>
             <tbody className="text-foreground">
               {filteredUsers.map((user) => (
-                <tr key={user.userID} className="border-b border-border hover:bg-gray-800/50">
+                <tr key={user.userID} className="border-b border-border hover:bg-popover/50">
                   <td className="py-3 px-4">{user.fullName}</td>
                   <td className="py-3 px-4">{user.email}</td>
                   <td className="py-3 px-4">{user.role}</td>
                   <td className="py-3 px-4">
                     <span
                       className={`px-2 py-1 text-xs font-semibold rounded-full ${
-                        user.status === 'Active' ? 'bg-green-500/20 text-green-400' :
-                        user.status === 'Banned' ? 'bg-red-500/20 text-red-400' :
-                        'bg-gray-500/20 text-gray-400'
+                        user.status === 'Active' ? 'bg-primary/20 text-primary' :
+                        user.status === 'Banned' ? 'bg-destructive/20 text-destructive' :
+                        'bg-muted/20 text-muted-foreground'
                       }`}
                     >
                       {user.status}
@@ -168,7 +168,7 @@ const ManageUsersPage: React.FC = () => {
                         variant={user.status === 'Banned' ? 'outline' : 'destructive'}
                         size="sm"
                         disabled={actingUserId === user.userID}
-                        className={`flex items-center justify-center ${user.status === 'Banned' ? 'border-green-500 text-green-400 hover:bg-green-500/10 hover:text-green-300' : 'bg-red-600 hover:bg-red-700 text-destructive-foreground'}`}
+                        className={`flex items-center justify-center ${user.status === 'Banned' ? 'border-primary text-primary hover:bg-primary/10 hover:text-primary/90' : 'bg-destructive hover:bg-destructive/90 text-destructive-foreground'}`}
                       >
                         {actingUserId === user.userID ? (
                           <Loader2 className="mr-2 h-4 w-4 animate-spin" />

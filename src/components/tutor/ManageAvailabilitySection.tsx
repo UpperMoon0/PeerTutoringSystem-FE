@@ -249,7 +249,7 @@ const ManageAvailabilitySection: React.FC = () => {
             <Button
               type="submit"
               disabled={isLoading}
-              className="w-full mt-6 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+              className="w-full mt-6 bg-gradient-to-r from-primary to-ring hover:from-primary/90 hover:to-ring/90"
             >
               {isLoading ? 'Adding...' : 'Add Availability'}
             </Button>

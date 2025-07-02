@@ -194,13 +194,13 @@ const ProfileSection: React.FC<ProfileSectionProps> = ({ onBioStatusChange }) =>
                 onClick={() => navigate('/chat', { state: { receiverId: tutorDisplayProfile.userID } })}
                 variant="outline"
                 size="sm"
-                className="bg-primary hover:bg-primary-foreground text-primary-foreground"
+                className="bg-primary/90 hover:bg-primary text-primary-foreground"
               >
                 <MessageCircle className="w-4 h-4 mr-2" /> Chat
               </Button>
             )}
             {!isEditingProfile && tutorDisplayProfile && (
-              <Button onClick={handleEditProfile} variant="outline" size="sm" className="bg-accent border-border hover:bg-accent text-foreground">
+              <Button onClick={handleEditProfile} variant="outline" size="sm" className="bg-muted border-border hover:bg-muted text-foreground">
                 <Edit className="w-4 h-4 mr-2" /> Edit Profile
               </Button>
             )}
@@ -224,7 +224,7 @@ const ProfileSection: React.FC<ProfileSectionProps> = ({ onBioStatusChange }) =>
           ) : (
             // Not loading, not editing, and no profile data
             <div className="text-center py-12 space-y-4">
-              <div className="w-16 h-16 mx-auto bg-accent rounded-full flex items-center justify-center">
+              <div className="w-16 h-16 mx-auto bg-muted rounded-full flex items-center justify-center">
                 <Briefcase className="h-8 w-8 text-muted-foreground" />
               </div>
               <h3 className="text-xl font-semibold text-foreground">Tutor Profile Not Found</h3>

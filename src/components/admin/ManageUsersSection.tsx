@@ -119,7 +119,7 @@ const ManageUsersSection: React.FC = () => {
         </Alert>
       )}
       {actionSuccess && (
-        <Alert variant="default" className="mb-4 bg-success/30 border-success text-success">
+        <Alert variant="default" className="mb-4 bg-primary/10 border-primary text-primary">
           <CheckCircle className="h-4 w-4 text-success" />
           <AlertTitle>Action Successful</AlertTitle>
           <AlertDescription>{actionSuccess}</AlertDescription>
@@ -153,7 +153,7 @@ const ManageUsersSection: React.FC = () => {
                   <td className="py-3 px-4">
                     <span
                       className={`px-2 py-1 text-xs font-semibold rounded-full ${
-                        user.status === 'Active' ? 'bg-success/20 text-success' :
+                        user.status === 'Active' ? 'bg-primary/20 text-primary' :
                         user.status === 'Banned' ? 'bg-destructive/20 text-destructive' :
                         'bg-muted/20 text-muted-foreground'
                       }`}
@@ -168,7 +168,7 @@ const ManageUsersSection: React.FC = () => {
                         variant={user.status === 'Banned' ? 'outline' : 'destructive'}
                         size="sm"
                         disabled={actingUserId === user.userID}
-                        className={`flex items-center justify-center ${user.status === 'Banned' ? 'border-success text-success hover:bg-success/10 hover:text-success-foreground' : 'bg-destructive hover:bg-destructive-foreground text-destructive-foreground'}`}
+                        className={`flex items-center justify-center ${user.status === 'Banned' ? 'border-primary text-primary hover:bg-primary/10 hover:text-primary/90' : 'bg-destructive hover:bg-destructive/90 text-destructive-foreground'}`}
                       >
                         {actingUserId === user.userID ? (
                           <Loader2 className="mr-2 h-4 w-4 animate-spin" />

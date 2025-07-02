@@ -47,13 +47,13 @@ const TutorCard: React.FC<TutorCardProps> = ({ tutor }) => {
         <Avatar className="w-24 h-24 border-2 border-accent">
           <AvatarImage src={tutor.avatarUrl} alt={tutor.fullName} />
           <AvatarFallback
-            className={`bg-gradient-to-br ${generateGradient(tutor.fullName)} text-[var(--color-primary-foreground)] text-2xl font-bold`}
+            className={`bg-gradient-to-br ${generateGradient(tutor.fullName)} text-primary-foreground text-2xl font-bold`}
           >
             {getInitials(tutor.fullName)}
           </AvatarFallback>
         </Avatar>
       </div>
-      <h2 className="text-xl font-semibold text-center mb-2 text-[var(--color-foreground)]">{tutor.fullName}</h2>
+      <h2 className="text-xl font-semibold text-center mb-2 text-foreground">{tutor.fullName}</h2>
       
       {/* Rating Section */}
       <div className="text-center mb-3">
@@ -69,29 +69,29 @@ const TutorCard: React.FC<TutorCardProps> = ({ tutor }) => {
         <div className="text-sm text-muted-foreground mt-2 space-y-1">
           {tutor.bio && (
             <p className="truncate" title={tutor.bio}>
-              <strong className="text-sidebar-foreground">Bio:</strong> {tutor.bio.substring(0, 80)}{tutor.bio.length > 80 ? '...' : ''}
+              <strong className="text-foreground">Bio:</strong> {tutor.bio.substring(0, 80)}{tutor.bio.length > 80 ? '...' : ''}
             </p>
           )}
           {tutor.experience && (
             <p>
-              <strong className="text-sidebar-foreground">Experience:</strong> {tutor.experience}
+              <strong className="text-foreground">Experience:</strong> {tutor.experience}
             </p>
           )}
           {tutor.hourlyRate !== undefined && (
             <p>
-              <strong className="text-sidebar-foreground">Rate:</strong> ${tutor.hourlyRate}/hr
+              <strong className="text-foreground">Rate:</strong> ${tutor.hourlyRate}/hr
             </p>
           )}
         </div>
 
-        <div className="mt-3 pt-3 border-t border-accent">
-          <h3 className="text-md font-semibold text-[var(--color-primary-foreground)] mb-1">Skills:</h3>
+        <div className="mt-3 pt-3 border-t border-border">
+          <h3 className="text-md font-semibold text-foreground mb-1">Skills:</h3>
           {tutor.skills.length === 0 ? (
             <p className="text-xs text-muted-foreground">No skills listed.</p>
           ) : (
             <div className="flex flex-wrap gap-1">
               {tutor.skills.map((userSkill) => (
-                <span key={userSkill.userSkillID} className="bg-[var(--color-primary)] text-[var(--color-primary-foreground)] px-2 py-0.5 rounded-full text-xs">
+                <span key={userSkill.userSkillID} className="bg-primary text-primary-foreground px-2 py-0.5 rounded-full text-xs">
                   {userSkill.skill.skillName}
                 </span>
               ))}
@@ -100,8 +100,8 @@ const TutorCard: React.FC<TutorCardProps> = ({ tutor }) => {
         </div>
       </div>
 
-      <div className="text-center mt-4 pt-2 border-t border-accent">
-        <Link to={`/tutors/${tutor.userID}`} className="text-[var(--color-primary)] hover:text-[var(--color-primary)] hover:underline font-medium">
+      <div className="text-center mt-4 pt-2 border-t border-border">
+        <Link to={`/tutors/${tutor.userID}`} className="text-primary hover:text-primary/90 hover:underline font-medium">
           View Profile
         </Link>
       </div>

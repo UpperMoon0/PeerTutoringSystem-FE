@@ -296,7 +296,7 @@ const ManageBookingsSection: React.FC = () => {
                 <p className="text-muted-foreground text-sm font-medium">Total Bookings</p>
                 <p className="text-2xl font-bold text-foreground mt-1">{stats.total}</p>
               </div>
-              <div className="p-2 bg-primary bg-opacity-20 rounded-lg">
+              <div className="p-2 bg-primary/10 rounded-lg">
                 <BookOpen className="w-5 h-5 text-primary" />
               </div>
             </div>
@@ -310,8 +310,8 @@ const ManageBookingsSection: React.FC = () => {
                 <p className="text-muted-foreground text-sm font-medium">Pending</p>
                 <p className="text-2xl font-bold text-foreground mt-1">{stats.pending}</p>
               </div>
-              <div className="p-2 bg-primary bg-opacity-20 rounded-lg">
-                <Clock className="w-5 h-5 text-primary" />
+              <div className="p-2 bg-yellow-400/10 rounded-lg">
+                <Clock className="w-5 h-5 text-yellow-400" />
               </div>
             </div>
           </CardContent>
@@ -324,7 +324,7 @@ const ManageBookingsSection: React.FC = () => {
                 <p className="text-muted-foreground text-sm font-medium">Confirmed</p>
                 <p className="text-2xl font-bold text-foreground mt-1">{stats.confirmed}</p>
               </div>
-              <div className="p-2 bg-primary bg-opacity-20 rounded-lg">
+              <div className="p-2 bg-primary/10 rounded-lg">
                 <CheckCircle className="w-5 h-5 text-primary" />
               </div>
             </div>
@@ -338,8 +338,8 @@ const ManageBookingsSection: React.FC = () => {
                 <p className="text-muted-foreground text-sm font-medium">Completed</p>
                 <p className="text-2xl font-bold text-foreground mt-1">{stats.completed}</p>
               </div>
-              <div className="p-2 bg-primary bg-opacity-20 rounded-lg">
-                <TrendingUp className="w-5 h-5 text-primary" />
+              <div className="p-2 bg-muted/10 rounded-lg">
+                <TrendingUp className="w-5 h-5 text-muted-foreground" />
               </div>
             </div>
           </CardContent>
@@ -352,7 +352,7 @@ const ManageBookingsSection: React.FC = () => {
                 <p className="text-muted-foreground text-sm font-medium">Rejected</p>
                 <p className="text-2xl font-bold text-foreground mt-1">{stats.rejected}</p>
               </div>
-              <div className="p-2 bg-destructive bg-opacity-20 rounded-lg">
+              <div className="p-2 bg-destructive/10 rounded-lg">
                 <AlertCircle className="w-5 h-5 text-destructive" />
               </div>
             </div>
@@ -374,21 +374,21 @@ const ManageBookingsSection: React.FC = () => {
                 <SelectTrigger className="w-40 bg-input border-border text-foreground">
                   <SelectValue placeholder="Filter status" />
                 </SelectTrigger>
-                <SelectContent className="bg-popover border-border">
-                  <SelectItem value="All" className="text-foreground hover:bg-accent">All Status</SelectItem>
-                  <SelectItem value="Pending" className="text-foreground hover:bg-accent">Pending</SelectItem>
-                  <SelectItem value="Confirmed" className="text-foreground hover:bg-accent">Confirmed</SelectItem>
-                  <SelectItem value="Completed" className="text-foreground hover:bg-accent">Completed</SelectItem>
-                  <SelectItem value="Cancelled" className="text-foreground hover:bg-accent">Cancelled</SelectItem>
-                  <SelectItem value="Rejected" className="text-foreground hover:bg-accent">Rejected</SelectItem>
-                </SelectContent>
+                <SelectContent className="bg-popover text-popover-foreground border-border">
+                   <SelectItem value="All">All Status</SelectItem>
+                   <SelectItem value="Pending">Pending</SelectItem>
+                   <SelectItem value="Confirmed">Confirmed</SelectItem>
+                   <SelectItem value="Completed">Completed</SelectItem>
+                   <SelectItem value="Cancelled">Cancelled</SelectItem>
+                   <SelectItem value="Rejected">Rejected</SelectItem>
+                 </SelectContent>
               </Select>
             </div>
           </div>
         </CardHeader>
         <CardContent>
           {error && (
-            <Alert className="mb-4 bg-destructive border-border">
+            <Alert className="mb-4 bg-destructive/10 border-destructive">
               <AlertCircle className="h-4 w-4" />
               <AlertTitle className="text-destructive-foreground">Error</AlertTitle>
               <AlertDescription className="text-destructive-foreground">{error}</AlertDescription>
@@ -418,7 +418,7 @@ const ManageBookingsSection: React.FC = () => {
             <>
               <Table>
                 <TableHeader>
-                  <TableRow className="border-border hover:bg-accent">
+                  <TableRow className="border-border hover:bg-muted">
                     <TableHead className="text-muted-foreground">Student</TableHead>
                     <TableHead className="text-muted-foreground">Topic</TableHead>
                     <TableHead className="text-muted-foreground">Date</TableHead>
@@ -449,7 +449,7 @@ const ManageBookingsSection: React.FC = () => {
                             variant="ghost"
                             size="sm"
                             onClick={() => handleViewDetails(booking.bookingId)}
-                            className="text-primary hover:text-primary-foreground hover:bg-accent"
+                            className="text-primary hover:bg-muted hover:text-primary-foreground"
                           >
                             <Eye className="w-4 h-4 mr-1" />
                             View Details
@@ -459,7 +459,7 @@ const ManageBookingsSection: React.FC = () => {
                               variant="ghost"
                               size="sm"
                               onClick={() => handleViewReview(booking.bookingId)}
-                              className="text-primary hover:text-primary-foreground hover:bg-accent"
+                              className="text-primary hover:bg-muted hover:text-primary-foreground"
                             >
                               <Star className="w-4 h-4 mr-1" />
                               View Review
@@ -482,7 +482,7 @@ const ManageBookingsSection: React.FC = () => {
                           e.preventDefault();
                           if (currentPage > 1) handlePageChange(currentPage - 1);
                         }}
-                        className={`${currentPage === 1 ? 'pointer-events-none opacity-50' : ''} text-muted-foreground hover:text-foreground hover:bg-accent border-border`}
+                        className={`${currentPage === 1 ? 'pointer-events-none opacity-50' : ''} text-muted-foreground hover:text-foreground hover:bg-muted border-border`}
                       />
                     </PaginationItem>
                     {[...Array(totalPages)].map((_, i) => (
@@ -494,7 +494,7 @@ const ManageBookingsSection: React.FC = () => {
                             handlePageChange(i + 1);
                           }}
                           isActive={currentPage === i + 1}
-                          className="text-muted-foreground hover:text-foreground hover:bg-accent border-border data-[active=true]:bg-primary data-[active=true]:text-primary-foreground"
+                          className="text-muted-foreground hover:text-foreground hover:bg-muted border-border data-[active=true]:bg-primary data-[active=true]:text-primary-foreground"
                         >
                           {i + 1}
                         </PaginationLink>
@@ -507,7 +507,7 @@ const ManageBookingsSection: React.FC = () => {
                           e.preventDefault();
                           if (currentPage < totalPages) handlePageChange(currentPage + 1);
                         }}
-                        className={`${currentPage === totalPages ? 'pointer-events-none opacity-50' : ''} text-muted-foreground hover:text-foreground hover:bg-accent border-border`}
+                        className={`${currentPage === totalPages ? 'pointer-events-none opacity-50' : ''} text-muted-foreground hover:text-foreground hover:bg-muted border-border`}
                       />
                     </PaginationItem>
                   </PaginationContent>
@@ -564,7 +564,7 @@ const ManageBookingsSection: React.FC = () => {
                 setSessionError(null);
               }}
               disabled={isUpdating}
-              className="bg-accent border-border text-foreground hover:bg-accent"
+              className="bg-muted border-border text-foreground hover:bg-muted"
             >
               Cancel
             </Button>
@@ -586,7 +586,7 @@ const ManageBookingsSection: React.FC = () => {
           </DialogHeader>
 
           {reviewError && (
-            <Alert variant="destructive" className="mb-4">
+            <Alert variant="destructive" className="mb-4 bg-destructive/10 border-destructive">
               <AlertCircle className="h-4 w-4" />
               <AlertTitle>Error</AlertTitle>
               <AlertDescription>{reviewError}</AlertDescription>
@@ -620,7 +620,7 @@ const ManageBookingsSection: React.FC = () => {
                     <MessageSquare className="w-4 h-4 mr-1" />
                     Comment
                   </h3>
-                  <div className="bg-accent p-3 rounded-lg">
+                  <div className="bg-muted p-3 rounded-lg">
                     <p className="text-muted-foreground whitespace-pre-wrap">
                       {selectedReview.comment}
                     </p>
@@ -642,7 +642,7 @@ const ManageBookingsSection: React.FC = () => {
                 setSelectedReview(null);
                 setReviewError(null);
               }}
-              className="bg-accent border-border text-foreground hover:bg-accent"
+              className="bg-muted border-border text-foreground hover:bg-muted"
             >
               Close
             </Button>

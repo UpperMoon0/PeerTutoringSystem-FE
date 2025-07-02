@@ -241,7 +241,7 @@ const TutorVerificationSection: React.FC = () => {
               <p className="text-muted-foreground"><strong>Citizen ID:</strong> {verification.citizenID}</p>
               <p className="mb-3 text-foreground"><strong>Status:</strong> <span className={`font-semibold ${
                 verification.verificationStatus === 'Pending' ? 'text-yellow-400' :
-                verification.verificationStatus === 'Approved' ? 'text-green-400' : 'text-destructive'
+                verification.verificationStatus === 'Approved' ? 'text-primary' : 'text-destructive'
               }`}>{verification.verificationStatus}</span></p>
               <div className="mb-3">
                 <strong className="text-foreground">Documents:</strong>
@@ -266,7 +266,7 @@ const TutorVerificationSection: React.FC = () => {
                 <div className="mt-4 flex space-x-3">
                   <Button
                     onClick={() => handleStatusClick(verification.verificationID, 'Approved', verification.fullName || verification.userID)}
-                    className="bg-success text-success-foreground hover:bg-success/90"
+                    className="bg-primary text-primary-foreground hover:bg-primary/90"
                   >
                     Approve
                   </Button>
@@ -291,7 +291,7 @@ const TutorVerificationSection: React.FC = () => {
             <AlertDialogTitle className="text-foreground">
               {confirmDialog.status === 'Approved' ? (
                 <span className="flex items-center gap-2">
-                  <CheckCircle className="h-5 w-5 text-success" />
+                  <CheckCircle className="h-5 w-5 text-primary" />
                   Approve Verification
                 </span>
               ) : (
@@ -314,8 +314,8 @@ const TutorVerificationSection: React.FC = () => {
               onClick={handleConfirmStatusUpdate}
               className={
                 confirmDialog.status === 'Approved'
-                  ? 'bg-success text-success-foreground hover:bg-success/90'
-                  : 'bg-destructive hover:bg-destructive-foreground text-destructive-foreground'
+                  ? 'bg-primary text-primary-foreground hover:bg-primary/90'
+                  : 'bg-destructive hover:bg-destructive/90 text-destructive-foreground'
               }
             >
               {confirmDialog.status === 'Approved' ? 'Approve' : 'Reject'}
@@ -330,12 +330,12 @@ const TutorVerificationSection: React.FC = () => {
           <Alert
             variant={alertInfo.type === 'error' ? 'destructive' : 'default'}
             className={`
-              ${alertInfo.type === 'success' ? 'bg-success/90 border-success text-success-foreground' : ''}
+              ${alertInfo.type === 'success' ? 'bg-primary/90 border-primary text-primary-foreground' : ''}
               ${alertInfo.type === 'error' ? 'bg-destructive/90 border-destructive text-destructive-foreground' : ''}
-              ${alertInfo.type === 'warning' ? 'bg-warning/90 border-warning text-warning-foreground' : ''}
+              ${alertInfo.type === 'warning' ? 'bg-yellow-400/90 border-yellow-400 text-yellow-400-foreground' : ''}
             `}
           >
-            {alertInfo.type === 'success' && <CheckCircle className="h-4 w-4" />}
+            {alertInfo.type === 'success' && <CheckCircle className="h-4 w-4 text-primary-foreground" />}
             {alertInfo.type === 'error' && <XCircle className="h-4 w-4" />}
             {alertInfo.type === 'warning' && <AlertTriangle className="h-4 w-4" />}
             <AlertTitle>{alertInfo.title}</AlertTitle>

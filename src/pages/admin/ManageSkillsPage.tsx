@@ -178,7 +178,7 @@ const ManageSkillsPage: React.FC = () => {
           setNewSkillName('');
           setNewSkillDescription('');
           setNewSkillLevel('');
-        }} className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-primary-foreground">
+        }} className="bg-gradient-to-r from-primary to-ring hover:from-primary/90 hover:to-ring/90 text-primary-foreground">
           <PlusCircle className="mr-2 h-5 w-5" /> Add New Skill
         </Button>
       </div>
@@ -191,7 +191,7 @@ const ManageSkillsPage: React.FC = () => {
         </Alert>
       )}
       {actionSuccess && (
-        <Alert variant="default" className="mb-4 bg-green-700/30 border-green-500 text-green-400">
+        <Alert variant="default" className="mb-4 bg-primary/10 border-primary text-primary">
           <CheckCircle className="h-4 w-4 text-green-400" />
           <AlertTitle>Success</AlertTitle>
           <AlertDescription>{actionSuccess}</AlertDescription>
@@ -205,7 +205,7 @@ const ManageSkillsPage: React.FC = () => {
       {skills.length > 0 && (
         <div className="bg-card border border-border shadow-lg rounded-lg overflow-hidden">
           <table className="min-w-full leading-normal">
-            <thead className="bg-gray-900">
+            <thead className="bg-card">
               <tr>
                 <th className="px-5 py-3 border-b-2 border-border text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                   Name
@@ -223,7 +223,7 @@ const ManageSkillsPage: React.FC = () => {
             </thead>
             <tbody className="text-card-foreground">
               {skills.map((skill) => (
-                <tr key={skill.skillID} className="hover:bg-gray-800/50">
+                <tr key={skill.skillID} className="hover:bg-popover/50">
                   <td className="px-5 py-4 border-b border-border bg-card text-sm">
                     <p className="text-foreground whitespace-no-wrap">{skill.skillName}</p>
                   </td>
@@ -236,14 +236,14 @@ const ManageSkillsPage: React.FC = () => {
                   <td className="px-5 py-4 border-b border-border bg-card text-sm">
                     <button
                       onClick={() => openEditModal(skill)}
-                      className="text-blue-400 hover:text-blue-300 mr-3 transition duration-150 ease-in-out"
+                      className="text-primary hover:text-primary/80 mr-3 transition duration-150 ease-in-out"
                       aria-label="Edit skill"
                     >
                       <Edit3 className="h-4 w-4" />
                     </button>
                     <button
                       onClick={() => openDeleteModal(skill.skillID)}
-                      className="text-red-400 hover:text-red-300 transition duration-150 ease-in-out"
+                      className="text-destructive hover:text-destructive/80 transition duration-150 ease-in-out"
                       aria-label="Delete skill"
                     >
                       <Trash2 className="h-4 w-4" />
@@ -296,7 +296,7 @@ const ManageSkillsPage: React.FC = () => {
             </div>
             <DialogFooter>
               <Button variant="outline" onClick={() => setIsAddModalOpen(false)} className="border-border hover:bg-muted hover:text-muted-foreground">Cancel</Button>
-              <Button onClick={handleAddSkill} className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-primary-foreground">Add Skill</Button>
+              <Button onClick={handleAddSkill} className="bg-gradient-to-r from-primary to-ring hover:from-primary/90 hover:to-ring/90 text-primary-foreground">Add Skill</Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
@@ -342,7 +342,7 @@ const ManageSkillsPage: React.FC = () => {
             </div>
             <DialogFooter>
               <Button variant="outline" onClick={() => { setIsEditModalOpen(false); setEditingSkill(null); }} className="border-border hover:bg-muted hover:text-muted-foreground">Cancel</Button>
-              <Button onClick={handleEditSkill} className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-primary-foreground">Save Changes</Button>
+              <Button onClick={handleEditSkill} className="bg-gradient-to-r from-primary to-ring hover:from-primary/90 hover:to-ring/90 text-primary-foreground">Save Changes</Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>

@@ -166,7 +166,7 @@ const ManageBookingsSection: React.FC = () => {
                 <p className="text-muted-foreground text-sm font-medium">Total Bookings</p>
                 <p className="text-2xl font-bold text-foreground mt-1">{stats.total}</p>
               </div>
-              <div className="p-2 bg-primary/20 rounded-lg">
+              <div className="p-2 bg-primary/10 rounded-lg">
                 <BookOpen className="w-5 h-5 text-primary" />
               </div>
             </div>
@@ -180,8 +180,8 @@ const ManageBookingsSection: React.FC = () => {
                 <p className="text-muted-foreground text-sm font-medium">Pending</p>
                 <p className="text-2xl font-bold text-foreground mt-1">{stats.pending}</p>
               </div>
-              <div className="p-2 bg-warning/20 rounded-lg">
-                <Clock className="w-5 h-5 text-warning" />
+              <div className="p-2 bg-yellow-400/10 rounded-lg">
+                <Clock className="w-5 h-5 text-yellow-400" />
               </div>
             </div>
           </CardContent>
@@ -194,8 +194,8 @@ const ManageBookingsSection: React.FC = () => {
                 <p className="text-muted-foreground text-sm font-medium">Confirmed</p>
                 <p className="text-2xl font-bold text-foreground mt-1">{stats.confirmed}</p>
               </div>
-              <div className="p-2 bg-success/20 rounded-lg">
-                <CheckCircle className="w-5 h-5 text-success" />
+              <div className="p-2 bg-primary/10 rounded-lg">
+                <CheckCircle className="w-5 h-5 text-primary" />
               </div>
             </div>
           </CardContent>
@@ -208,8 +208,8 @@ const ManageBookingsSection: React.FC = () => {
                 <p className="text-muted-foreground text-sm font-medium">Completed</p>
                 <p className="text-2xl font-bold text-foreground mt-1">{stats.completed}</p>
               </div>
-              <div className="p-2 bg-accent/20 rounded-lg">
-                <TrendingUp className="w-5 h-5 text-accent-foreground" />
+              <div className="p-2 bg-muted/10 rounded-lg">
+                <TrendingUp className="w-5 h-5 text-muted-foreground" />
               </div>
             </div>
           </CardContent>
@@ -222,8 +222,8 @@ const ManageBookingsSection: React.FC = () => {
                 <p className="text-muted-foreground text-sm font-medium">Cancelled</p>
                 <p className="text-2xl font-bold text-foreground mt-1">{stats.cancelled}</p>
               </div>
-              <div className="p-2 bg-muted/20 rounded-lg">
-                <AlertCircle className="w-5 h-5 text-muted-foreground" />
+              <div className="p-2 bg-destructive/10 rounded-lg">
+                <AlertCircle className="w-5 h-5 text-destructive" />
               </div>
             </div>
           </CardContent>
@@ -236,7 +236,7 @@ const ManageBookingsSection: React.FC = () => {
                 <p className="text-muted-foreground text-sm font-medium">Rejected</p>
                 <p className="text-2xl font-bold text-foreground mt-1">{stats.rejected}</p>
               </div>
-              <div className="p-2 bg-destructive/20 rounded-lg">
+              <div className="p-2 bg-destructive/10 rounded-lg">
                 <AlertCircle className="w-5 h-5 text-destructive" />
               </div>
             </div>
@@ -255,24 +255,24 @@ const ManageBookingsSection: React.FC = () => {
             <div className="flex items-center space-x-2">
               <Filter className="w-4 h-4 text-muted-foreground" />
               <Select value={selectedStatus} onValueChange={(value: BookingStatus) => handleStatusFilter(value)}>
-                <SelectTrigger className="w-40 bg-input border-accent text-foreground">
-                  <SelectValue placeholder="Filter status" />
-                </SelectTrigger>
-                <SelectContent className="bg-input border-accent">
-                  <SelectItem value="All" className="text-foreground hover:bg-accent">All Status</SelectItem>
-                  <SelectItem value="Pending" className="text-foreground hover:bg-accent">Pending</SelectItem>
-                  <SelectItem value="Confirmed" className="text-foreground hover:bg-accent">Confirmed</SelectItem>
-                  <SelectItem value="Completed" className="text-foreground hover:bg-accent">Completed</SelectItem>
-                  <SelectItem value="Cancelled" className="text-foreground hover:bg-accent">Cancelled</SelectItem>
-                  <SelectItem value="Rejected" className="text-foreground hover:bg-accent">Rejected</SelectItem>
-                </SelectContent>
+                <SelectTrigger className="w-40 bg-input border-border text-foreground">
+                   <SelectValue placeholder="Filter status" />
+                 </SelectTrigger>
+                 <SelectContent className="bg-popover text-popover-foreground border-border">
+                   <SelectItem value="All">All Status</SelectItem>
+                   <SelectItem value="Pending">Pending</SelectItem>
+                   <SelectItem value="Confirmed">Confirmed</SelectItem>
+                   <SelectItem value="Completed">Completed</SelectItem>
+                   <SelectItem value="Cancelled">Cancelled</SelectItem>
+                   <SelectItem value="Rejected">Rejected</SelectItem>
+                 </SelectContent>
               </Select>
             </div>
           </div>
         </CardHeader>
         <CardContent>
           {error && (
-            <Alert className="mb-4 bg-destructive/20 border-destructive">
+            <Alert className="mb-4 bg-destructive/10 border-destructive">
               <AlertCircle className="h-4 w-4" />
               <AlertTitle className="text-destructive-foreground">Error</AlertTitle>
               <AlertDescription className="text-destructive-foreground">{error}</AlertDescription>
@@ -331,7 +331,7 @@ const ManageBookingsSection: React.FC = () => {
                           variant="ghost"
                           size="sm"
                           onClick={() => handleViewDetails(booking.bookingId)}
-                          className="text-primary hover:text-primary-foreground hover:bg-muted"
+                          className="text-primary hover:bg-muted hover:text-primary-foreground"
                         >
                           <Eye className="w-4 h-4 mr-1" />
                           View Details
@@ -352,7 +352,7 @@ const ManageBookingsSection: React.FC = () => {
                           e.preventDefault();
                           if (currentPage > 1) handlePageChange(currentPage - 1);
                         }}
-                        className={`${currentPage === 1 ? 'pointer-events-none opacity-50' : ''} text-sidebar-foreground hover:text-foreground hover:bg-muted border-accent`}
+                        className={`${currentPage === 1 ? 'pointer-events-none opacity-50' : ''} text-muted-foreground hover:text-foreground hover:bg-muted border-border`}
                       />
                     </PaginationItem>
                     {[...Array(totalPages)].map((_, i) => (
@@ -364,7 +364,7 @@ const ManageBookingsSection: React.FC = () => {
                             handlePageChange(i + 1);
                           }}
                           isActive={currentPage === i + 1}
-                          className="text-sidebar-foreground hover:text-foreground hover:bg-muted border-accent data-[active=true]:bg-primary data-[active=true]:text-primary-foreground"
+                          className="text-muted-foreground hover:text-foreground hover:bg-muted border-border data-[active=true]:bg-primary data-[active=true]:text-primary-foreground"
                         >
                           {i + 1}
                         </PaginationLink>
@@ -377,7 +377,7 @@ const ManageBookingsSection: React.FC = () => {
                           e.preventDefault();
                           if (currentPage < totalPages) handlePageChange(currentPage + 1);
                         }}
-                        className={`${currentPage === totalPages ? 'pointer-events-none opacity-50' : ''} text-sidebar-foreground hover:text-foreground hover:bg-muted border-accent`}
+                        className={`${currentPage === totalPages ? 'pointer-events-none opacity-50' : ''} text-muted-foreground hover:text-foreground hover:bg-muted border-border`}
                       />
                     </PaginationItem>
                   </PaginationContent>

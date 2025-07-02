@@ -144,7 +144,7 @@ const TutorVerificationPage: React.FC = () => {
               <p className="text-muted-foreground"><strong>Citizen ID:</strong> {verification.citizenID}</p>
               <p className="mb-3"><strong>Status:</strong> <span className={`font-semibold ${
                 verification.verificationStatus === 'Pending' ? 'text-yellow-400' :
-                verification.verificationStatus === 'Approved' ? 'text-green-400' : 'text-red-400'
+                verification.verificationStatus === 'Approved' ? 'text-primary' : 'text-destructive'
               }`}>{verification.verificationStatus}</span></p>
               <div className="mb-3">
                 <strong className="text-foreground">Documents:</strong>
@@ -154,7 +154,7 @@ const TutorVerificationPage: React.FC = () => {
                       <li key={doc.documentID} className="text-muted-foreground">
                         <button
                           onClick={() => handleOpenDocument(doc.documentID)}
-                          className="text-blue-400 hover:text-blue-300 hover:underline cursor-pointer"
+                          className="text-primary hover:text-primary/90 hover:underline cursor-pointer"
                         >
                           {doc.documentType}
                         </button>
@@ -169,14 +169,14 @@ const TutorVerificationPage: React.FC = () => {
                 <div className="mt-4 flex space-x-3">
                   <Button
                     onClick={() => handleUpdateStatus(verification.verificationID, 'Approved')}
-                    className="bg-green-600 hover:bg-green-700 text-white"
+                    className="bg-primary hover:bg-primary/90 text-primary-foreground"
                   >
                     Approve
                   </Button>
                   <Button
                     onClick={() => handleUpdateStatus(verification.verificationID, 'Rejected')}
                     variant="destructive"
-                    className="bg-red-600 hover:bg-red-700 text-destructive-foreground"
+                    className="bg-destructive hover:bg-destructive/90 text-destructive-foreground"
                   >
                     Reject
                   </Button>
