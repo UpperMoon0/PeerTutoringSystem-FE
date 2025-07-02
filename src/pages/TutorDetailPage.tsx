@@ -60,8 +60,8 @@ const TutorDetailPage: React.FC = () => {
     interface RecurringGroup {
       slots: TutorAvailability[];
       minDate: Date;
-      maxDate: Date; // Tracks the start date of the latest slot in the group
-      originalRecurrenceEndDate?: Date | null; // From backend, if consistent for the group
+      maxDate: Date; 
+      originalRecurrenceEndDate?: Date | null;
     }
 
     const recurringGroups: Record<string, RecurringGroup> = {};

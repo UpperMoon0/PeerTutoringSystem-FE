@@ -207,19 +207,19 @@ const TutorVerificationSection: React.FC = () => {
   }
 
   return (
-    <div className="bg-gray-950 text-white p-4">
+    <div className="bg-background text-foreground p-4">
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold text-white">Tutor Verification Requests</h2>
+        <h2 className="text-2xl font-bold text-foreground">Tutor Verification Requests</h2>
         <div className="flex items-center space-x-2">
-          <Label htmlFor="status-filter" className="text-gray-400">Filter by status:</Label>
+          <Label htmlFor="status-filter" className="text-muted-foreground">Filter by status:</Label>
           <Select
             value={filterStatus}
             onValueChange={(value: string) => setFilterStatus(value as VerificationStatus | 'All')}
           >
-            <SelectTrigger id="status-filter" className="w-[180px] bg-gray-800 border-gray-700 text-white">
+            <SelectTrigger id="status-filter" className="w-[180px] bg-input border-border text-foreground">
               <SelectValue placeholder="Select status" />
             </SelectTrigger>
-            <SelectContent className="bg-gray-800 text-white border-gray-700">
+            <SelectContent className="bg-input text-foreground border-border">
               <SelectItem value="All">All</SelectItem>
               <SelectItem value="Pending">Pending</SelectItem>
               <SelectItem value="Approved">Approved</SelectItem>
@@ -230,28 +230,28 @@ const TutorVerificationSection: React.FC = () => {
       </div>
 
       {filteredVerifications.length === 0 ? (
-        <p className="text-gray-400 text-center py-8">No tutor verification requests match the current filter.</p>
+        <p className="text-muted-foreground text-center py-8">No tutor verification requests match the current filter.</p>
       ) : (
         <div className="space-y-6">
           {filteredVerifications.map((verification) => (
-            <div key={verification.verificationID} className="p-6 bg-gray-900 border border-gray-800 rounded-lg shadow-md">
-              <h3 className="text-xl font-semibold text-white mb-2">{verification.fullName || verification.userID} ({verification.studentID})</h3>
-              <p className="text-gray-400"><strong>University:</strong> {verification.university}</p>
-              <p className="text-gray-400"><strong>Major:</strong> {verification.major}</p>
-              <p className="text-gray-400"><strong>Citizen ID:</strong> {verification.citizenID}</p>
-              <p className="mb-3 text-white"><strong>Status:</strong> <span className={`font-semibold ${
+            <div key={verification.verificationID} className="p-6 bg-card border border-border rounded-lg shadow-md">
+              <h3 className="text-xl font-semibold text-foreground mb-2">{verification.fullName || verification.userID} ({verification.studentID})</h3>
+              <p className="text-muted-foreground"><strong>University:</strong> {verification.university}</p>
+              <p className="text-muted-foreground"><strong>Major:</strong> {verification.major}</p>
+              <p className="text-muted-foreground"><strong>Citizen ID:</strong> {verification.citizenID}</p>
+              <p className="mb-3 text-foreground"><strong>Status:</strong> <span className={`font-semibold ${
                 verification.verificationStatus === 'Pending' ? 'text-yellow-400' :
-                verification.verificationStatus === 'Approved' ? 'text-green-400' : 'text-red-400'
+                verification.verificationStatus === 'Approved' ? 'text-green-400' : 'text-destructive'
               }`}>{verification.verificationStatus}</span></p>
               <div className="mb-3">
-                <strong className="text-white">Documents:</strong>
+                <strong className="text-foreground">Documents:</strong>
                 {verification.documents && verification.documents.length > 0 ? (
                   <ul className="list-disc list-inside ml-4 mt-1">
                     {verification.documents.map(doc => (
-                      <li key={doc.documentID} className="text-gray-400">
+                      <li key={doc.documentID} className="text-muted-foreground">
                         <button
                           onClick={() => handleOpenDocument(doc.documentID)}
-                          className="text-blue-400 hover:text-blue-300 hover:underline cursor-pointer"
+                          className="text-primary hover:text-primary-foreground hover:underline cursor-pointer"
                         >
                           {doc.documentType}
                         </button>
@@ -259,21 +259,21 @@ const TutorVerificationSection: React.FC = () => {
                     ))}
                   </ul>
                 ) : (
-                  <p className="text-gray-400">No documents submitted.</p>
+                  <p className="text-muted-foreground">No documents submitted.</p>
                 )}
               </div>
               {verification.verificationStatus === 'Pending' && (
                 <div className="mt-4 flex space-x-3">
                   <Button
                     onClick={() => handleStatusClick(verification.verificationID, 'Approved', verification.fullName || verification.userID)}
-                    className="bg-green-600 hover:bg-green-700 text-white"
+                    className="bg-success text-success-foreground hover:bg-success/90"
                   >
                     Approve
                   </Button>
                   <Button
                     onClick={() => handleStatusClick(verification.verificationID, 'Rejected', verification.fullName || verification.userID)}
                     variant="destructive"
-                    className="bg-red-600 hover:bg-red-700 text-white"
+                    className="bg-destructive hover:bg-destructive-foreground text-destructive-foreground"
                   >
                     Reject
                   </Button>
@@ -286,36 +286,36 @@ const TutorVerificationSection: React.FC = () => {
 
       {/* Alert Dialog for Status Confirmation */}
       <AlertDialog open={confirmDialog.open} onOpenChange={(open) => setConfirmDialog({ ...confirmDialog, open })}>
-        <AlertDialogContent className="bg-gray-900 border-gray-700 text-white">
+        <AlertDialogContent className="bg-card border-border text-foreground">
           <AlertDialogHeader>
-            <AlertDialogTitle className="text-white">
+            <AlertDialogTitle className="text-foreground">
               {confirmDialog.status === 'Approved' ? (
                 <span className="flex items-center gap-2">
-                  <CheckCircle className="h-5 w-5 text-green-400" />
+                  <CheckCircle className="h-5 w-5 text-success" />
                   Approve Verification
                 </span>
               ) : (
                 <span className="flex items-center gap-2">
-                  <XCircle className="h-5 w-5 text-red-400" />
+                  <XCircle className="h-5 w-5 text-destructive" />
                   Reject Verification
                 </span>
               )}
             </AlertDialogTitle>
-            <AlertDialogDescription className="text-gray-300">
+            <AlertDialogDescription className="text-muted-foreground">
               Are you sure you want to {confirmDialog.status.toLowerCase()} the verification for{' '}
               <strong>{confirmDialog.tutorName}</strong>? This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel className="bg-gray-700 border-gray-600 text-white hover:bg-gray-600">
+            <AlertDialogCancel className="bg-muted border-border text-foreground hover:bg-accent">
               Cancel
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={handleConfirmStatusUpdate}
               className={
                 confirmDialog.status === 'Approved'
-                  ? 'bg-green-600 hover:bg-green-700 text-white'
-                  : 'bg-red-600 hover:bg-red-700 text-white'
+                  ? 'bg-success text-success-foreground hover:bg-success/90'
+                  : 'bg-destructive hover:bg-destructive-foreground text-destructive-foreground'
               }
             >
               {confirmDialog.status === 'Approved' ? 'Approve' : 'Reject'}
@@ -330,9 +330,9 @@ const TutorVerificationSection: React.FC = () => {
           <Alert
             variant={alertInfo.type === 'error' ? 'destructive' : 'default'}
             className={`
-              ${alertInfo.type === 'success' ? 'bg-green-900 border-green-600 text-green-100' : ''}
-              ${alertInfo.type === 'error' ? 'bg-red-900 border-red-600 text-red-100' : ''}
-              ${alertInfo.type === 'warning' ? 'bg-yellow-900 border-yellow-600 text-yellow-100' : ''}
+              ${alertInfo.type === 'success' ? 'bg-success/90 border-success text-success-foreground' : ''}
+              ${alertInfo.type === 'error' ? 'bg-destructive/90 border-destructive text-destructive-foreground' : ''}
+              ${alertInfo.type === 'warning' ? 'bg-warning/90 border-warning text-warning-foreground' : ''}
             `}
           >
             {alertInfo.type === 'success' && <CheckCircle className="h-4 w-4" />}
