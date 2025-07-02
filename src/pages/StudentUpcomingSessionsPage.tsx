@@ -93,7 +93,7 @@ const StudentUpcomingSessionsPage: React.FC = () => {
         setUpcomingSessions([]);
       }
     } catch (err: unknown) {
-      setError(err.message || 'An unexpected error occurred.');
+      setError((err instanceof Error) ? err.message : 'An unexpected error occurred.');
       setUpcomingSessions([]);
     } finally {
       setIsLoading(false);

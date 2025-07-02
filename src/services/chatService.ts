@@ -1,7 +1,9 @@
 import type { ServiceResult } from '@/types/api.types';
-import { AuthService } from './AuthService';
+import { apiClient } from './AuthService';
+import { HubConnectionBuilder, HubConnection, HubConnectionState } from '@microsoft/signalr';
 
-const BASE_API_URL = import.meta.env.VITE_API_BASE_URL;
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+const chatHubUrl = `${API_BASE_URL.replace('/api', '')}/chatHub`;
 
 interface ChatMessage {
   senderId: string;
@@ -10,53 +12,71 @@ interface ChatMessage {
   timestamp: string;
 }
 
-export const ChatService = {
-  sendMessage: async (message: ChatMessage): Promise<ServiceResult<void>> => {
-    const url = `${BASE_API_URL}/chat/send`;
-    try {
-      const response = await AuthService.fetchWithAuth(url, {
-        method: 'POST',
-        body: JSON.stringify(message),
-        headers: { 'Content-Type': 'application/json' },
-      });
+let connection: HubConnection | null = null;
 
-      if (!response.ok) {
-        let errorBody: unknown;
-        try {
-          errorBody = await response.json();
-        } catch (e) {
-          try {
-            errorBody = await response.text();
-          } catch (textError) {
-            errorBody = `Request failed with status ${response.status} and error body could not be read.`;
-          }
-        }
-        console.error(`API Error ${response.status} for URL ${url}:`, errorBody);
-        let finalErrorMessage: string;
-        if (typeof errorBody === 'object' && errorBody !== null) {
-          if ('message' in errorBody && typeof (errorBody as any).message === 'string' && (errorBody as any).message.trim() !== '') {
-            finalErrorMessage = (errorBody as any).message;
-          } else if ('error' in errorBody && typeof (errorBody as any).error === 'string' && (errorBody as any).error.trim() !== '') {
-            finalErrorMessage = (errorBody as any).error;
-          } else {
-            finalErrorMessage = `Request failed with status ${response.status}. Response body: ${JSON.stringify(errorBody)}`;
-          }
-        } else if (typeof errorBody === 'string' && errorBody.trim() !== '') {
-          finalErrorMessage = errorBody;
-        } else {
-          finalErrorMessage = `Request failed with status ${response.status}`;
-        }
-        return { success: false, error: new Error(finalErrorMessage) };
+export const ChatService = {
+  initializeConnection: (): HubConnection => {
+    if (!connection) {
+      connection = new HubConnectionBuilder()
+        .withUrl(chatHubUrl)
+        .withAutomaticReconnect()
+        .build();
+    }
+    return connection;
+  },
+
+  startConnection: async (): Promise<ServiceResult<void>> => {
+    if (!connection) {
+      return { success: false, error: new Error("SignalR connection not initialized.") };
+    }
+    if (connection.state === HubConnectionState.Disconnected) {
+      try {
+        await connection.start();
+        console.log('SignalR Connected!');
+        return { success: true, data: undefined };
+      } catch (e) {
+        console.error('SignalR Connection Error: ', e);
+        return { success: false, error: e instanceof Error ? e : new Error(String(e)) };
       }
-      return { success: true, data: undefined };
-    } catch (networkOrOtherError) {
-      console.error(`Request processing failed for URL ${url}:`, networkOrOtherError);
-      return {
-        success: false,
-        error: networkOrOtherError instanceof Error ? networkOrOtherError : new Error(String(networkOrOtherError))
-      };
+    }
+    return { success: true, data: undefined }; // Already connected or connecting
+  },
+
+  stopConnection: async (): Promise<ServiceResult<void>> => {
+    if (connection && connection.state === HubConnectionState.Connected) {
+      try {
+        await connection.stop();
+        console.log('SignalR Disconnected.');
+        connection = null; // Clear connection after stopping
+        return { success: true, data: undefined };
+      } catch (e) {
+        console.error('SignalR Disconnection Error: ', e);
+        return { success: false, error: e instanceof Error ? e : new Error(String(e)) };
+      }
+    }
+    return { success: true, data: undefined }; // Already disconnected or not initialized
+  },
+
+  onReceiveMessage: (callback: (message: ChatMessage) => void) => {
+    if (connection) {
+      connection.on('ReceiveMessage', callback);
     }
   },
+
+  sendMessage: async (message: ChatMessage): Promise<ServiceResult<void>> => {
+    try {
+      // Use apiClient.post for consistency with other services
+      await apiClient.post('/Chat/send', message);
+      return { success: true, data: undefined };
+    } catch (error) {
+      console.error('Error sending message via API:', error);
+      return { success: false, error: error instanceof Error ? error : new Error(String(error)) };
+    }
+  },
+
+  getConnectionState: (): HubConnectionState | null => {
+    return connection ? connection.state : null;
+  }
 };
 
 export type { ChatMessage };
