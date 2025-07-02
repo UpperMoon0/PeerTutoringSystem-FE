@@ -101,12 +101,12 @@ const FeaturedTutorsCarousel: React.FC = () => {
 
   if (isLoading) {
     return (
-      <section className="py-8 md:py-16 bg-gray-950">
+      <section className="py-8 md:py-16 bg-background">
         <div className="container mx-auto px-4">
-          <h2 className="text-3xl md:text-4xl font-bold text-center mb-8 text-white">
+          <h2 className="text-3xl md:text-4xl font-bold text-center mb-8 text-foreground">
             Featured Tutors
           </h2>
-          <div className="text-center text-gray-400">
+          <div className="text-center text-muted-foreground">
             <p>Loading featured tutors...</p>
           </div>
         </div>
@@ -116,12 +116,12 @@ const FeaturedTutorsCarousel: React.FC = () => {
 
   if (error) {
     return (
-      <section className="py-8 md:py-16 bg-gray-950">
+      <section className="py-8 md:py-16 bg-background">
         <div className="container mx-auto px-4">
-          <h2 className="text-3xl md:text-4xl font-bold text-center mb-8 text-white">
+          <h2 className="text-3xl md:text-4xl font-bold text-center mb-8 text-foreground">
             Featured Tutors
           </h2>
-          <div className="text-center text-red-400">
+          <div className="text-center text-destructive-foreground">
             <p>{error}</p>
           </div>
         </div>
@@ -131,12 +131,12 @@ const FeaturedTutorsCarousel: React.FC = () => {
 
   if (tutors.length === 0) {
     return (
-      <section className="py-8 md:py-16 bg-gray-950">
+      <section className="py-8 md:py-16 bg-background">
         <div className="container mx-auto px-4">
-          <h2 className="text-3xl md:text-4xl font-bold text-center mb-8 text-white">
+          <h2 className="text-3xl md:text-4xl font-bold text-center mb-8 text-foreground">
             Featured Tutors
           </h2>
-          <div className="text-center text-gray-400">
+          <div className="text-center text-muted-foreground">
             <p>No featured tutors available at the moment.</p>
           </div>
         </div>
@@ -145,9 +145,9 @@ const FeaturedTutorsCarousel: React.FC = () => {
   }
 
   return (
-    <section className="py-8 md:py-16 bg-gray-950">
+    <section className="py-8 md:py-16 bg-background">
       <div className="container mx-auto px-4">
-        <h2 className="text-3xl md:text-4xl font-bold text-center mb-8 text-white">
+        <h2 className="text-3xl md:text-4xl font-bold text-center mb-8 text-foreground">
           Featured Tutors
         </h2>
         
@@ -167,18 +167,18 @@ const FeaturedTutorsCarousel: React.FC = () => {
                   className="flex-shrink-0 px-3"
                   style={{ width: `${100 / tutors.length}%` }}
                 >
-                  <Card className="bg-gray-900 border-gray-800 text-white h-full flex flex-col">
+                  <Card className="bg-card border-border text-card-foreground h-full flex flex-col">
                     <CardHeader className="text-center pb-4">
-                      <Avatar className="h-20 w-20 mx-auto mb-3 border-2 border-gray-700">
-                        <AvatarImage 
-                          src={tutor.tutorAccount?.avatarUrl} 
-                          alt={tutor.tutorName} 
+                      <Avatar className="h-20 w-20 mx-auto mb-3 border-2 border-border">
+                        <AvatarImage
+                          src={tutor.tutorAccount?.avatarUrl}
+                          alt={tutor.tutorName}
                         />
-                        <AvatarFallback className="bg-gray-700 text-gray-300 text-2xl">
+                        <AvatarFallback className="bg-accent text-muted-foreground text-2xl">
                           {tutor.tutorName.charAt(0)}
                         </AvatarFallback>
                       </Avatar>
-                      <CardTitle className="text-xl text-white">{tutor.tutorName}</CardTitle>
+                      <CardTitle className="text-xl text-card-foreground">{tutor.tutorName}</CardTitle>
                       
                       {/* Rating */}
                       <div className="mt-2">
@@ -194,37 +194,37 @@ const FeaturedTutorsCarousel: React.FC = () => {
                     <CardContent className="flex-grow pt-0">
                       {/* Bio */}
                       {tutor.tutorProfile?.bio && (
-                        <p className="text-sm text-gray-400 mb-3 line-clamp-3">
+                        <p className="text-sm text-muted-foreground mb-3 line-clamp-3">
                           {tutor.tutorProfile.bio}
                         </p>
                       )}
                       
                       {/* Experience and Rate */}
-                      <div className="text-sm text-gray-400 mb-3 space-y-1">
+                      <div className="text-sm text-muted-foreground mb-3 space-y-1">
                         {tutor.tutorProfile?.experience && (
-                          <p><strong className="text-gray-300">Experience:</strong> {tutor.tutorProfile.experience}</p>
+                          <p><strong className="text-foreground">Experience:</strong> {tutor.tutorProfile.experience}</p>
                         )}
                         {tutor.tutorProfile?.hourlyRate !== undefined && (
-                          <p><strong className="text-gray-300">Rate:</strong> ${tutor.tutorProfile.hourlyRate}/hr</p>
+                          <p><strong className="text-foreground">Rate:</strong> ${tutor.tutorProfile.hourlyRate}/hr</p>
                         )}
                       </div>
                       
                       {/* Skills */}
                       {tutor.skills && tutor.skills.length > 0 && (
                         <div className="mb-4">
-                          <h4 className="text-sm font-semibold text-white mb-2">Skills:</h4>
+                          <h4 className="text-sm font-semibold text-foreground mb-2">Skills:</h4>
                           <div className="flex flex-wrap gap-1">
                             {tutor.skills.slice(0, 3).map((userSkill) => (
-                              <Badge 
-                                key={userSkill.userSkillID} 
-                                variant="secondary" 
-                                className="bg-gray-750 text-blue-300 text-xs"
+                              <Badge
+                                key={userSkill.userSkillID}
+                                variant="secondary"
+                                className="bg-secondary text-primary text-xs"
                               >
                                 {userSkill.skill.skillName}
                               </Badge>
                             ))}
                             {tutor.skills.length > 3 && (
-                              <Badge variant="secondary" className="bg-gray-750 text-gray-400 text-xs">
+                              <Badge variant="secondary" className="bg-secondary text-muted-foreground text-xs">
                                 +{tutor.skills.length - 3} more
                               </Badge>
                             )}
@@ -235,7 +235,7 @@ const FeaturedTutorsCarousel: React.FC = () => {
                       {/* View Profile Button */}
                       <div className="mt-auto pt-4">
                         <Link to={`/tutors/${tutor.tutorId}`}>
-                          <Button className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white">
+                          <Button className="w-full bg-gradient-to-r from-primary to-purple-600 hover:from-primary/90 hover:to-purple-700 text-primary-foreground">
                             View Profile
                           </Button>
                         </Link>
@@ -253,7 +253,7 @@ const FeaturedTutorsCarousel: React.FC = () => {
               <Button
                 variant="outline"
                 size="icon"
-                className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-gray-800/80 border-gray-700 hover:bg-gray-700 text-white z-10"
+                className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-secondary/80 border-border hover:bg-secondary text-foreground z-10"
                 onClick={prevSlide}
                 disabled={currentIndex === 0}
               >
@@ -263,7 +263,7 @@ const FeaturedTutorsCarousel: React.FC = () => {
               <Button
                 variant="outline"
                 size="icon"
-                className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-gray-800/80 border-gray-700 hover:bg-gray-700 text-white z-10"
+                className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-secondary/80 border-border hover:bg-secondary text-foreground z-10"
                 onClick={nextSlide}
                 disabled={currentIndex >= totalSlides - 1}
               >
@@ -279,7 +279,7 @@ const FeaturedTutorsCarousel: React.FC = () => {
                 <button
                   key={index}
                   className={`w-3 h-3 rounded-full transition-colors ${
-                    index === currentIndex ? 'bg-blue-500' : 'bg-gray-600'
+                    index === currentIndex ? 'bg-primary' : 'bg-muted'
                   }`}
                   onClick={() => setCurrentIndex(index)}
                 />

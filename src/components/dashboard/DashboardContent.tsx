@@ -13,10 +13,10 @@ const DashboardContent: React.FC<DashboardContentProps> = ({
   
   if (!sectionConfig) {
     return (
-      <div className="flex-1 flex items-center justify-center bg-gray-950">
+      <div className="flex-1 flex items-center justify-center bg-background">
         <div className="text-center">
-          <h2 className="text-2xl font-bold text-white mb-2">Section Not Found</h2>
-          <p className="text-gray-400">The requested section "{activeSection}" could not be found.</p>
+          <h2 className="text-2xl font-bold text-foreground mb-2">Section Not Found</h2>
+          <p className="text-muted-foreground">The requested section "{activeSection}" could not be found.</p>
         </div>
       </div>
     );
@@ -28,14 +28,14 @@ const DashboardContent: React.FC<DashboardContentProps> = ({
   return (
     <div className="flex-1 flex flex-col overflow-hidden">
       {/* Header */}
-      <header className="bg-gray-900 border-b border-gray-800 px-6 py-4">
+      <header className="bg-card border-b border-border px-6 py-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
             <div>
-              <h1 className="text-xl lg:text-2xl font-bold text-white">
+              <h1 className="text-xl lg:text-2xl font-bold text-card-foreground">
                 {sectionConfig.title}
               </h1>
-              <p className="text-gray-400 mt-1 text-sm lg:text-base">
+              <p className="text-muted-foreground mt-1 text-sm lg:text-base">
                 {sectionConfig.subtitle}
               </p>
             </div>
@@ -45,11 +45,11 @@ const DashboardContent: React.FC<DashboardContentProps> = ({
 
       {/* Content */}
       <main className={cn(
-        "flex-1 p-6 overflow-auto bg-gray-950",
+        "flex-1 p-6 overflow-auto bg-background",
         className
       )}>
         {SectionComponent ? (
-          <SectionComponent onNavigateToSection={onSectionChange} />
+          <SectionComponent onNavigateToSection={onSectionChange || (() => {})} />
         ) : (
           children
         )}

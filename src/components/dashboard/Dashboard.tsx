@@ -71,7 +71,7 @@ const Dashboard: React.FC<DashboardProps> = ({
   };
 
   return (
-    <div className={cn("h-screen bg-gray-950 flex", className)}>
+    <div className={cn("h-screen bg-background flex", className)}>
       {/* Sidebar */}
       <DashboardSidebar
         config={enhancedConfig}

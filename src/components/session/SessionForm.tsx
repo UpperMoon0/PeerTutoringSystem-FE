@@ -171,19 +171,19 @@ const SessionForm: React.FC<SessionFormProps> = ({
 
     return (
       <div className={className}>
-        <Label className="text-gray-300 mb-1">{label}</Label>
+        <Label className="text-muted-foreground mb-1">{label}</Label>
         <Popover open={open} onOpenChange={setOpen}>
           <PopoverTrigger asChild>
             <Button
               type="button"
               variant="outline"
-              className={`w-full justify-between bg-gray-800 border-gray-700 text-white ${className}`}
+              className={`w-full justify-between bg-secondary border-border text-secondary-foreground ${className}`}
               disabled={disabled}
             >
               {value || 'Select time'}
             </Button>
           </PopoverTrigger>
-          <PopoverContent className="flex flex-col gap-2 p-2 bg-gray-900 border-gray-700">
+          <PopoverContent className="flex flex-col gap-2 p-2 bg-popover border-border">
             <div className="flex gap-2">
               <Select value={tempTime.h} onValueChange={(val: string) => setTempTime(prev => ({ ...prev, h: val }))} disabled={disabled}>
                 <SelectTrigger className="w-20">
@@ -217,12 +217,12 @@ const SessionForm: React.FC<SessionFormProps> = ({
                 </SelectContent>
               </Select>
             </div>
-            <Button onClick={handleSave} className="mt-2 bg-blue-600 hover:bg-blue-700" disabled={disabled}>
+            <Button onClick={handleSave} className="mt-2 bg-primary hover:bg-primary/90" disabled={disabled}>
               Save
             </Button>
           </PopoverContent>
         </Popover>
-        {error && <p className="text-red-400 text-sm">{error}</p>}
+        {error && <p className="text-destructive-foreground text-sm">{error}</p>}
       </div>
     );
   };
@@ -290,16 +290,16 @@ const SessionForm: React.FC<SessionFormProps> = ({
   };
 
   return (
-    <Card className="bg-gray-900 border-gray-800">
+    <Card className="bg-card border-border">
       <CardHeader>
-        <CardTitle className="text-white flex items-center">
-          <VideoIcon className="w-5 h-5 mr-2 text-blue-400" />
+        <CardTitle className="text-card-foreground flex items-center">
+          <VideoIcon className="w-5 h-5 mr-2 text-primary" />
           Session Details
         </CardTitle>
-        <div className="text-sm text-gray-400">
+        <div className="text-sm text-muted-foreground">
           <div className="flex items-center mt-2">
-            <Clock className="w-4 h-4 mr-1 text-blue-400" />
-            <span className="text-gray-400">
+            <Clock className="w-4 h-4 mr-1 text-primary" />
+            <span className="text-muted-foreground">
               {format(new Date(booking.startTime), 'PPP')} - {format(new Date(booking.startTime), 'p')} - {format(new Date(booking.endTime), 'p')}
             </span>
           </div>
@@ -309,15 +309,15 @@ const SessionForm: React.FC<SessionFormProps> = ({
       </CardHeader>
       <CardContent>
         {error && (
-          <Alert className="mb-4 bg-red-900 border-red-800">
+          <Alert className="mb-4 bg-destructive/20 border-destructive/30">
             <AlertCircle className="h-4 w-4" />
-            <AlertDescription className="text-red-300">{error}</AlertDescription>
+            <AlertDescription className="text-destructive-foreground">{error}</AlertDescription>
           </Alert>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="videoCallLink" className="text-gray-300 flex items-center">
+            <Label htmlFor="videoCallLink" className="text-muted-foreground flex items-center">
               <VideoIcon className="w-4 h-4 mr-1" />
               Video Call Link *
             </Label>
@@ -327,16 +327,16 @@ const SessionForm: React.FC<SessionFormProps> = ({
               placeholder="https://meet.google.com/... or https://zoom.us/..."
               value={formData.videoCallLink}
               onChange={(e) => handleInputChange('videoCallLink', e.target.value)}
-              className="bg-gray-800 border-gray-700 text-white placeholder-gray-500"
+              className="bg-input border-border text-foreground placeholder-muted-foreground"
               disabled={isSubmitting}
             />
             {formErrors.videoCallLink && (
-              <p className="text-red-400 text-sm">{formErrors.videoCallLink}</p>
+              <p className="text-destructive-foreground text-sm">{formErrors.videoCallLink}</p>
             )}
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="sessionNotes" className="text-gray-300 flex items-center">
+            <Label htmlFor="sessionNotes" className="text-muted-foreground flex items-center">
               <FileText className="w-4 h-4 mr-1" />
               Session Notes *
             </Label>
@@ -345,23 +345,23 @@ const SessionForm: React.FC<SessionFormProps> = ({
               placeholder="Add any preparation notes, agenda, or materials the student should review before the session..."
               value={formData.sessionNotes}
               onChange={(e) => handleInputChange('sessionNotes', e.target.value)}
-              className="bg-gray-800 border-gray-700 text-white placeholder-gray-500 min-h-[100px]"
+              className="bg-input border-border text-foreground placeholder-muted-foreground min-h-[100px]"
               disabled={isSubmitting}
             />
             {formErrors.sessionNotes && (
-              <p className="text-red-400 text-sm">{formErrors.sessionNotes}</p>
+              <p className="text-destructive-foreground text-sm">{formErrors.sessionNotes}</p>
             )}
-            <p className="text-gray-500 text-xs">
+            <p className="text-muted-foreground text-xs">
               Minimum 10 characters. Include session agenda, preparation materials, or any special instructions.
             </p>
           </div>
 
-          <div className="bg-gray-800 border border-gray-700 rounded-lg p-4">
-            <h4 className="text-gray-300 font-medium mb-3 flex items-center">
+          <div className="bg-secondary border border-border rounded-lg p-4">
+            <h4 className="text-muted-foreground font-medium mb-3 flex items-center">
               <Clock className="w-4 h-4 mr-1" />
               Session Time (within booking window)
             </h4>
-            <p className="text-sm text-gray-400 mb-4">
+            <p className="text-sm text-muted-foreground mb-4">
               Booking window: {format(new Date(booking.startTime), 'HH:mm')} - {format(new Date(booking.endTime), 'HH:mm')}
             </p>
             
@@ -373,7 +373,7 @@ const SessionForm: React.FC<SessionFormProps> = ({
                   onChange={val => handleTimeChange('startTime', to24Hour(val))}
                   disabled={isSubmitting}
                   error={formErrors.startTime}
-                  className="border border-gray-300 rounded-md p-2"
+                  className="border border-border rounded-md p-2"
                 />
               </div>
               <div className="flex flex-col gap-2 mb-2">
@@ -383,7 +383,7 @@ const SessionForm: React.FC<SessionFormProps> = ({
                   onChange={val => handleTimeChange('endTime', to24Hour(val))}
                   disabled={isSubmitting}
                   error={formErrors.endTime}
-                  className="border border-gray-300 rounded-md p-2"
+                  className="border border-border rounded-md p-2"
                 />
               </div>
             </div>
@@ -396,7 +396,7 @@ const SessionForm: React.FC<SessionFormProps> = ({
                 variant="outline"
                 onClick={onCancel}
                 disabled={isSubmitting}
-                className="border-gray-700 text-gray-300 hover:bg-gray-800"
+                className="border-border text-muted-foreground hover:bg-secondary"
               >
                 Cancel
               </Button>
@@ -404,7 +404,7 @@ const SessionForm: React.FC<SessionFormProps> = ({
             <Button
               type="submit"
               disabled={isSubmitting}
-              className="bg-green-600 hover:bg-green-700"
+              className="bg-primary hover:bg-primary/90"
             >
               {isSubmitting
                 ? session

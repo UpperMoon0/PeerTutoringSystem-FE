@@ -12,8 +12,8 @@ export type TutorSection = 'overview' | 'availability' | 'bookings' | 'profile';
 export interface SidebarItem {
   icon: React.ComponentType<{ className?: string }>;
   label: string;
-  href: string; // Always required for highlighting
-  onClick?: () => void; // Optional handler
+  href: string; 
+  onClick?: () => void; 
   indicator?: {
     show: boolean;
     variant: 'warning' | 'info' | 'success' | 'error';
@@ -37,10 +37,14 @@ export interface DashboardConfig {
 }
 
 // Section configuration interface
+export interface SectionComponentProps {
+  onNavigateToSection: (section: string) => void;
+}
+
 export interface SectionConfig {
   title: string;
   subtitle: string;
-  component?: React.ComponentType<unknown>;
+  component?: React.ComponentType<SectionComponentProps>;
 }
 
 // Dashboard props interface

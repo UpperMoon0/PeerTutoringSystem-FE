@@ -56,7 +56,7 @@ const DashboardSidebar: React.FC<SidebarProps> = ({
       {/* Mobile Menu Button */}
       <button
         onClick={() => setIsMobileMenuOpen(true)}
-        className="lg:hidden fixed top-4 left-4 z-50 p-2 bg-gray-900 text-white rounded-lg shadow-lg"
+        className="lg:hidden fixed top-4 left-4 z-50 p-2 bg-card text-card-foreground rounded-lg shadow-lg"
         aria-label="Open menu"
       >
         <Menu className="w-6 h-6" />
@@ -72,14 +72,14 @@ const DashboardSidebar: React.FC<SidebarProps> = ({
 
       {/* Sidebar */}
       <div className={cn(
-        "w-64 bg-gray-900 border-r border-gray-800 flex flex-col h-full",
+        "w-64 bg-sidebar border-r border-sidebar-border flex flex-col h-full",
         "lg:relative lg:translate-x-0",
         "fixed inset-y-0 left-0 z-50 transform transition-transform duration-200 ease-in-out",
         isMobileMenuOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0",
         className
       )}>
         {/* Header */}
-        <div className="p-6 border-b border-gray-800">
+        <div className="p-6 border-b border-sidebar-border">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
               <div className={cn(
@@ -87,18 +87,18 @@ const DashboardSidebar: React.FC<SidebarProps> = ({
                 `from-${config.theme.primaryColor} to-${config.theme.iconColor}`
               )}>
                 {React.createElement(config.sidebarItems[0]?.icon || Menu, {
-                  className: "w-6 h-6 text-white"
+                  className: "w-6 h-6 text-sidebar-primary-foreground"
                 })}
               </div>
               <div>
-                <h2 className="text-white font-semibold text-lg">{config.title}</h2>
-                <p className="text-gray-400 text-sm">{config.subtitle}</p>
+                <h2 className="text-sidebar-foreground font-semibold text-lg">{config.title}</h2>
+                <p className="text-muted-foreground text-sm">{config.subtitle}</p>
               </div>
             </div>
             {/* Mobile Close Button */}
             <button
               onClick={() => setIsMobileMenuOpen(false)}
-              className="lg:hidden p-1 text-gray-400 hover:text-white"
+              className="lg:hidden p-1 text-muted-foreground hover:text-foreground"
               aria-label="Close menu"
             >
               <X className="w-6 h-6" />
@@ -117,8 +117,8 @@ const DashboardSidebar: React.FC<SidebarProps> = ({
               className: cn(
                 "w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all duration-200 group",
                 isActive
-                  ? `bg-gradient-to-r ${config.theme.gradientColors[0]} ${config.theme.gradientColors[1]} text-white shadow-lg`
-                  : "text-gray-300 hover:text-white hover:bg-gray-800"
+                  ? `bg-gradient-to-r ${config.theme.gradientColors[0]} ${config.theme.gradientColors[1]} text-sidebar-primary-foreground shadow-lg`
+                  : "text-sidebar-foreground hover:text-foreground hover:bg-sidebar-accent"
               ),
               "aria-label": item.label,
             };
@@ -127,7 +127,7 @@ const DashboardSidebar: React.FC<SidebarProps> = ({
               <>
                 <Icon className={cn(
                   "w-5 h-5 transition-colors",
-                  isActive ? "text-white" : "text-gray-400 group-hover:text-white"
+                  isActive ? "text-sidebar-primary-foreground" : "text-muted-foreground group-hover:text-foreground"
                 )} />
                 <span className="font-medium">{item.label}</span>
                 {/* Show indicator if configured */}
@@ -135,10 +135,10 @@ const DashboardSidebar: React.FC<SidebarProps> = ({
                   <div className="ml-auto" title={item.indicator.tooltip || ''}>
                     <AlertCircle className={cn(
                       "w-4 h-4",
-                      item.indicator.variant === 'warning' && "text-yellow-400",
-                      item.indicator.variant === 'error' && "text-red-400",
-                      item.indicator.variant === 'info' && "text-blue-400",
-                      item.indicator.variant === 'success' && "text-green-400"
+                      item.indicator.variant === 'warning' && "text-yellow-400", // Keep specific color for warning
+                      item.indicator.variant === 'error' && "text-destructive-foreground",
+                      item.indicator.variant === 'info' && "text-primary",
+                      item.indicator.variant === 'success' && "text-green-400" // Keep specific color for success
                     )} />
                   </div>
                 )}
@@ -161,13 +161,13 @@ const DashboardSidebar: React.FC<SidebarProps> = ({
         </nav>
 
         {/* Footer */}
-        <div className="p-4 border-t border-gray-800">
-          <div className="bg-gray-800 rounded-lg p-4">
+        <div className="p-4 border-t border-sidebar-border">
+          <div className="bg-sidebar-accent rounded-lg p-4">
             <div className="flex items-center space-x-3 mb-3">
               {React.createElement(config.sidebarItems[0]?.icon || Menu, {
-                className: `w-5 h-5 text-${config.theme.iconColor.split('-')[0]}-400`
+                className: `w-5 h-5 text-${config.theme.iconColor.split('-')[0]}-400` // Keep this as it uses config.theme.iconColor
               })}
-              <span className="text-gray-300 text-sm font-medium">
+              <span className="text-sidebar-foreground text-sm font-medium">
                 {config.role === 'admin' ? 'System Stats' : 'Quick Stats'}
               </span>
             </div>
@@ -175,23 +175,23 @@ const DashboardSidebar: React.FC<SidebarProps> = ({
               {config.role === 'admin' ? (
                 <>
                   <div className="flex justify-between">
-                    <span className="text-gray-400">Total Users</span>
-                    <span className="text-blue-400 font-medium">1,250</span>
+                    <span className="text-muted-foreground">Total Users</span>
+                    <span className="text-primary font-medium">1,250</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-400">Pending Verifications</span>
+                    <span className="text-muted-foreground">Pending Verifications</span>
                     <span className="text-yellow-400 font-medium">12</span>
                   </div>
                 </>
               ) : (
                 <>
                   <div className="flex justify-between">
-                    <span className="text-gray-400">This Month</span>
+                    <span className="text-muted-foreground">This Month</span>
                     <span className="text-green-400 font-medium">$1,250</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-400">Sessions</span>
-                    <span className="text-blue-400 font-medium">24</span>
+                    <span className="text-muted-foreground">Sessions</span>
+                    <span className="text-primary font-medium">24</span>
                   </div>
                 </>
               )}

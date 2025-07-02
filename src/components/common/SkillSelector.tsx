@@ -40,11 +40,11 @@ const SkillSelector: React.FC<SkillSelectorProps> = ({
           value={searchTerm}
           onChange={handleSearchChange}
           disabled={isLoading}
-          className="pl-10 bg-gray-800 border-gray-700 text-white placeholder:text-gray-500"
+          className="pl-10 bg-input border-border text-foreground placeholder:text-muted-foreground"
         />
         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
           <svg
-            className="h-5 w-5 text-gray-400"
+            className="h-5 w-5 text-muted-foreground"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -59,13 +59,13 @@ const SkillSelector: React.FC<SkillSelectorProps> = ({
         </div>
       </div>
 
-      <div className="bg-gray-700/30 border border-gray-600 rounded-lg p-4">
+      <div className="bg-secondary/30 border border-border rounded-lg p-4">
         <div className="mb-3 flex items-center justify-between">
-          <p className="text-sm font-medium text-white">
+          <p className="text-sm font-medium text-foreground">
             Available Skills ({filteredSkills.length})
           </p>
           {selectedSkillIds.length > 0 && (
-            <p className="text-xs text-gray-400">
+            <p className="text-xs text-muted-foreground">
               {selectedSkillIds.length} selected
             </p>
           )}
@@ -84,9 +84,9 @@ const SkillSelector: React.FC<SkillSelectorProps> = ({
             ))
           ) : (
             <div className="col-span-full flex flex-col items-center justify-center py-8 text-center">
-              <div className="w-12 h-12 bg-gray-700 rounded-full flex items-center justify-center mb-3">
+              <div className="w-12 h-12 bg-secondary rounded-full flex items-center justify-center mb-3">
                 <svg
-                  className="h-6 w-6 text-gray-400"
+                  className="h-6 w-6 text-muted-foreground"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -99,8 +99,8 @@ const SkillSelector: React.FC<SkillSelectorProps> = ({
                   />
                 </svg>
               </div>
-              <p className="text-sm font-medium text-white mb-1">No skills found</p>
-              <p className="text-xs text-gray-400">
+              <p className="text-sm font-medium text-foreground mb-1">No skills found</p>
+              <p className="text-xs text-muted-foreground">
                 Try adjusting your search terms
               </p>
             </div>
@@ -109,21 +109,21 @@ const SkillSelector: React.FC<SkillSelectorProps> = ({
       </div>
 
       {selectedSkillIds.length > 0 && (
-        <div className="bg-blue-600/20 border border-blue-600/30 rounded-lg p-3">
-          <p className="text-sm font-medium text-white mb-2">Selected Skills:</p>
+        <div className="bg-primary/20 border border-primary/30 rounded-lg p-3">
+          <p className="text-sm font-medium text-foreground mb-2">Selected Skills:</p>
           <div className="flex flex-wrap gap-2">
             {selectedSkillIds.map(skillId => {
               const skill = allSkills.find(s => s.skillID === skillId);
               return skill ? (
                 <span
                   key={skillId}
-                  className="inline-flex items-center gap-1 px-2 py-1 bg-blue-600/20 text-blue-400 border border-blue-600/30 rounded-md text-xs font-medium"
+                  className="inline-flex items-center gap-1 px-2 py-1 bg-primary/20 text-primary border border-primary/30 rounded-md text-xs font-medium"
                 >
                   {skill.skillName}
                   <button
                     type="button"
                     onClick={() => onSkillChange(skillId)}
-                    className="hover:bg-blue-600/30 rounded-full p-0.5 transition-colors"
+                    className="hover:bg-primary/30 rounded-full p-0.5 transition-colors"
                     disabled={isLoading}
                   >
                     <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">

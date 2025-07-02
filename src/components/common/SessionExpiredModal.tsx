@@ -21,15 +21,15 @@ const SessionExpiredModal: React.FC<SessionExpiredModalProps> = ({ isOpen, onClo
 
   return (
     <AlertDialog open={isOpen} onOpenChange={onClose}>
-      <AlertDialogContent>
+      <AlertDialogContent className="bg-card text-foreground border-border">
         <AlertDialogHeader>
-          <AlertDialogTitle>Session Expired</AlertDialogTitle>
-          <AlertDialogDescription>
+          <AlertDialogTitle className="text-foreground">Session Expired</AlertDialogTitle>
+          <AlertDialogDescription className="text-muted-foreground">
             Your session has expired. Please log in again to continue.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogAction onClick={onClose}>Login</AlertDialogAction>
+          <AlertDialogAction onClick={onClose} className="bg-primary text-primary-foreground hover:bg-primary/90">Login</AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
