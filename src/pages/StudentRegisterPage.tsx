@@ -213,7 +213,7 @@ const StudentRegisterPage: React.FC = () => {
                     {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                   </Button>
                 </div>
-                {errors.password && <p className="text-red-400 text-xs mt-1">{errors.password.message}</p>}
+                {errors.password && <p className="text-destructive text-xs mt-1">{errors.password.message}</p>}
               </div>
 
               <div className="grid gap-2">
@@ -236,7 +236,7 @@ const StudentRegisterPage: React.FC = () => {
                     {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                   </Button>
                 </div>
-                {errors.confirmPassword && <p className="text-red-400 text-xs mt-1">{errors.confirmPassword.message}</p>}
+                {errors.confirmPassword && <p className="text-destructive text-xs mt-1">{errors.confirmPassword.message}</p>}
               </div>
             </div>
             <CardFooter className="flex flex-col pt-6 px-0">

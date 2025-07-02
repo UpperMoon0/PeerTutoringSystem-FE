@@ -193,8 +193,8 @@ const TutorListPage: React.FC = () => {
     return (
       <div className="w-full bg-background min-h-screen flex items-center justify-center">
         <div className="flex flex-col items-center space-y-4">
-          <Loader2 className="h-8 w-8 animate-spin text-[var(--color-primary)]" />
-          <p className="text-[var(--color-primary-foreground)] text-lg font-medium">Loading tutors...</p>
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <p className="text-foreground text-lg font-medium">Loading tutors...</p>
         </div>
       </div>
     );
@@ -206,7 +206,7 @@ const TutorListPage: React.FC = () => {
 
   return (
     <div className="w-full p-6 bg-background min-h-screen">
-      <h1 className="text-4xl font-bold mb-8 text-center text-[var(--color-primary-foreground)]">Available Tutors</h1>
+      <h1 className="text-4xl font-bold mb-8 text-center text-foreground">Available Tutors</h1>
       
       {/* Search and Filter Toggle */}
       <div className="mb-6 max-w-6xl mx-auto">
@@ -215,7 +215,7 @@ const TutorListPage: React.FC = () => {
             <Input
               type="text"
               placeholder="Search tutors by name, email, bio, or skills..."
-              className="w-full p-4 bg-card border border-input rounded-lg shadow-sm focus:ring-2 focus:ring-[var(--color-primary)] focus:border-[var(--color-primary)] text-[var(--color-primary-foreground)] placeholder-muted-foreground transition-colors"
+              className="w-full p-4 bg-card border border-input rounded-lg shadow-sm focus:ring-2 focus:ring-primary focus:border-primary text-foreground placeholder-muted-foreground transition-colors"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
@@ -231,10 +231,10 @@ const TutorListPage: React.FC = () => {
               {showFilters ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
             </Button>
             <Select value={sortBy} onValueChange={setSortBy}>
-              <SelectTrigger className="w-48 bg-popover border-border text-[var(--color-primary-foreground)]">
+              <SelectTrigger className="w-48 bg-popover border-border text-foreground">
                 <SelectValue placeholder="Sort by" />
               </SelectTrigger>
-              <SelectContent className="bg-popover border-border text-[var(--color-primary-foreground)]">
+              <SelectContent className="bg-popover border-border text-foreground">
                 <SelectItem value="name">Name (A-Z)</SelectItem>
                 <SelectItem value="rating">Highest Rated</SelectItem>
                 <SelectItem value="rate-low">Price: Low to High</SelectItem>
@@ -258,7 +258,7 @@ const TutorListPage: React.FC = () => {
               <Button
                 variant="ghost"
                 onClick={clearAllFilters}
-                className="text-muted-foreground hover:text-[var(--color-primary-foreground)]"
+                className="text-muted-foreground hover:text-foreground"
               >
                 Clear All
               </Button>
@@ -298,7 +298,7 @@ const TutorListPage: React.FC = () => {
                       <Badge
                         key={skillId}
                         variant="secondary"
-                        className="bg-[var(--color-primary)] text-[var(--color-primary-foreground)] hover:bg-[var(--color-primary)] cursor-pointer flex items-center gap-1"
+                        className="bg-primary text-primary-foreground hover:bg-primary cursor-pointer flex items-center gap-1"
                         onClick={() => toggleSkill(skillId)}
                       >
                         {skill.skillName}
@@ -313,30 +313,30 @@ const TutorListPage: React.FC = () => {
             {/* Hourly Rate Filter */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <Label className="text-[var(--color-primary-foreground)] font-medium mb-2 block">Min Hourly Rate ($)</Label>
+                <Label className="text-foreground font-medium mb-2 block">Min Hourly Rate ($)</Label>
                 <Input
                   type="number"
                   placeholder="0"
                   value={minHourlyRate}
                   onChange={(e) => setMinHourlyRate(e.target.value)}
-                  className="bg-popover border-border text-[var(--color-primary-foreground)]"
+                  className="bg-popover border-border text-foreground"
                 />
               </div>
               <div>
-                <Label className="text-[var(--color-primary-foreground)] font-medium mb-2 block">Max Hourly Rate ($)</Label>
+                <Label className="text-foreground font-medium mb-2 block">Max Hourly Rate ($)</Label>
                 <Input
                   type="number"
                   placeholder="1000"
                   value={maxHourlyRate}
                   onChange={(e) => setMaxHourlyRate(e.target.value)}
-                  className="bg-popover border-border text-[var(--color-primary-foreground)]"
+                  className="bg-popover border-border text-foreground"
                 />
               </div>
             </div>
 
             {/* Skill Levels Filter */}
             <div>
-              <Label className="text-[var(--color-primary-foreground)] font-medium mb-3 block">Skill Levels</Label>
+              <Label className="text-foreground font-medium mb-3 block">Skill Levels</Label>
               <div className="flex flex-wrap gap-2">
                 {skillLevels.map((level) => (
                   <div key={level} className="flex items-center space-x-2">
@@ -374,12 +374,12 @@ const TutorListPage: React.FC = () => {
 
             {/* Rating Filter */}
             <div>
-              <Label className="text-[var(--color-primary-foreground)] font-medium mb-2 block">Minimum Rating</Label>
+              <Label className="text-foreground font-medium mb-2 block">Minimum Rating</Label>
               <Select value={minRating} onValueChange={setMinRating}>
-                <SelectTrigger className="w-48 bg-popover border-border text-[var(--color-primary-foreground)]">
+                <SelectTrigger className="w-48 bg-popover border-border text-foreground">
                   <SelectValue placeholder="Any rating" />
                 </SelectTrigger>
-                <SelectContent className="bg-popover border-border text-[var(--color-primary-foreground)]">
+                <SelectContent className="bg-popover border-border text-foreground">
                   <SelectItem value="any">Any rating</SelectItem>
                   <SelectItem value="1">1+ stars</SelectItem>
                   <SelectItem value="2">2+ stars</SelectItem>

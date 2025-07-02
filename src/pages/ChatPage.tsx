@@ -80,10 +80,10 @@ const ChatPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-4 md:p-6 space-y-6">
-      <Card className="bg-gray-900 border-gray-800 shadow-xl flex flex-col h-[calc(100vh-8rem)]">
-        <CardHeader className="p-6 border-b border-gray-800">
-          <CardTitle className="text-2xl text-white">Chat</CardTitle>
+    <div className="min-h-screen bg-background text-foreground p-4 md:p-6 space-y-6">
+      <Card className="bg-card border-border shadow-xl flex flex-col h-[calc(100vh-8rem)]">
+        <CardHeader className="p-6 border-b border-border">
+          <CardTitle className="text-2xl text-foreground">Chat</CardTitle>
         </CardHeader>
         <CardContent ref={chatContentRef} className="flex-1 overflow-y-auto p-6 space-y-4">
           {messages.map((msg, index) => (
@@ -93,21 +93,21 @@ const ChatPage: React.FC = () => {
             >
               <div
                 className={`${
-                  msg.sender === 'You' ? 'bg-gray-700' : 'bg-blue-600'
-                } text-white p-3 rounded-lg max-w-xs shadow-md`}
+                  msg.sender === 'You' ? 'bg-accent' : 'bg-primary'
+                } text-primary-foreground p-3 rounded-lg max-w-xs shadow-md`}
               >
                 <p>{msg.content}</p>
-                <span className="text-xs text-gray-400 mt-1 block">
+                <span className="text-xs text-muted-foreground mt-1 block">
                   {new Date(msg.timestamp).toLocaleTimeString()} - {msg.sender}
                 </span>
               </div>
             </div>
           ))}
         </CardContent>
-        <div className="p-6 border-t border-gray-800 flex items-center space-x-3">
+        <div className="p-6 border-t border-border flex items-center space-x-3">
           <Input
             placeholder="Type your message..."
-            className="flex-1 bg-gray-800 border-gray-700 text-white placeholder-gray-500 focus:ring-blue-500 focus:border-blue-500"
+            className="flex-1 bg-input border-border text-foreground placeholder-muted-foreground focus:ring-ring focus:border-ring"
             value={messageInput}
             onChange={(e) => setMessageInput(e.target.value)}
             onKeyPress={(e) => {
@@ -117,7 +117,7 @@ const ChatPage: React.FC = () => {
             }}
           />
           <Button
-            className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-3 text-base"
+            className="bg-gradient-to-r from-primary to-ring hover:from-primary hover:to-ring text-primary-foreground font-semibold py-3 text-base"
             onClick={sendMessage}
             disabled={!connection || connection.state !== HubConnectionState.Connected}
           >

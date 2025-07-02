@@ -478,7 +478,7 @@ const TutorDetailPage: React.FC = () => {
                     <Button
                       variant={"outline"}
                       className={cn(
-                        "w-full justify-start text-left font-normal bg-input border-border hover:bg-secondary text-foreground",
+                        "w-full justify-start text-left font-normal bg-input border-border hover:bg-accent text-foreground",
                         !dateRangeStart && "text-muted-foreground"
                       )}
                     >
@@ -507,7 +507,7 @@ const TutorDetailPage: React.FC = () => {
                         return date < today;
                       }}
                       initialFocus
-                      className="bg-popover text-popover-foreground [&_button]:text-popover-foreground [&_button:hover]:bg-secondary [&_button[aria-selected]]:bg-primary"
+                      className="bg-popover text-popover-foreground [&_button]:text-popover-foreground [&_button:hover]:bg-accent [&_button[aria-selected]]:bg-primary"
                     />
                   </PopoverContent>
                 </Popover>
@@ -521,7 +521,7 @@ const TutorDetailPage: React.FC = () => {
                     <Button
                       variant={"outline"}
                       className={cn(
-                        "w-full justify-start text-left font-normal bg-input border-border hover:bg-secondary text-foreground",
+                        "w-full justify-start text-left font-normal bg-input border-border hover:bg-accent text-foreground",
                         !dateRangeEnd && "text-muted-foreground"
                       )}
                     >
@@ -543,7 +543,7 @@ const TutorDetailPage: React.FC = () => {
                         dateRangeStart ? date < dateRangeStart : false // Can't be before start date
                       }
                       initialFocus
-                      className="bg-popover text-popover-foreground [&_button]:text-popover-foreground [&_button:hover]:bg-secondary [&_button[aria-selected]]:bg-primary"
+                      className="bg-popover text-popover-foreground [&_button]:text-popover-foreground [&_button:hover]:bg-accent [&_button[aria-selected]]:bg-primary"
                     />
                   </PopoverContent>
                 </Popover>
@@ -573,34 +573,34 @@ const TutorDetailPage: React.FC = () => {
                           "w-full text-left justify-start h-auto py-3 px-3 transition-all min-h-[4rem]",
                           selectedAvailability?.availabilityId === avail.availabilityId && selectedAvailability?.startTime === avail.startTime
                           ? "bg-gradient-to-r from-primary to-ring hover:from-ring hover:to-ring text-primary-foreground border-transparent"
-                          : "bg-input border-border hover:bg-secondary text-muted-foreground hover:text-foreground"
+                          : "bg-input border-border hover:bg-accent text-muted-foreground hover:text-foreground"
                         )}
                         onClick={() => setSelectedAvailability(avail)}
                       >
                         <div className="flex flex-col">
                           {avail.isRecurring ? (
                             <>
-                              <div className="flex items-center gap-2">
-                                <span className="font-medium">
-                                  {avail.recurringDay ? avail.recurringDay.charAt(0).toUpperCase() + avail.recurringDay.slice(1).toLowerCase() : 'Daily'}
-                                </span>
-                                <span className="text-xs bg-primary/20 text-primary-foreground px-2 py-0.5 rounded-full">
-                                  Recurring
-                                </span>
-                              </div>
-                              <span className="text-sm">
-                                {`${format(new Date(avail.startTime), "p")} - ${format(new Date(avail.endTime), "p")}`}
-                              </span>
-                              {avail.recurrenceEndDate && (
-                                <span className="text-xs text-muted-foreground">
-                                  Until {format(new Date(avail.recurrenceEndDate), "PPP")}
-                                </span>
-                              )}
+                               <div className="flex items-center gap-2">
+                                 <span className="font-medium">
+                                   {avail.recurringDay ? avail.recurringDay.charAt(0).toUpperCase() + avail.recurringDay.slice(1).toLowerCase() : 'Daily'}
+                                 </span>
+                                 <span className="text-xs bg-primary/20 text-primary-foreground px-2 py-0.5 rounded-full">
+                                   Recurring
+                                 </span>
+                               </div>
+                               <span className="text-sm">
+                                 {`${format(new Date(avail.startTime), "p")} - ${format(new Date(avail.endTime), "p")}`}
+                               </span>
+                               {avail.recurrenceEndDate && (
+                                 <span className="text-xs text-muted-foreground">
+                                   Until {format(new Date(avail.recurrenceEndDate), "PPP")}
+                                 </span>
+                               )}
                             </>
                           ) : (
                             <>
-                              <span className="font-medium">{format(new Date(avail.startTime), "PPP")}</span>
-                              <span className="text-sm">{`${format(new Date(avail.startTime), "p")} - ${format(new Date(avail.endTime), "p")}`}</span>
+                               <span className="font-medium">{format(new Date(avail.startTime), "PPP")}</span>
+                               <span className="text-sm">{`${format(new Date(avail.startTime), "p")} - ${format(new Date(avail.endTime), "p")}`}</span>
                             </>
                           )}
                         </div>
