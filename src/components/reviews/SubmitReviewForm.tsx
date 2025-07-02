@@ -90,7 +90,7 @@ const SubmitReviewForm: React.FC<SubmitReviewFormProps> = ({ bookingId, tutorId,
                 <Star
                   key={star}
                   className={`h-8 w-8 cursor-pointer ${
-                    star <= currentRating ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300 hover:text-yellow-300'
+                    star <= currentRating ? 'text-primary fill-primary' : 'text-muted-foreground hover:text-primary'
                   }`}
                   onClick={() => handleStarClick(star)}
                 />

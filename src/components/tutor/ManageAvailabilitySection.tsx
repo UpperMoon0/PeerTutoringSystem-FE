@@ -123,7 +123,7 @@ const ManageAvailabilitySection: React.FC = () => {
   if (!currentUser || currentUser.role !== 'Tutor') {
     return (
       <div className="p-6 text-center">
-        <p className="text-gray-400">Access Denied. Only tutors can manage availability.</p>
+        <p className="text-muted-foreground">Access Denied. Only tutors can manage availability.</p>
       </div>
     );
   }
@@ -131,34 +131,34 @@ const ManageAvailabilitySection: React.FC = () => {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-xl font-bold text-white mb-2">Manage Your Availability</h2>
-        <p className="text-gray-400">Set your available time slots for tutoring sessions.</p>
+        <h2 className="text-xl font-bold text-foreground mb-2">Manage Your Availability</h2>
+        <p className="text-muted-foreground">Set your available time slots for tutoring sessions.</p>
       </div>
 
-      <Card className="bg-gray-900 border-gray-800">
+      <Card className="bg-card border-border">
         <CardHeader>
-          <CardTitle className="text-white">Add New Availability</CardTitle>
+          <CardTitle className="text-foreground">Add New Availability</CardTitle>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
               <div>
-                <Label htmlFor="selectedDate" className="text-gray-300">Date</Label>
+                <Label htmlFor="selectedDate" className="text-muted-foreground">Date</Label>
                 <Popover>
                   <PopoverTrigger asChild>
                     <Button
                       variant={"outline"}
                       className={cn(
-                        "w-full justify-start text-left font-normal bg-gray-800 border-gray-700 hover:bg-gray-700",
+                        "w-full justify-start text-left font-normal bg-input border-border hover:bg-accent",
                         !selectedDate && "text-muted-foreground",
-                        getErrorForField('selectedDate') && "border-red-500"
+                        getErrorForField('selectedDate') && "border-destructive"
                       )}
                     >
-                      <CalendarIcon className="mr-2 size-4 text-white" />
-                      {selectedDate ? format(selectedDate, "PPP") : <span className="text-white">Pick a date</span>}
+                      <CalendarIcon className="mr-2 size-4 text-foreground" />
+                      {selectedDate ? format(selectedDate, "PPP") : <span className="text-foreground">Pick a date</span>}
                     </Button>
                   </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0 bg-gray-800 border-gray-700">
+                  <PopoverContent className="w-auto p-0 bg-popover border-border">
                     <Calendar
                       mode="single"
                       selected={selectedDate}
@@ -167,88 +167,88 @@ const ManageAvailabilitySection: React.FC = () => {
                         if (validationErrors) setValidationErrors(null);
                       }}
                       initialFocus
-                      className="bg-gray-800"
+                      className="bg-popover"
                     />
                   </PopoverContent>
                 </Popover>
-                {getErrorForField('selectedDate') && <p className="text-red-500 text-xs mt-1">{getErrorForField('selectedDate')}</p>}
+                {getErrorForField('selectedDate') && <p className="text-destructive text-xs mt-1">{getErrorForField('selectedDate')}</p>}
               </div>
               <div>
-                <Label htmlFor="startTimeInput" className="text-gray-300">Start Time</Label>
-                <Input 
-                  type="time" 
-                  id="startTimeInput" 
-                  value={startTimeStr} 
+                <Label htmlFor="startTimeInput" className="text-muted-foreground">Start Time</Label>
+                <Input
+                  type="time"
+                  id="startTimeInput"
+                  value={startTimeStr}
                   onChange={(e) => {
-                    setStartTimeStr(e.target.value); 
+                    setStartTimeStr(e.target.value);
                     if (validationErrors) setValidationErrors(null);
                   }}
-                  required 
-                  className={cn("w-full bg-gray-800 border-gray-700 text-white", getErrorForField('startTimeStr') && "border-red-500")}
+                  required
+                  className={cn("w-full bg-input border-border text-foreground", getErrorForField('startTimeStr') && "border-destructive")}
                 />
-                {getErrorForField('startTimeStr') && <p className="text-red-500 text-xs mt-1">{getErrorForField('startTimeStr')}</p>}
+                {getErrorForField('startTimeStr') && <p className="text-destructive text-xs mt-1">{getErrorForField('startTimeStr')}</p>}
               </div>
               <div>
-                <Label htmlFor="endTimeInput" className="text-gray-300">End Time</Label>
-                <Input 
-                  type="time" 
-                  id="endTimeInput" 
-                  value={endTimeStr} 
+                <Label htmlFor="endTimeInput" className="text-muted-foreground">End Time</Label>
+                <Input
+                  type="time"
+                  id="endTimeInput"
+                  value={endTimeStr}
                   onChange={(e) => {
-                    setEndTimeStr(e.target.value); 
+                    setEndTimeStr(e.target.value);
                     if (validationErrors) setValidationErrors(null);
                   }}
-                  required 
-                  className={cn("w-full bg-gray-800 border-gray-700 text-white", getErrorForField('endTimeStr') && "border-red-500")}
+                  required
+                  className={cn("w-full bg-input border-border text-foreground", getErrorForField('endTimeStr') && "border-destructive")}
                 />
-                {getErrorForField('endTimeStr') && <p className="text-red-500 text-xs mt-1">{getErrorForField('endTimeStr')}</p>}
+                {getErrorForField('endTimeStr') && <p className="text-destructive text-xs mt-1">{getErrorForField('endTimeStr')}</p>}
               </div>
             </div>
 
             <div className="flex items-center space-x-2 pt-2">
-              <Checkbox 
-                id="isRecurring" 
-                checked={isRecurring} 
+              <Checkbox
+                id="isRecurring"
+                checked={isRecurring}
                 onCheckedChange={(checked) => setIsRecurring(Boolean(checked))}
-                className="border-gray-600"
+                className="border-border"
               />
-              <Label htmlFor="isRecurring" className="text-gray-300">Is Recurring?</Label>
+              <Label htmlFor="isRecurring" className="text-muted-foreground">Is Recurring?</Label>
             </div>
 
             {isRecurring && (
-              <div className="space-y-4 p-4 border rounded-md bg-gray-800 border-gray-700">
+              <div className="space-y-4 p-4 border rounded-md bg-card-secondary border-border">
                 <div>
-                  <Label htmlFor="recurrenceEndDate" className="text-gray-300">Recurrence End Date (Optional)</Label>
+                  <Label htmlFor="recurrenceEndDate" className="text-muted-foreground">Recurrence End Date (Optional)</Label>
                   <Popover>
                     <PopoverTrigger asChild>
                       <Button
                         variant={"outline"}
                         className={cn(
-                          "w-full justify-start text-left font-normal bg-gray-800 border-gray-700 hover:bg-gray-700",
+                          "w-full justify-start text-left font-normal bg-input border-border hover:bg-accent",
                           !recurrenceEndDate && "text-muted-foreground"
                         )}
                       >
-                        <CalendarIcon className="mr-2 h-4 w-4 opacity-50 text-white" />
-                        {recurrenceEndDate ? format(recurrenceEndDate, "PPP") : <span className="text-white">Pick a date</span>}
+                        <CalendarIcon className="mr-2 h-4 w-4 opacity-50 text-foreground" />
+                        {recurrenceEndDate ? format(recurrenceEndDate, "PPP") : <span className="text-foreground">Pick a date</span>}
                       </Button>
                     </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0 bg-gray-800 border-gray-700">
+                    <PopoverContent className="w-auto p-0 bg-popover border-border">
                       <Calendar
                         mode="single"
                         selected={recurrenceEndDate}
                         onSelect={setRecurrenceEndDate}
                         initialFocus
-                        className="bg-gray-800"
+                        className="bg-popover"
                       />
                     </PopoverContent>
                   </Popover>
                 </div>
               </div>
             )}
-            {error && <p className="text-red-500 text-sm mt-2 text-center">{error}</p>}
-            <Button 
-              type="submit" 
-              disabled={isLoading} 
+            {error && <p className="text-destructive text-sm mt-2 text-center">{error}</p>}
+            <Button
+              type="submit"
+              disabled={isLoading}
               className="w-full mt-6 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
             >
               {isLoading ? 'Adding...' : 'Add Availability'}
@@ -257,26 +257,26 @@ const ManageAvailabilitySection: React.FC = () => {
         </CardContent>
       </Card>
 
-      <Card className="bg-gray-900 border-gray-800">
+      <Card className="bg-card border-border">
         <CardHeader>
-          <CardTitle className="text-white">Your Current Availabilities</CardTitle>
+          <CardTitle className="text-foreground">Your Current Availabilities</CardTitle>
         </CardHeader>
         <CardContent>
-          {isLoading && <p className="text-gray-400">Loading availabilities...</p>}
-          {!isLoading && availabilities.length === 0 && <p className="text-gray-400">You have no availabilities set.</p>}
+          {isLoading && <p className="text-muted-foreground">Loading availabilities...</p>}
+          {!isLoading && availabilities.length === 0 && <p className="text-muted-foreground">You have no availabilities set.</p>}
           {!isLoading && availabilities.length > 0 && (
             <div className="space-y-3">
               {availabilities.map(avail => (
-                <div key={avail.availabilityId} className="p-4 bg-gray-800 border border-gray-700 rounded-lg">
-                  <p className="text-white"><strong>From:</strong> {new Date(avail.startTime).toLocaleString()}</p>
-                  <p className="text-white"><strong>To:</strong> {new Date(avail.endTime).toLocaleString()}</p>
+                <div key={avail.availabilityId} className="p-4 bg-card-secondary border border-border rounded-lg">
+                  <p className="text-foreground"><strong>From:</strong> {new Date(avail.startTime).toLocaleString()}</p>
+                  <p className="text-foreground"><strong>To:</strong> {new Date(avail.endTime).toLocaleString()}</p>
                   {avail.isRecurring && (
-                    <p className="text-gray-300">
+                    <p className="text-muted-foreground">
                       Recurs on {avail.recurringDay}
                       {avail.recurrenceEndDate ? ` until ${new Date(avail.recurrenceEndDate).toLocaleDateString()}` : ' indefinitely'}
                     </p>
                   )}
-                  <p className={avail.isBooked ? 'text-red-400' : 'text-green-400'}>
+                  <p className={avail.isBooked ? 'text-destructive' : 'text-primary'}>
                     {avail.isBooked ? 'Booked' : 'Available'}
                   </p>
                 </div>
