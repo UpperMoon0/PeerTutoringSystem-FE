@@ -53,7 +53,7 @@ const TutorCard: React.FC<TutorCardProps> = ({ tutor }) => {
           </AvatarFallback>
         </Avatar>
       </div>
-      <h2 className="text-xl font-semibold text-center mb-2 text-[var(--color-primary-foreground)]">{tutor.fullName}</h2>
+      <h2 className="text-xl font-semibold text-center mb-2 text-[var(--color-foreground)]">{tutor.fullName}</h2>
       
       {/* Rating Section */}
       <div className="text-center mb-3">
