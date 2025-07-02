@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { TutorAvailabilityService } from '@/services/TutorAvailabilityService';
 import type { TutorAvailability, CreateTutorAvailabilityDto } from '@/types/availability.types';
 import { useAuth } from '@/contexts/AuthContext';
@@ -37,7 +37,7 @@ const ManageAvailabilitySection: React.FC = () => {
     return combined.toISOString();
   };
 
-  const fetchAvailabilities = async () => {
+  const fetchAvailabilities = useCallback(async () => {
     if (!currentUser || currentUser.role !== 'Tutor') return;
     setIsLoading(true);
     setError(null);
@@ -48,13 +48,13 @@ const ManageAvailabilitySection: React.FC = () => {
       setError(response.error ? (response.error instanceof Error ? response.error.message : typeof response.error === 'string' ? response.error : String(response.error)) : 'Failed to fetch availabilities.');
     }
     setIsLoading(false);
-  };
+  }, [currentUser, setAvailabilities, setError, setIsLoading]); // Add all dependencies
 
   useEffect(() => {
     if (currentUser && currentUser.role === 'Tutor') {
       fetchAvailabilities();
     }
-  }, [currentUser]);
+  }, [currentUser, fetchAvailabilities]); // Add fetchAvailabilities to dependency array
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

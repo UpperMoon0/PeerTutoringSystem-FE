@@ -135,13 +135,12 @@ const TutorDetailPage: React.FC = () => {
     finalProcessedSlots.sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
     
     return finalProcessedSlots;
-  }, [format]);
+  }, []);
 
   const displaySlots = useMemo(() => {
     const unbookedSlots = availabilities.filter(slot => !slot.isBooked);
     return getProcessedAvailabilities(unbookedSlots);
   }, [availabilities, getProcessedAvailabilities]);
-
 
   useEffect(() => {
     const fetchTutorDetails = async () => {
