@@ -432,7 +432,7 @@ const TutorDetailPage: React.FC = () => {
             </div>
             {currentUser && currentUser.userId !== tutorId && (
               <Button
-                onClick={() => navigate('/student/chat', { state: { receiverId: tutorId } })}
+                onClick={() => navigate(`/student/chat?userId=${tutorId}`)}
                 variant="outline"
                 size="sm"
                 className="bg-primary hover:bg-ring text-primary-foreground ml-auto"

@@ -1,7 +1,7 @@
 import type { ApiResult } from '@/types/api.types';
 import { AuthService } from './AuthService';
 import { HubConnectionBuilder, HubConnection, HubConnectionState } from '@microsoft/signalr';
-import type { ChatMessage } from '@/types/chat.types';
+import type { ChatMessage, Conversation, SendMessagePayload } from '@/types/chat';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 const chatHubUrl = `${API_BASE_URL.replace('/api', '')}/chatHub`;
@@ -59,7 +59,7 @@ export const ChatService = {
     }
   },
 
-  sendMessage: async (message: ChatMessage): Promise<ApiResult<ChatMessage>> => {
+  sendMessage: async (message: SendMessagePayload): Promise<ApiResult<ChatMessage>> => {
     try {
       const response = await AuthService.fetchWithAuth(`${API_BASE_URL}/Chat/send`, {
         method: 'POST',
@@ -80,5 +80,39 @@ export const ChatService = {
 
   getConnectionState: (): HubConnectionState | null => {
     return connection ? connection.state : null;
+  },
+
+  getConversations: async (userId: string): Promise<ApiResult<Conversation[]>> => {
+    try {
+      const response = await AuthService.fetchWithAuth(`${API_BASE_URL}/Chat/conversations/${userId}`);
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: "Failed to parse error response." }));
+        throw new Error(errorData.error || `Failed to fetch conversations: ${response.statusText}`);
+      }
+      const conversations: Conversation[] = await response.json();
+      return { success: true, data: conversations };
+    } catch (error) {
+      console.error('Error fetching conversations:', error);
+      return { success: false, error: error instanceof Error ? error.message : "Failed to fetch conversations." };
+    }
+  },
+
+  findOrCreateConversation: async (participantId: string): Promise<ApiResult<Conversation>> => {
+    try {
+      const response = await AuthService.fetchWithAuth(`${API_BASE_URL}/Chat/find-or-create`, {
+        method: 'POST',
+        body: JSON.stringify({ participantId }),
+        headers: { 'Content-Type': 'application/json' },
+      });
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: "Failed to parse error response." }));
+        throw new Error(errorData.error || `Failed to find or create conversation: ${response.statusText}`);
+      }
+      const conversation: Conversation = await response.json();
+      return { success: true, data: conversation };
+    } catch (error) {
+      console.error('Error finding or creating conversation:', error);
+      return { success: false, error: error instanceof Error ? error.message : "Failed to find or create conversation." };
+    }
   }
 };

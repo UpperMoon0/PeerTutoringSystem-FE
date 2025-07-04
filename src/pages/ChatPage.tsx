@@ -1,125 +1,44 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { useParams } from 'react-router-dom';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
+import ConversationList from '@/components/chat/ConversationList';
+import ChatWindow from '@/components/chat/ChatWindow';
+import type { Conversation } from '@/types/chat';
 import { ChatService } from '@/services/ChatService';
-import type { ChatMessage } from '@/types/chat.types';
-import { HubConnectionState } from '@microsoft/signalr';
-import { useAuth } from '@/contexts/AuthContext'; 
+import { useAuth } from '@/contexts/AuthContext';
 
 const ChatPage: React.FC = () => {
+  const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null);
+  const [searchParams] = useSearchParams();
   const { currentUser } = useAuth();
-  const { receiverId } = useParams<{ receiverId: string }>();
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const [messageInput, setMessageInput] = useState<string>('');
-  const [connectionState, setConnectionState] = useState<HubConnectionState | null>(null);
-  const chatContentRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const connection = ChatService.initializeConnection();
-    setConnectionState(connection.state);
-
-    const handleReceiveMessage = (message: ChatMessage) => {
-      setMessages((prevMessages) => [...prevMessages, message]);
-    };
-
-    ChatService.onReceiveMessage(handleReceiveMessage);
-
-    ChatService.startConnection().then(result => {
-      if (result.success) {
-        setConnectionState(ChatService.getConnectionState());
-      } else {
-        console.error("Failed to start SignalR connection:", result.error);
-      }
-    });
-
-    return () => {
-      ChatService.stopConnection().then(result => {
-        if (result.success) {
-          setConnectionState(ChatService.getConnectionState());
+    const userId = searchParams.get('userId');
+    if (userId && currentUser) {
+      const findAndSelectConversation = async () => {
+        const result = await ChatService.findOrCreateConversation(userId);
+        if (result.success && result.data) {
+          setSelectedConversation(result.data);
         } else {
-          console.error("Failed to stop SignalR connection:", result.error);
+          console.error("Failed to find or create conversation:", result.error);
         }
-      });
-    };
-  }, []);
-
-  useEffect(() => {
-    if (chatContentRef.current) {
-      chatContentRef.current.scrollTop = chatContentRef.current.scrollHeight;
-    }
-  }, [messages]);
-
-  const sendMessage = async () => {
-    if (messageInput.trim() && currentUser?.userId && receiverId) {
-      const newMessage: ChatMessage = {
-        senderId: currentUser.userId,
-        receiverId: receiverId,
-        message: messageInput,
-        timestamp: new Date().toISOString(),
       };
-      const result = await ChatService.sendMessage(newMessage);
-      if (result.success) {
-        if (result.data) {
-          setMessages((prevMessages) => [...prevMessages, result.data as ChatMessage]);
-        }
-        setMessageInput('');
-      } else {
-        console.error('Error sending message:', result.error);
-      }
+      findAndSelectConversation();
     }
-  };
+  }, [searchParams, currentUser]);
 
   return (
-    <div className="min-h-screen bg-background text-foreground p-4 md:p-6 space-y-6">
-      <Card className="bg-card border-border shadow-xl flex flex-col h-[calc(100vh-8rem)]">
-        <CardHeader className="p-6 border-b border-border">
-          <CardTitle className="text-2xl text-foreground">Chat</CardTitle>
-        </CardHeader>
-        <CardContent ref={chatContentRef} className="flex-1 overflow-y-auto p-6 space-y-4">
-          {messages.map((msg, index) => {
-            if (!msg) return null;
-            return (
-              <div
-                key={index}
-                className={`flex ${msg.senderId === currentUser?.userId ? 'justify-end' : 'justify-start'}`}
-              >
-                <div
-                  className={`${
-                    msg.senderId === currentUser?.userId ? 'bg-accent' : 'bg-primary'
-                  } text-primary-foreground p-3 rounded-lg max-w-xs shadow-md`}
-                >
-                  <p>{msg.message}</p>
-                  <span className="text-xs text-muted-foreground mt-1 block">
-                    {new Date(msg.timestamp).toLocaleTimeString()} - {msg.senderId === currentUser?.userId ? 'You' : 'Other User'}
-                  </span>
-                </div>
-              </div>
-            );
-          })}
-        </CardContent>
-        <div className="p-6 border-t border-border flex items-center space-x-3">
-          <Input
-            placeholder="Type your message..."
-            className="flex-1 bg-input border-border text-foreground placeholder-muted-foreground focus:ring-ring focus:border-ring"
-            value={messageInput}
-            onChange={(e) => setMessageInput(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' && messageInput.trim()) {
-                sendMessage();
-              }
-            }}
+    <div className="min-h-screen bg-background text-foreground p-4 md:p-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 h-[calc(100vh-8rem)]">
+        <div className="md:col-span-1">
+          <ConversationList
+            onSelectConversation={setSelectedConversation}
+            selectedConversation={selectedConversation}
           />
-          <Button
-            className="bg-gradient-to-r from-primary to-ring hover:from-primary hover:to-ring text-primary-foreground font-semibold py-3 text-base"
-            onClick={sendMessage}
-            disabled={connectionState !== HubConnectionState.Connected}
-          >
-            Send
-          </Button>
         </div>
-      </Card>
+        <div className="md:col-span-2">
+          <ChatWindow conversation={selectedConversation} />
+        </div>
+      </div>
     </div>
   );
 };
