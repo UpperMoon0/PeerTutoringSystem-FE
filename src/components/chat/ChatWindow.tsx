@@ -34,7 +34,12 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ conversation }) => {
         ((message.senderId === currentUser?.userId && message.receiverId === conversation.participant.id) ||
           (message.senderId === conversation.participant.id && message.receiverId === currentUser?.userId))
       ) {
-        setMessages((prevMessages) => [...prevMessages, message]);
+        setMessages((prevMessages) => {
+          if (prevMessages.some((m) => m.id === message.id)) {
+            return prevMessages; // Message already exists, do not add duplicate
+          }
+          return [...prevMessages, message];
+        });
       }
     };
 
@@ -68,19 +73,38 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ conversation }) => {
   const sendMessage = async () => {
     const receiverId = conversation?.participant.id;
     if (messageInput.trim() && currentUser?.userId && receiverId) {
-      const newMessage: SendMessagePayload = {
+      const optimisticMessage: ChatMessage = {
+        id: Date.now().toString(), // Temporary ID
         senderId: currentUser.userId,
         receiverId: receiverId,
         message: messageInput,
+        timestamp: new Date().toISOString(),
       };
-      const result = await ChatService.sendMessage(newMessage);
-      if (result.success) {
-        if (result.data) {
-          setMessages((prevMessages) => [...prevMessages, result.data as ChatMessage]);
-        }
-        setMessageInput('');
+
+      setMessages((prevMessages) => [...prevMessages, optimisticMessage]);
+      setMessageInput('');
+
+      const payload: SendMessagePayload = {
+        senderId: optimisticMessage.senderId,
+        receiverId: optimisticMessage.receiverId,
+        message: optimisticMessage.message,
+      };
+
+      const result = await ChatService.sendMessage(payload);
+
+      if (result.success && result.data) {
+        // Replace optimistic message with the real one from the server
+        setMessages((prevMessages) =>
+          prevMessages.map((msg) =>
+            msg.id === optimisticMessage.id ? (result.data as ChatMessage) : msg
+          )
+        );
       } else {
         console.error('Error sending message:', result.error);
+        // Revert optimistic update
+        setMessages((prevMessages) =>
+          prevMessages.filter((msg) => msg.id !== optimisticMessage.id)
+        );
       }
     }
   };
