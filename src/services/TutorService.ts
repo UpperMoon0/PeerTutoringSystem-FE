@@ -320,7 +320,7 @@ const getAllEnrichedTutors = async (): Promise<ApiResult<EnrichedTutor[]>> => {
 };
 
 const getTutorById = async (tutorId: string): Promise<ApiResult<ProfileDto>> => {
-  const url = `${API_BASE_URL}/UserBio/user/${tutorId}`;
+  const url = `${API_BASE_URL}/tutors/enriched/${tutorId}`;
   try {
     // Use regular fetch instead of fetchWithAuth to allow guest access
     const response = await fetch(url, { method: 'GET' });

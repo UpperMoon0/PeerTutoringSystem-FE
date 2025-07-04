@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import type { ProfileDto, UpdateProfileDto } from '@/types/user.types';
 import type { AppUser } from '../../contexts/AuthContext';
 import { Button } from '../ui/button';
@@ -49,11 +49,7 @@ const ProfileCard: React.FC<ProfileCardProps> = ({
   loading,
   canEdit,
   onCancelEdit,
-  currentUser,
-  userId,
 }) => {
-  const isTutorOwner = profile.role === 'Tutor' && currentUser?.userId === profile.userID;
-  const [, setTutorSectionExpanded] = useState(true);
 
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {

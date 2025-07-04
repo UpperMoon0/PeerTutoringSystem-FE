@@ -7,6 +7,9 @@ export function cn(...inputs: ClassValue[]) {
 
 // Generate a consistent gradient color based on the tutor's name
 export const generateGradient = (name: string) => {
+  if (!name) {
+    return 'from-gray-400 to-gray-500';
+  }
   const colors = [
     'from-purple-400 to-pink-400',
     'from-blue-400 to-indigo-400',
@@ -33,5 +36,8 @@ export const generateGradient = (name: string) => {
 };
 
 export const getInitials = (name: string) => {
+  if (!name) {
+    return '?';
+  }
   return name.charAt(0).toUpperCase();
 };
