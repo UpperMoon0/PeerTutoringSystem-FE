@@ -9,9 +9,10 @@ import { useAuth } from '@/contexts/AuthContext';
 
 interface ChatWindowProps {
   conversation: Conversation | null;
+  onNewMessage: (message: ChatMessage) => void;
 }
 
-const ChatWindow: React.FC<ChatWindowProps> = ({ conversation }) => {
+const ChatWindow: React.FC<ChatWindowProps> = ({ conversation, onNewMessage }) => {
   const { currentUser } = useAuth();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [messageInput, setMessageInput] = useState<string>('');
@@ -20,7 +21,15 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ conversation }) => {
 
   useEffect(() => {
     if (conversation) {
-      // Fetch message history for the conversation
+      const fetchMessages = async () => {
+        const result = await ChatService.getMessages(conversation.id);
+        if (result.success && result.data) {
+          setMessages(result.data);
+        } else {
+          console.error("Failed to fetch messages:", result.error);
+        }
+      };
+      fetchMessages();
     }
   }, [conversation]);
 
@@ -38,7 +47,9 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ conversation }) => {
           if (prevMessages.some((m) => m.id === message.id)) {
             return prevMessages; // Message already exists, do not add duplicate
           }
-          return [...prevMessages, message];
+          const newMessages = [...prevMessages, message];
+          onNewMessage(message);
+          return newMessages;
         });
       }
     };
@@ -93,12 +104,14 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ conversation }) => {
       const result = await ChatService.sendMessage(payload);
 
       if (result.success && result.data) {
+        const receivedMessage = result.data as ChatMessage;
         // Replace optimistic message with the real one from the server
         setMessages((prevMessages) =>
           prevMessages.map((msg) =>
-            msg.id === optimisticMessage.id ? (result.data as ChatMessage) : msg
+            msg.id === optimisticMessage.id ? receivedMessage : msg
           )
         );
+        onNewMessage(receivedMessage);
       } else {
         console.error('Error sending message:', result.error);
         // Revert optimistic update
@@ -128,8 +141,10 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ conversation }) => {
             >
               <div
                 className={`${
-                  msg.senderId === currentUser?.userId ? 'bg-accent' : 'bg-primary'
-                } text-primary-foreground p-3 rounded-lg max-w-xs shadow-md`}
+                  msg.senderId === currentUser?.userId
+                    ? 'bg-accent text-accent-foreground'
+                    : 'bg-primary text-primary-foreground'
+                } p-3 rounded-lg max-w-xs shadow-md`}
               >
                 <p>{msg.message}</p>
                 <span className="text-xs text-muted-foreground mt-1 block">

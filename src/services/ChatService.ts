@@ -114,5 +114,20 @@ export const ChatService = {
       console.error('Error finding or creating conversation:', error);
       return { success: false, error: error instanceof Error ? error.message : "Failed to find or create conversation." };
     }
+  },
+
+  getMessages: async (conversationId: string): Promise<ApiResult<ChatMessage[]>> => {
+    try {
+      const response = await AuthService.fetchWithAuth(`${API_BASE_URL}/Chat/${conversationId}/messages`);
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: 'Failed to parse error response.' }));
+        throw new Error(errorData.error || `Failed to fetch messages: ${response.statusText}`);
+      }
+      const messages: ChatMessage[] = await response.json();
+      return { success: true, data: messages };
+    } catch (error) {
+      console.error('Error fetching messages:', error);
+      return { success: false, error: error instanceof Error ? error.message : 'Failed to fetch messages.' };
+    }
   }
 };

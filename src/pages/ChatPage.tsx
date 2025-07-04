@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import ConversationList from '@/components/chat/ConversationList';
 import ChatWindow from '@/components/chat/ChatWindow';
-import type { Conversation } from '@/types/chat';
+import type { Conversation, ChatMessage } from '@/types/chat';
 import { ChatService } from '@/services/ChatService';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -53,7 +53,18 @@ const ChatPage: React.FC = () => {
 
     processConversations();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentUser]);
+  }, [currentUser, searchParams, setSearchParams]);
+
+  const handleNewMessage = (message: ChatMessage) => {
+    setConversations(prev => {
+      const conversationToUpdate = prev.find(c => c.id === selectedConversation?.id);
+      if (conversationToUpdate) {
+        const updatedConv = { ...conversationToUpdate, lastMessage: message };
+        return [updatedConv, ...prev.filter(c => c.id !== selectedConversation?.id)];
+      }
+      return prev;
+    });
+  };
 
   return (
     <div className="min-h-screen bg-background text-foreground p-4 md:p-6">
@@ -66,7 +77,7 @@ const ChatPage: React.FC = () => {
           />
         </div>
         <div className="md:col-span-2">
-          <ChatWindow conversation={selectedConversation} />
+          <ChatWindow conversation={selectedConversation} onNewMessage={handleNewMessage} />
         </div>
       </div>
     </div>
