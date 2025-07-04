@@ -2,7 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ChatService, type ChatMessage } from '@/services/chatService';
+import { ChatService } from '@/services/ChatService';
+import type { ChatMessage } from '@/types/chat.types';
 import { HubConnectionState } from '@microsoft/signalr';
 import { useAuth } from '@/contexts/AuthContext'; 
 
