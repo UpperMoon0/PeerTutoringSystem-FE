@@ -16,7 +16,7 @@ const facebookProvider = new FacebookAuthProvider();
 const signInWithGoogleRedirect = async (): Promise<void> => {
   try {
     await signInWithRedirect(auth, googleProvider);
-  } catch (error: any) {
+  } catch (error) {
     console.error("Google Sign-In Redirect Error:", error);
     throw error;
   }
@@ -26,7 +26,7 @@ const handleGoogleRedirectResult = async (): Promise<UserCredential | null> => {
   try {
     const result = await getRedirectResult(auth);
     return result; // Return the entire UserCredential
-  } catch (error: any) {
+  } catch (error) {
     console.error("Google Redirect Result Error:", error);
     return null;
   }
@@ -36,7 +36,7 @@ const signInWithGooglePopup = async (): Promise<UserCredential | null> => {
   try {
     const result = await signInWithPopup(auth, googleProvider);
     return result; // Return the entire UserCredential
-  } catch (error: any) {
+  } catch (error) {
     console.error("Google Sign-In Popup Error:", error);
     throw error; // Rethrow to be caught by the caller in AuthService
   }

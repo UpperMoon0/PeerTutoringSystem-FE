@@ -1,6 +1,7 @@
 import type { ProfileDto, UpdateProfileDto, User } from '@/types/user.types';
 import type { ServiceResult } from '@/types/api.types';
 import { AuthService } from './AuthService';
+import { handleApiResponse } from '../lib/apiUtils';
 
 const BASE_API_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -9,48 +10,7 @@ export const ProfileService = {
     const url = `${BASE_API_URL}/users/${profileId}`;
     try {
       const response = await AuthService.fetchWithAuth(url, { method: 'GET' });
-      if (!response.ok) {
-        let errorBody: unknown;
-        try {
-          errorBody = await response.json();
-        } catch (e) {
-          try {
-            errorBody = await response.text();
-          } catch (textError) {
-            errorBody = `Request failed with status ${response.status} and error body could not be read.`;
-          }
-        }
-        console.error(`API Error ${response.status} for URL ${url}:`, errorBody);
-        let finalErrorMessage: string;
-        if (typeof errorBody === 'object' && errorBody !== null) {
-          if ('message' in errorBody && typeof (errorBody as any).message === 'string' && (errorBody as any).message.trim() !== '') {
-            finalErrorMessage = (errorBody as any).message;
-          } else if ('error' in errorBody && typeof (errorBody as any).error === 'string' && (errorBody as any).error.trim() !== '') {
-            finalErrorMessage = (errorBody as any).error;
-          } else {
-            finalErrorMessage = `Request failed with status ${response.status}. Response body: ${JSON.stringify(errorBody)}`;
-          }
-        } else if (typeof errorBody === 'string' && errorBody.trim() !== '') {
-          finalErrorMessage = errorBody;
-        } else {
-          finalErrorMessage = `Request failed with status ${response.status}`;
-        }
-        return { success: false, error: new Error(finalErrorMessage) };
-      }
-      if (response.status === 204) {
-        return { success: true, data: undefined as unknown as ProfileDto };
-      }
-      const responseText = await response.text();
-      if (!responseText) { // Check if body is empty for non-204 success (e.g. 200 with empty body)
-        return { success: true, data: undefined as unknown as ProfileDto };
-      }
-      try {
-        const data = JSON.parse(responseText) as ProfileDto;
-        return { success: true, data };
-      } catch (parseError) {
-        console.error(`JSON parsing error for URL ${url}:`, parseError, "Response text:", responseText);
-        return { success: false, error: new Error("Failed to parse server response.") };
-      }
+      return await handleApiResponse<ProfileDto>(response, url);
     } catch (networkOrOtherError) {
       console.error(`Request processing failed for URL ${url}:`, networkOrOtherError);
       return {
@@ -64,48 +24,7 @@ export const ProfileService = {
     const url = `${BASE_API_URL}/users/${userId}`;
     try {
       const response = await AuthService.fetchWithAuth(url, { method: 'GET' });
-      if (!response.ok) {
-        let errorBody: unknown;
-        try {
-          errorBody = await response.json();
-        } catch (e) {
-          try {
-            errorBody = await response.text();
-          } catch (textError) {
-            errorBody = `Request failed with status ${response.status} and error body could not be read.`;
-          }
-        }
-        console.error(`API Error ${response.status} for URL ${url}:`, errorBody);
-        let finalErrorMessage: string;
-        if (typeof errorBody === 'object' && errorBody !== null) {
-          if ('message' in errorBody && typeof (errorBody as any).message === 'string' && (errorBody as any).message.trim() !== '') {
-            finalErrorMessage = (errorBody as any).message;
-          } else if ('error' in errorBody && typeof (errorBody as any).error === 'string' && (errorBody as any).error.trim() !== '') {
-            finalErrorMessage = (errorBody as any).error;
-          } else {
-            finalErrorMessage = `Request failed with status ${response.status}. Response body: ${JSON.stringify(errorBody)}`;
-          }
-        } else if (typeof errorBody === 'string' && errorBody.trim() !== '') {
-          finalErrorMessage = errorBody;
-        } else {
-          finalErrorMessage = `Request failed with status ${response.status}`;
-        }
-        return { success: false, error: new Error(finalErrorMessage) };
-      }
-      if (response.status === 204) {
-        return { success: true, data: undefined as unknown as ProfileDto };
-      }
-      const responseText = await response.text();
-      if (!responseText) { // Check if body is empty for non-204 success
-        return { success: true, data: undefined as unknown as ProfileDto };
-      }
-      try {
-        const data = JSON.parse(responseText) as ProfileDto;
-        return { success: true, data };
-      } catch (parseError) {
-        console.error(`JSON parsing error for URL ${url}:`, parseError, "Response text:", responseText);
-        return { success: false, error: new Error("Failed to parse server response.") };
-      }
+      return await handleApiResponse<ProfileDto>(response, url);
     } catch (networkOrOtherError) {
       console.error(`Request processing failed for URL ${url}:`, networkOrOtherError);
       return {
@@ -119,48 +38,14 @@ export const ProfileService = {
     const url = `${BASE_API_URL}/users/${userId}`;
     try {
       const response = await AuthService.fetchWithAuth(url, { method: 'GET' });
-      if (!response.ok) {
-        let errorBody: unknown;
-        try {
-          errorBody = await response.json();
-        } catch (e) {
-          try {
-            errorBody = await response.text();
-          } catch (textError) {
-            errorBody = `Request failed with status ${response.status} and error body could not be read.`;
-          }
-        }
-        console.error(`API Error ${response.status} for URL ${url}:`, errorBody);
-        let finalErrorMessage: string;
-        if (typeof errorBody === 'object' && errorBody !== null) {
-          if ('message' in errorBody && typeof (errorBody as any).message === 'string' && (errorBody as any).message.trim() !== '') {
-            finalErrorMessage = (errorBody as any).message;
-          } else if ('error' in errorBody && typeof (errorBody as any).error === 'string' && (errorBody as any).error.trim() !== '') {
-            finalErrorMessage = (errorBody as any).error;
-          } else {
-            finalErrorMessage = `Request failed with status ${response.status}. Response body: ${JSON.stringify(errorBody)}`;
-          }
-        } else if (typeof errorBody === 'string' && errorBody.trim() !== '') {
-          finalErrorMessage = errorBody;
-        } else {
-          finalErrorMessage = `Request failed with status ${response.status}`;
-        }
-        return { success: false, error: new Error(finalErrorMessage) };
-      }
       if (response.status === 204) { // Should not happen for getUserById if user exists
-        return { success: false, error: new Error('User not found.') }; 
+        return { success: false, error: new Error('User not found.') };
       }
-      const responseText = await response.text();
-      if (!responseText) {
-        return { success: false, error: new Error('Empty response from server.') };
+      const result = await handleApiResponse<User>(response, url);
+      if (result.success && result.data === undefined) {
+          return { success: false, error: new Error('Empty response from server.') };
       }
-      try {
-        const data = JSON.parse(responseText) as User; // Expecting User DTO
-        return { success: true, data };
-      } catch (parseError) {
-        console.error(`JSON parsing error for URL ${url}:`, parseError, "Response text:", responseText);
-        return { success: false, error: new Error("Failed to parse server response for user account.") };
-      }
+      return result;
     } catch (networkOrOtherError) {
       console.error(`Request processing failed for URL ${url}:`, networkOrOtherError);
       return {
@@ -185,6 +70,7 @@ export const ProfileService = {
         formData.append('avatar', payload.avatar);
         response = await AuthService.fetchWithAuth(url, { method: 'PUT', body: formData });
       } else {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { avatar, ...restPayload } = payload;
         response = await AuthService.fetchWithAuth(url, {
           method: 'PUT',
@@ -192,49 +78,7 @@ export const ProfileService = {
           headers: { 'Content-Type': 'application/json' }
         });
       }
-
-      if (!response.ok) {
-        let errorBody: unknown;
-        try {
-          errorBody = await response.json();
-        } catch (e) {
-          try {
-            errorBody = await response.text();
-          } catch (textError) {
-            errorBody = `Request failed with status ${response.status} and error body could not be read.`;
-          }
-        }
-        console.error(`API Error ${response.status} for URL ${url}:`, errorBody);
-        let finalErrorMessage: string;
-        if (typeof errorBody === 'object' && errorBody !== null) {
-          if ('message' in errorBody && typeof (errorBody as any).message === 'string' && (errorBody as any).message.trim() !== '') {
-            finalErrorMessage = (errorBody as any).message;
-          } else if ('error' in errorBody && typeof (errorBody as any).error === 'string' && (errorBody as any).error.trim() !== '') {
-            finalErrorMessage = (errorBody as any).error;
-          } else {
-            finalErrorMessage = `Request failed with status ${response.status}. Response body: ${JSON.stringify(errorBody)}`;
-          }
-        } else if (typeof errorBody === 'string' && errorBody.trim() !== '') {
-          finalErrorMessage = errorBody;
-        } else {
-          finalErrorMessage = `Request failed with status ${response.status}`;
-        }
-        return { success: false, error: new Error(finalErrorMessage) };
-      }
-      if (response.status === 204) {
-        return { success: true, data: undefined as unknown as { message: string } };
-      }
-      const responseText = await response.text();
-      if (!responseText) { // Check if body is empty for non-204 success
-        return { success: true, data: undefined as unknown as { message: string } };
-      }
-      try {
-        const data = JSON.parse(responseText) as { message: string };
-        return { success: true, data };
-      } catch (parseError) {
-        console.error(`JSON parsing error for URL ${url}:`, parseError, "Response text:", responseText);
-        return { success: false, error: new Error("Failed to parse server response.") };
-      }
+      return await handleApiResponse<{ message: string }>(response, url);
     } catch (networkOrOtherError) {
       console.error(`Request processing failed for URL ${url}:`, networkOrOtherError);
       return {

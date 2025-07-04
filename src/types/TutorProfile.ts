@@ -23,4 +23,4 @@ export interface CreateTutorProfileDto {
   skillIds?: string[]; 
 }
 
-export interface UpdateTutorProfileDto extends CreateTutorProfileDto {}
+export type UpdateTutorProfileDto = CreateTutorProfileDto
