@@ -19,7 +19,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { CalendarIcon, MessageCircle } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
-import { cn } from '@/lib/utils';
+import { cn, generateGradient, getInitials } from '@/lib/utils';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
@@ -409,11 +409,15 @@ const TutorDetailPage: React.FC = () => {
       <Card className="bg-card border-border shadow-xl">
         <CardHeader className="flex flex-col md:flex-row items-center space-y-4 md:space-y-0 md:space-x-6 p-6">
           <Avatar className="h-28 w-28 border-2 border-accent">
-            <AvatarImage src={tutor.avatarUrl} alt={tutor.tutorName || tutorAccount?.fullName || "Tutor avatar"} />
-            <AvatarFallback className="bg-accent text-muted-foreground text-4xl">{(tutor.tutorName || tutorAccount?.fullName)?.charAt(0) || 'T'}</AvatarFallback>
+            <AvatarImage src={tutor.avatarUrl} alt={tutor.fullName || "Tutor avatar"} />
+            <AvatarFallback
+              className={`bg-gradient-to-br ${generateGradient(tutor.fullName)} text-primary-foreground text-4xl font-bold`}
+            >
+              {getInitials(tutor.fullName)}
+            </AvatarFallback>
           </Avatar>
           <div className="text-center md:text-left">
-            <CardTitle className="text-3xl text-foreground">{tutor.tutorName || tutorAccount?.fullName || "Tutor"}</CardTitle>
+            <CardTitle className="text-3xl text-foreground">{tutor.fullName || "Tutor"}</CardTitle>
             {tutorAccount && tutorAccount.email && <CardDescription className="text-muted-foreground">Email: {tutorAccount.email}</CardDescription>}
             {tutor.school && <CardDescription className="text-muted-foreground">School: {tutor.school}</CardDescription>}
             

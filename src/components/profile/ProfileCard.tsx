@@ -11,11 +11,13 @@ import {
   Calendar, 
   Phone, 
   MapPin, 
-  Mail, 
+  Mail,
   Edit3,
   UserCheck,
   Clock
 } from 'lucide-react';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { generateGradient, getInitials } from '@/lib/utils';
 
 interface ProfileCardProps {
   profile: ProfileDto;
@@ -86,17 +88,14 @@ const ProfileCard: React.FC<ProfileCardProps> = ({
             {/* Avatar Section */}
             <div className="flex flex-col items-center lg:items-start space-y-4">
               <div className="relative">
-                {avatarPreview ? (
-                  <img 
-                    src={avatarPreview} 
-                    alt="Profile Avatar" 
-                    className="w-32 h-32 lg:w-40 lg:h-40 rounded-full object-cover ring-4 ring-border shadow-xl" 
-                  />
-                ) : (
-                  <div className="w-32 h-32 lg:w-40 lg:h-40 rounded-full bg-muted flex items-center justify-center ring-4 ring-border shadow-xl">
-                    <User className="h-16 w-16 lg:h-20 lg:w-20 text-muted-foreground" />
-                  </div>
-                )}
+                <Avatar className="w-32 h-32 lg:w-40 lg:h-40 rounded-full object-cover ring-4 ring-border shadow-xl">
+                  <AvatarImage src={avatarPreview || ''} alt={profile.fullName} />
+                  <AvatarFallback
+                    className={`bg-gradient-to-br ${generateGradient(profile.fullName)} text-primary-foreground text-5xl font-bold`}
+                  >
+                    {getInitials(profile.fullName)}
+                  </AvatarFallback>
+                </Avatar>
                 {/* Status indicator */}
                 <div className={`absolute -bottom-1 -right-1 w-6 h-6 rounded-full border-4 border-card ${
                   profile.status === 'Active' ? 'bg-green-500' : 'bg-muted'

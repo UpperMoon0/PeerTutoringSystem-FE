@@ -1,5 +1,7 @@
 import React from 'react';
 import type { Conversation } from '@/types/chat';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { generateGradient, getInitials } from '@/lib/utils';
 
 interface ConversationListProps {
   conversations: Conversation[];
@@ -34,11 +36,14 @@ const ConversationList: React.FC<ConversationListProps> = ({
               onClick={() => handleSelectConversation(conversation)}
             >
               <div className="flex items-center">
-                <img
-                  src={conversation.participant.avatarUrl || `https://i.pravatar.cc/150?u=${conversation.participant.id}`}
-                  alt="Avatar"
-                  className="w-12 h-12 rounded-full mr-4"
-                />
+                <Avatar className="w-12 h-12 mr-4">
+                  <AvatarImage src={conversation.participant.avatarUrl || ''} alt={conversation.participant.fullName} />
+                  <AvatarFallback
+                    className={`bg-gradient-to-br ${generateGradient(conversation.participant.fullName)} text-primary-foreground font-bold`}
+                  >
+                    {getInitials(conversation.participant.fullName)}
+                  </AvatarFallback>
+                </Avatar>
                 <div className="flex-1">
                   <div className="flex justify-between">
                     <h3 className="font-semibold">
