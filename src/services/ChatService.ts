@@ -59,7 +59,7 @@ export const ChatService = {
     }
   },
 
-  sendMessage: async (message: ChatMessage): Promise<ApiResult<void>> => {
+  sendMessage: async (message: ChatMessage): Promise<ApiResult<ChatMessage>> => {
     try {
       const response = await AuthService.fetchWithAuth(`${API_BASE_URL}/Chat/send`, {
         method: 'POST',
@@ -70,7 +70,8 @@ export const ChatService = {
         const errorData = await response.json().catch(() => ({ error: "Failed to parse error response." }));
         throw new Error(errorData.error || `Failed to send message: ${response.statusText}`);
       }
-      return { success: true, data: undefined };
+      const createdMessage: ChatMessage = await response.json();
+      return { success: true, data: createdMessage };
     } catch (error) {
       console.error('Error sending message via API:', error);
       return { success: false, error: error instanceof Error ? error.message : "Failed to send message." };

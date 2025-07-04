@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useParams } from 'react-router-dom';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -9,6 +10,7 @@ import { useAuth } from '@/contexts/AuthContext';
 
 const ChatPage: React.FC = () => {
   const { currentUser } = useAuth();
+  const { receiverId } = useParams<{ receiverId: string }>();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [messageInput, setMessageInput] = useState<string>('');
   const [connectionState, setConnectionState] = useState<HubConnectionState | null>(null);
@@ -50,16 +52,18 @@ const ChatPage: React.FC = () => {
   }, [messages]);
 
   const sendMessage = async () => {
-    if (messageInput.trim() && currentUser?.userId) {
+    if (messageInput.trim() && currentUser?.userId && receiverId) {
       const newMessage: ChatMessage = {
         senderId: currentUser.userId,
-        receiverId: 'some-other-user-id',
-        content: messageInput,
+        receiverId: receiverId,
+        message: messageInput,
         timestamp: new Date().toISOString(),
       };
       const result = await ChatService.sendMessage(newMessage);
       if (result.success) {
-        setMessages((prevMessages) => [...prevMessages, newMessage]);
+        if (result.data) {
+          setMessages((prevMessages) => [...prevMessages, result.data as ChatMessage]);
+        }
         setMessageInput('');
       } else {
         console.error('Error sending message:', result.error);
@@ -74,23 +78,26 @@ const ChatPage: React.FC = () => {
           <CardTitle className="text-2xl text-foreground">Chat</CardTitle>
         </CardHeader>
         <CardContent ref={chatContentRef} className="flex-1 overflow-y-auto p-6 space-y-4">
-          {messages.map((msg, index) => (
-            <div
-              key={index}
-              className={`flex ${msg.senderId === currentUser?.userId ? 'justify-end' : 'justify-start'}`}
-            >
+          {messages.map((msg, index) => {
+            if (!msg) return null;
+            return (
               <div
-                className={`${
-                  msg.senderId === currentUser?.userId ? 'bg-accent' : 'bg-primary'
-                } text-primary-foreground p-3 rounded-lg max-w-xs shadow-md`}
+                key={index}
+                className={`flex ${msg.senderId === currentUser?.userId ? 'justify-end' : 'justify-start'}`}
               >
-                <p>{msg.content}</p>
-                <span className="text-xs text-muted-foreground mt-1 block">
-                  {new Date(msg.timestamp).toLocaleTimeString()} - {msg.senderId === currentUser?.userId ? 'You' : 'Other User'}
-                </span>
+                <div
+                  className={`${
+                    msg.senderId === currentUser?.userId ? 'bg-accent' : 'bg-primary'
+                  } text-primary-foreground p-3 rounded-lg max-w-xs shadow-md`}
+                >
+                  <p>{msg.message}</p>
+                  <span className="text-xs text-muted-foreground mt-1 block">
+                    {new Date(msg.timestamp).toLocaleTimeString()} - {msg.senderId === currentUser?.userId ? 'You' : 'Other User'}
+                  </span>
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </CardContent>
         <div className="p-6 border-t border-border flex items-center space-x-3">
           <Input
@@ -98,8 +105,8 @@ const ChatPage: React.FC = () => {
             className="flex-1 bg-input border-border text-foreground placeholder-muted-foreground focus:ring-ring focus:border-ring"
             value={messageInput}
             onChange={(e) => setMessageInput(e.target.value)}
-            onKeyPress={(e) => {
-              if (e.key === 'Enter') {
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && messageInput.trim()) {
                 sendMessage();
               }
             }}
