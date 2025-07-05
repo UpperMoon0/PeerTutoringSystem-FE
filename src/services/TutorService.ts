@@ -1,11 +1,9 @@
 import type { RequestTutorPayload } from '../types/RequestTutorPayload';
 import type { RequestTutorResponse } from '../types/RequestTutorResponse';
 import type { Tutor } from '../types/Tutor';
-import type { TutorVerification } from '../types/TutorVerification';
 import { AuthService } from './AuthService';
 import type { ApiResult } from '@/types/api.types';
 import type { DocumentUploadDto, FileUploadResponse } from '@/types/file.types';
-import type { PendingTutorVerificationStatus } from '@/types/TutorVerification';
 import type { User, ProfileDto } from '@/types/user.types';
 import type { EnrichedTutor } from '@/types/enrichedTutor.types';
 
@@ -48,8 +46,8 @@ const getErrorBody = async (response: Response): Promise<unknown> => {
   }
 };
 
-const requestTutor = async (userId: string, payload: RequestTutorPayload): Promise<ApiResult<RequestTutorResponse>> => {
-  const url = `${API_BASE_URL}/Users/${userId}/request-tutor`;
+const requestTutor = async (payload: RequestTutorPayload): Promise<ApiResult<RequestTutorResponse>> => {
+  const url = `${API_BASE_URL}/TutorVerifications/request`;
   try {
     const response = await AuthService.fetchWithAuth(url, {
       method: 'POST',
@@ -86,11 +84,11 @@ const requestTutor = async (userId: string, payload: RequestTutorPayload): Promi
   }
 };
 
-const uploadDocument = async (file: File, userId: string): Promise<ApiResult<DocumentUploadDto>> => {
+const uploadDocument = async (file: File): Promise<ApiResult<DocumentUploadDto>> => {
   const formData = new FormData();
   formData.append('file', file);
 
-  const url = `${API_BASE_URL}/documents/upload?userId=${userId}`;
+  const url = `${API_BASE_URL}/Documents/upload`;
   try {
     const response = await AuthService.fetchWithAuth(url, {
       method: 'POST',
@@ -103,38 +101,36 @@ const uploadDocument = async (file: File, userId: string): Promise<ApiResult<Doc
       return { success: false, error: finalErrorMessageApi };
     }
 
-    if (response.status === 204) { 
-      return { success: true, data: undefined as unknown as DocumentUploadDto }; 
+    if (response.status === 204) {
+      return { success: true, data: undefined as unknown as DocumentUploadDto };
     }
 
     const responseText = await response.text();
     if (!responseText) {
-        // Similar to 204, how to map an empty successful response to DocumentUploadDto?
-        return { success: true, data: undefined as unknown as DocumentUploadDto }; 
+      return { success: true, data: undefined as unknown as DocumentUploadDto };
     }
 
     try {
-        const fileUploadResponse = JSON.parse(responseText) as FileUploadResponse;
-        // Now map FileUploadResponse to DocumentUploadDto
-        return {
-          success: true,
-          data: {
-            documentType: fileUploadResponse.documentType,
-            documentPath: fileUploadResponse.documentPath,
-            fileSize: file.size, // fileSize comes from the input `file` object
-          },
-        };
+      const fileUploadResponse = JSON.parse(responseText) as FileUploadResponse;
+      return {
+        success: true,
+        data: {
+          documentType: fileUploadResponse.documentType,
+          documentPath: fileUploadResponse.documentPath,
+          fileSize: file.size,
+        },
+      };
     } catch (parseError) {
-        console.error(`JSON parsing error for URL ${url}:`, parseError, "Response text:", responseText);
-        return { success: false, error: "Failed to parse server response." };
+      console.error(`JSON parsing error for URL ${url}:`, parseError, "Response text:", responseText);
+      return { success: false, error: "Failed to parse server response." };
     }
 
   } catch (networkOrOtherError) {
     console.error(`Request processing failed for URL ${url}:`, networkOrOtherError);
     const errorString = networkOrOtherError instanceof Error ? networkOrOtherError.message : String(networkOrOtherError);
-    return { 
-      success: false, 
-      error: errorString 
+    return {
+      success: false,
+      error: errorString
     };
   }
 };
@@ -161,114 +157,6 @@ const getFeaturedTutors = async (searchTerm?: string): Promise<Tutor[]> => {
   }
 };
 
-const getTutorVerifications = async (): Promise<ApiResult<TutorVerification[]>> => {
-  const url = `${API_BASE_URL}/TutorVerifications`;
-  try {
-    const response = await AuthService.fetchWithAuth(url, { method: 'GET' });
-    if (!response.ok) {
-      const errorBody = await getErrorBody(response);
-      console.error(`API Error ${response.status} for URL ${url}:`, errorBody);
-      const finalErrorMessageApi = extractErrorMessage(errorBody, response.status);
-      return { success: false, error: finalErrorMessageApi };
-    }
-    if (response.status === 204) {
-      return { success: true, data: undefined as unknown as TutorVerification[] };
-    }
-    const responseText = await response.text();
-    if (!responseText) {
-      return { success: true, data: undefined as unknown as TutorVerification[] };
-    }
-    try {
-      const data = JSON.parse(responseText) as TutorVerification[];
-      return { success: true, data };
-    } catch (parseError) {
-      console.error(`JSON parsing error for URL ${url}:`, parseError, "Response text:", responseText);
-      return { success: false, error: "Failed to parse server response." };
-    }
-  } catch (networkOrOtherError) {
-    console.error(`Request processing failed for URL ${url}:`, networkOrOtherError);
-    const errorString = networkOrOtherError instanceof Error ? networkOrOtherError.message : String(networkOrOtherError);
-    return {
-      success: false,
-      error: errorString
-    };
-  }
-};
-
-const updateTutorVerificationStatus = async (
-  verificationId: string,
-  status: 'Approved' | 'Rejected',
-  adminNotes?: string
-): Promise<ApiResult<TutorVerification>> => {
-  const url = `${API_BASE_URL}/TutorVerifications/${verificationId}`;
-  try {
-    const response = await AuthService.fetchWithAuth(url, {
-      method: 'PUT',
-      body: JSON.stringify({ verificationStatus: status, adminNotes }),
-      headers: { 'Content-Type': 'application/json' },
-    });
-    if (!response.ok) {
-      const errorBody = await getErrorBody(response);
-      console.error(`API Error ${response.status} for URL ${url}:`, errorBody);
-      const finalErrorMessageApi = extractErrorMessage(errorBody, response.status);
-      return { success: false, error: finalErrorMessageApi };
-    }
-    if (response.status === 204) {
-      return { success: true, data: undefined as unknown as TutorVerification };
-    }
-    const responseText = await response.text();
-    if (!responseText) {
-      return { success: true, data: undefined as unknown as TutorVerification };
-    }
-    try {
-      const data = JSON.parse(responseText) as TutorVerification;
-      return { success: true, data };
-    } catch (parseError) {
-      console.error(`JSON parsing error for URL ${url}:`, parseError, "Response text:", responseText);
-      return { success: false, error: "Failed to parse server response." };
-    }
-  } catch (networkOrOtherError) {
-    console.error(`Request processing failed for URL ${url}:`, networkOrOtherError);
-    const errorString = networkOrOtherError instanceof Error ? networkOrOtherError.message : String(networkOrOtherError);
-    return {
-      success: false,
-      error: errorString
-    };
-  }
-};
-
-const checkPendingTutorVerification = async (userId: string): Promise<ApiResult<PendingTutorVerificationStatus>> => {
-  const url = `${API_BASE_URL}/TutorVerifications/pending/${userId}`;
-  try {
-    const response = await AuthService.fetchWithAuth(url, {
-      method: 'GET',
-      headers: { 'Content-Type': 'application/json' },
-    });
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error(`API Error ${response.status}: ${response.statusText}`, errorText);
-      return { success: false, error: `Failed to check pending verification. Status: ${response.status}. ${errorText}` };
-    }
-    if (response.status === 204) {
-      return { success: true, data: { hasVerificationRequest: false, latestStatus: null } }; 
-    }
-    const responseText = await response.text();
-    if (!responseText) {
-      return { success: true, data: { hasVerificationRequest: false, latestStatus: null } }; 
-    }
-    try {
-      const data = JSON.parse(responseText) as PendingTutorVerificationStatus;
-      return { success: true, data };
-    } catch (parseError) {
-      console.error(`JSON parsing error for URL ${url}:`, parseError, "Response text:", responseText);
-      return { success: false, error: "Failed to parse server response." };
-    }
-  } catch (networkOrOtherError) {
-    console.error(`Request processing failed for URL ${url}:`, networkOrOtherError);
-    const errorString = networkOrOtherError instanceof Error ? networkOrOtherError.message : String(networkOrOtherError);
-    return { success: false, error: errorString };
-  }
-};
 
 const getAllTutors = async (): Promise<ApiResult<User[]>> => {
   const url = `${API_BASE_URL}/Users/tutors`;
@@ -358,10 +246,7 @@ export const TutorService = {
   requestTutor,
   uploadDocument,
   getFeaturedTutors,
-  getTutorVerifications,
-  updateTutorVerificationStatus,
-  checkPendingTutorVerification,
   getAllTutors,
-  getAllEnrichedTutors, // Add the new method here
+  getAllEnrichedTutors,
   getTutorById,
 };

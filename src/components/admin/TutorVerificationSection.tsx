@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import type { TutorVerification } from '@/types/TutorVerification';
-import { TutorService } from '@/services/TutorService';
+import { TutorVerificationService } from '@/services/TutorVerificationService';
 import {
   Select,
   SelectContent,
@@ -22,8 +22,6 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { AlertTriangle, CheckCircle, XCircle } from 'lucide-react';
-
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export type VerificationStatus = 'Pending' | 'Approved' | 'Rejected';
 
@@ -55,64 +53,17 @@ const TutorVerificationSection: React.FC = () => {
     fetchVerifications();
   }, []);
 
-  const handleOpenDocument = async (documentId: string) => {
-    const token = localStorage.getItem('accessToken');
-    if (!token) {
+  const handleDownloadDocument = async (documentId: string) => {
+    setAlertInfo(null);
+    const result = await TutorVerificationService.downloadDocument(documentId);
+    if (!result.success) {
+      const errorMessage = typeof result.error === 'string'
+        ? result.error
+        : (result.error as { message?: string })?.message || 'An unknown error occurred while downloading the document.';
       setAlertInfo({
         type: 'error',
-        title: 'Authentication Error',
-        message: 'Authentication token not found. Please log in again.'
-      });
-      return;
-    }
-
-    try {
-      const fullUrl = `${API_BASE_URL}/Documents/${documentId}`;
-      console.log('TutorVerificationSection: Calling document API URL:', fullUrl);
-      console.log('TutorVerificationSection: API_BASE_URL:', API_BASE_URL);
-      
-      const response = await fetch(fullUrl, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
-
-      if (!response.ok) {
-        console.log('TutorVerificationSection: Document API call failed with status:', response.status);
-        if (response.status === 401) {
-          setAlertInfo({
-            type: 'error',
-            title: 'Unauthorized',
-            message: 'Please log in again.'
-          });
-        } else if (response.status === 403) {
-          setAlertInfo({
-            type: 'error',
-            title: 'Forbidden',
-            message: 'You do not have permission to view this document.'
-          });
-        } else {
-          const errorData = await response.json().catch(() => ({ error: 'Failed to fetch document.' }));
-          console.log('TutorVerificationSection: Error response data:', errorData);
-          setAlertInfo({
-            type: 'error',
-            title: 'Document Error',
-            message: `Error fetching document: ${errorData.error || response.statusText}`
-          });
-        }
-        return;
-      }
-
-      console.log('TutorVerificationSection: Document API call successful');
-      const blob = await response.blob();
-      const fileURL = URL.createObjectURL(blob);
-      window.open(fileURL, '_blank');
-    } catch (err) {
-      console.error('Failed to open document:', err);
-      setAlertInfo({
-        type: 'error',
-        title: 'Unexpected Error',
-        message: 'An unexpected error occurred while trying to open the document.'
+        title: 'Download Failed',
+        message: errorMessage
       });
     }
   };
@@ -120,7 +71,7 @@ const TutorVerificationSection: React.FC = () => {
   const fetchVerifications = async () => {
     try {
       setLoading(true);
-      const result = await TutorService.getTutorVerifications();
+      const result = await TutorVerificationService.getTutorVerifications();
       if (result.success && result.data) {
         setVerifications(result.data);
         setError(null);
@@ -138,7 +89,7 @@ const TutorVerificationSection: React.FC = () => {
 
   const handleUpdateStatus = async (verificationID: string, status: 'Approved' | 'Rejected') => {
     try {
-      const result = await TutorService.updateTutorVerificationStatus(verificationID, status);
+      const result = await TutorVerificationService.updateTutorVerificationStatus(verificationID, status);
       if (result.success) {
         setAlertInfo({
           type: 'success',
@@ -250,7 +201,7 @@ const TutorVerificationSection: React.FC = () => {
                     {verification.documents.map(doc => (
                       <li key={doc.documentID} className="text-muted-foreground">
                         <button
-                          onClick={() => handleOpenDocument(doc.documentID)}
+                          onClick={() => handleDownloadDocument(doc.documentID)}
                           className="text-primary hover:text-primary-foreground hover:underline cursor-pointer"
                         >
                           {doc.documentType}
