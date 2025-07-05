@@ -5,7 +5,8 @@ import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Ban, CheckCircle, ShieldAlert, Loader2 } from 'lucide-react';
+import { Ban, CheckCircle, ShieldAlert, Loader2, Info } from 'lucide-react';
+import UserInfoModal from '@/components/admin/UserInfoModal';
 
 const ManageUsersSection: React.FC = () => {
   const [allUsers, setAllUsers] = useState<User[]>([]);
@@ -15,6 +16,7 @@ const ManageUsersSection: React.FC = () => {
   const [actionError, setActionError] = useState<string | null>(null);
   const [actionSuccess, setActionSuccess] = useState<string | null>(null);
   const [actingUserId, setActingUserId] = useState<string | null>(null);
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
 
   const { accessToken: token } = useAuth();
 
@@ -162,28 +164,38 @@ const ManageUsersSection: React.FC = () => {
                     </span>
                   </td>
                   <td className="py-3 px-4 text-center">
-                    {user.role !== 'Admin' && (
+                    <div className="flex justify-center items-center gap-2">
                       <Button
-                        onClick={() => handleBanToggle(user.userID, user.status)}
-                        variant={user.status === 'Banned' ? 'outline' : 'destructive'}
+                        onClick={() => setSelectedUser(user)}
+                        variant="outline"
                         size="sm"
-                        disabled={actingUserId === user.userID}
-                        className={`flex items-center justify-center ${user.status === 'Banned' ? 'border-primary text-primary hover:bg-primary/10 hover:text-primary/90' : 'bg-destructive hover:bg-destructive/90 text-destructive-foreground'}`}
+                        className="border-blue-500 text-blue-500 hover:bg-blue-500/10"
                       >
-                        {actingUserId === user.userID ? (
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        ) : user.status === 'Banned' ? (
-                          <CheckCircle className="mr-2 h-4 w-4" />
-                        ) : (
-                          <Ban className="mr-2 h-4 w-4" />
-                        )}
-                        {actingUserId === user.userID
-                          ? 'Processing...'
-                          : user.status === 'Banned'
-                          ? 'Unban'
-                          : 'Ban'}
+                        <Info className="mr-2 h-4 w-4" /> Info
                       </Button>
-                    )}
+                      {user.role !== 'Admin' && (
+                        <Button
+                          onClick={() => handleBanToggle(user.userID, user.status)}
+                          variant={user.status === 'Banned' ? 'outline' : 'destructive'}
+                          size="sm"
+                          disabled={actingUserId === user.userID}
+                          className={`flex items-center justify-center ${user.status === 'Banned' ? 'border-primary text-primary hover:bg-primary/10 hover:text-primary/90' : 'bg-destructive hover:bg-destructive/90 text-destructive-foreground'}`}
+                        >
+                          {actingUserId === user.userID ? (
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          ) : user.status === 'Banned' ? (
+                            <CheckCircle className="mr-2 h-4 w-4" />
+                          ) : (
+                            <Ban className="mr-2 h-4 w-4" />
+                          )}
+                          {actingUserId === user.userID
+                            ? 'Processing...'
+                            : user.status === 'Banned'
+                            ? 'Unban'
+                            : 'Ban'}
+                        </Button>
+                      )}
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -191,6 +203,7 @@ const ManageUsersSection: React.FC = () => {
           </table>
         </div>
       )}
+      <UserInfoModal user={selectedUser} onClose={() => setSelectedUser(null)} />
     </div>
   );
 };

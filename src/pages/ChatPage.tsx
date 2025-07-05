@@ -1,117 +1,85 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ChatService, type ChatMessage } from '@/services/chatService';
-import { HubConnectionState } from '@microsoft/signalr';
-import { useAuth } from '@/contexts/AuthContext'; 
+import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
+import ConversationList from '@/components/chat/ConversationList';
+import ChatWindow from '@/components/chat/ChatWindow';
+import type { Conversation, ChatMessage } from '@/types/chat';
+import { ChatService } from '@/services/ChatService';
+import { useAuth } from '@/contexts/AuthContext';
 
 const ChatPage: React.FC = () => {
+  const [conversations, setConversations] = useState<Conversation[]>([]);
+  const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null);
+  const [searchParams, setSearchParams] = useSearchParams();
   const { currentUser } = useAuth();
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const [messageInput, setMessageInput] = useState<string>('');
-  const [connectionState, setConnectionState] = useState<HubConnectionState | null>(null);
-  const chatContentRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const connection = ChatService.initializeConnection();
-    setConnectionState(connection.state);
+    if (!currentUser) return;
 
-    const handleReceiveMessage = (message: ChatMessage) => {
-      setMessages((prevMessages) => [...prevMessages, message]);
-    };
+    const processConversations = async () => {
+      const userIdToFind = searchParams.get('userId');
+      
+      // If a userId is present in the URL, handle it first.
+      if (userIdToFind) {
+        // Immediately remove the userId from the URL to prevent this block from running again on re-renders.
+        const newSearchParams = new URLSearchParams(searchParams.toString());
+        newSearchParams.delete('userId');
+        setSearchParams(newSearchParams, { replace: true });
 
-    ChatService.onReceiveMessage(handleReceiveMessage);
-
-    ChatService.startConnection().then(result => {
-      if (result.success) {
-        setConnectionState(ChatService.getConnectionState());
-      } else {
-        console.error("Failed to start SignalR connection:", result.error);
-      }
-    });
-
-    return () => {
-      ChatService.stopConnection().then(result => {
-        if (result.success) {
-          setConnectionState(ChatService.getConnectionState());
+        const result = await ChatService.findOrCreateConversation(userIdToFind);
+        if (result.success && result.data) {
+          const newOrExistingConv = result.data;
+          setSelectedConversation(newOrExistingConv);
+          // After creating/finding, fetch the whole list to ensure consistency.
+          const convListResult = await ChatService.getConversations(currentUser.userId);
+          if (convListResult.success && convListResult.data) {
+            setConversations(convListResult.data);
+          }
         } else {
-          console.error("Failed to stop SignalR connection:", result.error);
+          console.error("Failed to find or create conversation:", result.error);
+          // Fallback to just fetching the list if creation fails.
+          const convListResult = await ChatService.getConversations(currentUser.userId);
+          if (convListResult.success && convListResult.data) {
+            setConversations(convListResult.data);
+          }
         }
-      });
-    };
-  }, []);
-
-  useEffect(() => {
-    if (chatContentRef.current) {
-      chatContentRef.current.scrollTop = chatContentRef.current.scrollHeight;
-    }
-  }, [messages]);
-
-  const sendMessage = async () => {
-    if (messageInput.trim() && currentUser?.userId) {
-      const newMessage: ChatMessage = {
-        senderId: currentUser.userId,
-        receiverId: 'some-other-user-id',
-        content: messageInput,
-        timestamp: new Date().toISOString(),
-      };
-      const result = await ChatService.sendMessage(newMessage);
-      if (result.success) {
-        setMessages((prevMessages) => [...prevMessages, newMessage]);
-        setMessageInput('');
       } else {
-        console.error('Error sending message:', result.error);
+        // If no userId is in the URL, just fetch the user's conversations.
+        const convListResult = await ChatService.getConversations(currentUser.userId);
+        if (convListResult.success && convListResult.data) {
+          setConversations(convListResult.data);
+        }
       }
-    }
+    };
+
+    processConversations();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentUser, searchParams, setSearchParams]);
+
+  const handleNewMessage = (message: ChatMessage) => {
+    setConversations(prev => {
+      const conversationToUpdate = prev.find(c => c.id === selectedConversation?.id);
+      if (conversationToUpdate) {
+        const updatedConv = { ...conversationToUpdate, lastMessage: message };
+        return [updatedConv, ...prev.filter(c => c.id !== selectedConversation?.id)];
+      }
+      return prev;
+    });
   };
 
   return (
-    <div className="min-h-screen bg-background text-foreground p-4 md:p-6 space-y-6">
-      <Card className="bg-card border-border shadow-xl flex flex-col h-[calc(100vh-8rem)]">
-        <CardHeader className="p-6 border-b border-border">
-          <CardTitle className="text-2xl text-foreground">Chat</CardTitle>
-        </CardHeader>
-        <CardContent ref={chatContentRef} className="flex-1 overflow-y-auto p-6 space-y-4">
-          {messages.map((msg, index) => (
-            <div
-              key={index}
-              className={`flex ${msg.senderId === currentUser?.userId ? 'justify-end' : 'justify-start'}`}
-            >
-              <div
-                className={`${
-                  msg.senderId === currentUser?.userId ? 'bg-accent' : 'bg-primary'
-                } text-primary-foreground p-3 rounded-lg max-w-xs shadow-md`}
-              >
-                <p>{msg.content}</p>
-                <span className="text-xs text-muted-foreground mt-1 block">
-                  {new Date(msg.timestamp).toLocaleTimeString()} - {msg.senderId === currentUser?.userId ? 'You' : 'Other User'}
-                </span>
-              </div>
-            </div>
-          ))}
-        </CardContent>
-        <div className="p-6 border-t border-border flex items-center space-x-3">
-          <Input
-            placeholder="Type your message..."
-            className="flex-1 bg-input border-border text-foreground placeholder-muted-foreground focus:ring-ring focus:border-ring"
-            value={messageInput}
-            onChange={(e) => setMessageInput(e.target.value)}
-            onKeyPress={(e) => {
-              if (e.key === 'Enter') {
-                sendMessage();
-              }
-            }}
+    <div className="min-h-screen bg-background text-foreground p-4 md:p-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 h-[calc(100vh-8rem)]">
+        <div className="md:col-span-1">
+          <ConversationList
+            conversations={conversations}
+            onSelectConversation={setSelectedConversation}
+            selectedConversation={selectedConversation}
           />
-          <Button
-            className="bg-gradient-to-r from-primary to-ring hover:from-primary hover:to-ring text-primary-foreground font-semibold py-3 text-base"
-            onClick={sendMessage}
-            disabled={connectionState !== HubConnectionState.Connected}
-          >
-            Send
-          </Button>
         </div>
-      </Card>
+        <div className="md:col-span-2">
+          <ChatWindow conversation={selectedConversation} onNewMessage={handleNewMessage} />
+        </div>
+      </div>
     </div>
   );
 };

@@ -5,7 +5,8 @@ import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '../components/ui/card';
-import { TutorService } from '../services/TutorService'; 
+import { TutorService } from '../services/TutorService';
+import { TutorVerificationService } from '../services/TutorVerificationService';
 import type { RequestTutorPayload } from '../types/RequestTutorPayload';
 import type { DocumentUploadDto } from '../types/file.types';
 import type { PendingTutorVerificationStatus } from '../types/TutorVerification';
@@ -27,7 +28,7 @@ const TutorRegisterPage: React.FC = () => {
     const checkStatus = async () => {
       if (currentUser && currentUser.role === 'Student') {
         setStatusLoading(true);
-        const result = await TutorService.checkPendingTutorVerification(currentUser.userId);
+        const result = await TutorVerificationService.checkPendingTutorVerification(currentUser.userId);
         if (result.success) {
           setPendingStatus(result.data || null); 
         } else {
@@ -80,7 +81,7 @@ const TutorRegisterPage: React.FC = () => {
     const uploadedDocuments: DocumentUploadDto[] = [];
     try {
       for (const file of files) {
-        const uploadResult = await TutorService.uploadDocument(file, currentUser.userId);
+        const uploadResult = await TutorService.uploadDocument(file);
         if (uploadResult.success && uploadResult.data) {
           uploadedDocuments.push(uploadResult.data);
         } else {
@@ -103,7 +104,7 @@ const TutorRegisterPage: React.FC = () => {
         documents: uploadedDocuments,
       };
 
-      const result = await TutorService.requestTutor(currentUser.userId, payload);
+      const result = await TutorService.requestTutor(payload);
 
       if (result.success && result.data) {
         console.log('Tutor registration request successful:', result.data);

@@ -7,7 +7,7 @@ import ProfileCard from '../components/profile/ProfileCard';
 
 const UserProfilePage: React.FC = () => {
   const { userId } = useParams<{ userId: string }>();
-  const { currentUser } = useAuth();
+  const { currentUser, updateCurrentUser } = useAuth();
   const [profile, setProfile] = useState<ProfileDto | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState<UpdateProfileDto | null>(null);
@@ -93,10 +93,15 @@ const UserProfilePage: React.FC = () => {
         const updatedProfileResult = await ProfileService.getProfileByUserId(userId);
         if (updatedProfileResult.success && updatedProfileResult.data) {
           setProfile(updatedProfileResult.data);
-          setAvatarPreview(updatedProfileResult.data.avatarUrl || null); 
+          setAvatarPreview(updatedProfileResult.data.avatarUrl || null);
+          // Update the global user state
+          updateCurrentUser({
+            fullName: updatedProfileResult.data.fullName,
+            avatarUrl: updatedProfileResult.data.avatarUrl,
+          });
         }
         setIsEditing(false);
-        setSelectedAvatarFile(null); 
+        setSelectedAvatarFile(null);
       } else {
         setError(result.error instanceof Error ? result.error.message : typeof result.error === 'string' ? result.error : (result.error && typeof result.error.message === 'string') ? result.error.message : 'Failed to update profile.');
       }

@@ -15,13 +15,20 @@ export interface User {
 export interface ProfileDto {
   bioID: number;
   userID: string;
-  tutorName: string;
+  fullName: string;
+  email: string;
+  dateOfBirth: string;
+  phoneNumber: string;
+  gender: string;
+  hometown: string;
   bio?: string;
   experience?: string;
   hourlyRate?: number;
   availability?: string;
   avatarUrl?: string;
   school?: string;
+  status: string;
+  role: string;
   createdDate: string;
   updatedDate?: string;
 }
