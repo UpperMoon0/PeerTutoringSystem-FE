@@ -19,7 +19,8 @@ interface AuthContextType {
   handleGoogleLogin: () => Promise<boolean>; 
   handleEmailRegister: (payload: RegisterPayload) => Promise<boolean>;
   handleEmailLogin: (payload: LoginPayload) => Promise<boolean>;
-  logout: (sessionExpired?: boolean) => Promise<void>; 
+  logout: (sessionExpired?: boolean) => Promise<void>;
+  updateCurrentUser: (updatedData: Partial<AppUser>) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -232,9 +233,18 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setLoading(false);
   };
 
+  const updateCurrentUser = (updatedData: Partial<AppUser>) => {
+    setCurrentUser(prevUser => {
+      if (!prevUser) return null;
+      const newUser = { ...prevUser, ...updatedData };
+      localStorage.setItem('user', JSON.stringify(newUser));
+      return newUser;
+    });
+  };
+
   const closeModalAndRedirect = () => {
     setIsSessionExpired(false);
-    window.location.href = '/login'; 
+    window.location.href = '/login';
   };
 
   const value = {
@@ -246,6 +256,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     handleEmailRegister,
     handleEmailLogin,
     logout,
+    updateCurrentUser,
   };
 
   return (
