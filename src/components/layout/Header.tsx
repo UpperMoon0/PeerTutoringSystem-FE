@@ -37,7 +37,7 @@ const Header: React.FC = () => {
                 to="/tutors"
                 className={`px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
                   location.pathname === '/tutors'
-                    ? 'bg-primary text-primary-foreground shadow-lg'
+                    ? 'bg-highlight text-primary-foreground shadow-lg'
                     : 'text-primary-foreground/80 hover:text-primary-foreground'
                 }`}
               >
@@ -51,7 +51,7 @@ const Header: React.FC = () => {
                     to="/student/upcoming-sessions"
                     className={`px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
                       location.pathname === '/student/upcoming-sessions'
-                        ? 'bg-primary text-primary-foreground shadow-lg'
+                        ? 'bg-highlight text-primary-foreground shadow-lg'
                         : 'text-primary-foreground/80 hover:text-primary-foreground'
                     }`}
                   >
@@ -61,7 +61,7 @@ const Header: React.FC = () => {
                     to="/student/booking-history"
                     className={`px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
                       location.pathname === '/student/booking-history'
-                        ? 'bg-primary text-primary-foreground shadow-lg'
+                        ? 'bg-highlight text-primary-foreground shadow-lg'
                         : 'text-primary-foreground/80 hover:text-primary-foreground'
                     }`}
                   >
@@ -76,7 +76,7 @@ const Header: React.FC = () => {
                   to="/tutor"
                   className={`px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
                     (location.pathname === '/tutor' || location.pathname.startsWith('/tutor/'))
-                      ? 'bg-primary text-primary-foreground shadow-lg'
+                      ? 'bg-highlight text-primary-foreground shadow-lg'
                       : 'text-primary-foreground/80 hover:text-primary-foreground'
                   }`}
                 >
@@ -90,7 +90,7 @@ const Header: React.FC = () => {
                   to="/admin"
                   className={`px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
                     location.pathname.startsWith('/admin')
-                      ? 'bg-primary text-primary-foreground shadow-lg'
+                      ? 'bg-highlight text-primary-foreground shadow-lg'
                       : 'text-primary-foreground/80 hover:text-primary-foreground'
                   }`}
                 >
@@ -104,7 +104,7 @@ const Header: React.FC = () => {
                   to="/register-tutor"
                   className={`px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
                     location.pathname === '/register-tutor'
-                      ? 'bg-primary text-primary-foreground shadow-lg'
+                      ? 'bg-highlight text-primary-foreground shadow-lg'
                       : 'text-primary-foreground/80 hover:text-primary-foreground'
                   }`}
                 >

@@ -144,6 +144,9 @@
     -webkit-line-clamp: 3;
   }
 }
+  .bg-highlight {
+    @apply bg-ring;
+  }
 
 @keyframes flicker {
   0%, 100% {
