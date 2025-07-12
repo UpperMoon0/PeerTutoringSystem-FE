@@ -239,7 +239,7 @@ const TutorVerificationSection: React.FC = () => {
                   <Button
                     onClick={() => handleStatusClick(verification.verificationID, 'Rejected', verification.fullName || verification.userID)}
                     variant="destructive"
-                    className="bg-destructive hover:bg-destructive-foreground text-destructive-foreground"
+                    className="bg-destructive hover:bg-destructive-foreground text-primary-foreground"
                   >
                     Reject
                   </Button>
