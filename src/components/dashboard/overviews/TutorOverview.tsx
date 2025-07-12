@@ -93,19 +93,19 @@ const TutorOverview: React.FC<TutorOverviewProps> = () => {
     <div className="space-y-6">
       {/* Welcome Section */}
       <div>
-        <h2 className="text-2xl font-bold text-white mb-2">Welcome back, Tutor!</h2>
-        <p className="text-gray-400">Here's your tutoring overview and recent activity.</p>
+        <h2 className="text-2xl font-bold text-foreground mb-2">Welcome back, Tutor!</h2>
+        <p className="text-muted-foreground">Here's your tutoring overview and recent activity.</p>
       </div>
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {/* Total Bookings */}
-        <Card className="bg-gray-900 border-gray-800">
+        <Card className="bg-card border-border">
           <CardContent className="p-4 lg:p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-gray-400 text-sm font-medium">Total Bookings</p>
-                <p className="text-3xl font-bold text-white mt-2">{stats.totalBookings}</p>
+                <p className="text-muted-foreground text-sm font-medium">Total Bookings</p>
+                <p className="text-3xl font-bold text-foreground mt-2">{stats.totalBookings}</p>
                 <p className="text-green-500 text-sm mt-1 flex items-center">
                   <TrendingUp className="w-4 h-4 mr-1" />
                   +12% from last month
@@ -119,12 +119,12 @@ const TutorOverview: React.FC<TutorOverviewProps> = () => {
         </Card>
 
         {/* Available Slots */}
-        <Card className="bg-gray-900 border-gray-800">
+        <Card className="bg-card border-border">
           <CardContent className="p-4 lg:p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-gray-400 text-sm font-medium">Available Slots</p>
-                <p className="text-3xl font-bold text-white mt-2">{stats.availableSlots}</p>
+                <p className="text-muted-foreground text-sm font-medium">Available Slots</p>
+                <p className="text-3xl font-bold text-foreground mt-2">{stats.availableSlots}</p>
                 <p className="text-blue-500 text-sm mt-1 flex items-center">
                   <Calendar className="w-4 h-4 mr-1" />
                   This week
@@ -138,12 +138,12 @@ const TutorOverview: React.FC<TutorOverviewProps> = () => {
         </Card>
 
         {/* Completed Sessions */}
-        <Card className="bg-gray-900 border-gray-800">
+        <Card className="bg-card border-border">
           <CardContent className="p-4 lg:p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-gray-400 text-sm font-medium">Completed Sessions</p>
-                <p className="text-3xl font-bold text-white mt-2">{stats.completedSessions}</p>
+                <p className="text-muted-foreground text-sm font-medium">Completed Sessions</p>
+                <p className="text-3xl font-bold text-foreground mt-2">{stats.completedSessions}</p>
                 <p className="text-green-500 text-sm mt-1 flex items-center">
                   <CheckCircle className="w-4 h-4 mr-1" />
                   +8% from last month
@@ -157,12 +157,12 @@ const TutorOverview: React.FC<TutorOverviewProps> = () => {
         </Card>
 
         {/* Earnings */}
-        <Card className="bg-gray-900 border-gray-800">
+        <Card className="bg-card border-border">
           <CardContent className="p-4 lg:p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-gray-400 text-sm font-medium">Total Earnings</p>
-                <p className="text-3xl font-bold text-white mt-2">${stats.totalEarnings}</p>
+                <p className="text-muted-foreground text-sm font-medium">Total Earnings</p>
+                <p className="text-3xl font-bold text-foreground mt-2">${stats.totalEarnings}</p>
                 <p className="text-green-500 text-sm mt-1 flex items-center">
                   <DollarSign className="w-4 h-4 mr-1" />
                   +15% from last month
@@ -178,9 +178,9 @@ const TutorOverview: React.FC<TutorOverviewProps> = () => {
 
       <div className="grid grid-cols-1 gap-6">
         {/* Recent Bookings */}
-        <Card className="bg-gray-900 border-gray-800">
+        <Card className="bg-card border-border">
           <CardHeader>
-            <CardTitle className="text-white flex items-center justify-between">
+            <CardTitle className="text-foreground flex items-center justify-between">
               <span className="flex items-center">
                 <BookOpen className="w-5 h-5 mr-2 text-blue-400" />
                 Recent Bookings
@@ -192,7 +192,7 @@ const TutorOverview: React.FC<TutorOverviewProps> = () => {
                 View all
               </Button>
             </CardTitle>
-            <CardDescription className="text-gray-400">
+            <CardDescription className="text-muted-foreground">
               Your latest student bookings
             </CardDescription>
           </CardHeader>
@@ -201,7 +201,7 @@ const TutorOverview: React.FC<TutorOverviewProps> = () => {
               <div className="space-y-4">
                 {[...Array(3)].map((_, i) => (
                   <div key={i} className="animate-pulse">
-                    <div className="h-16 bg-gray-800 rounded-lg"></div>
+                    <div className="h-16 bg-muted rounded-lg"></div>
                   </div>
                 ))}
               </div>
@@ -210,18 +210,18 @@ const TutorOverview: React.FC<TutorOverviewProps> = () => {
                 {recentBookings.slice(0, 5).map((booking) => (
                   <div 
                     key={booking.bookingId} 
-                    className="flex items-center justify-between p-4 bg-gray-800 rounded-lg hover:bg-gray-750 transition-colors"
+                    className="flex items-center justify-between p-4 bg-muted rounded-lg hover:bg-accent transition-colors"
                   >
                     <div className="flex items-center space-x-4">
-                      <div className="p-2 bg-gray-700 rounded-lg">
-                        <User className="w-5 h-5 text-gray-300" />
+                      <div className="p-2 bg-background rounded-lg">
+                        <User className="w-5 h-5 text-muted-foreground" />
                       </div>
                       <div>
-                        <p className="text-white font-medium">{booking.topic}</p>
-                        <p className="text-gray-400 text-sm">
+                        <p className="text-foreground font-medium">{booking.topic}</p>
+                        <p className="text-muted-foreground text-sm">
                           with {booking.studentName || 'Student'}
                         </p>
-                        <p className="text-gray-500 text-xs">
+                        <p className="text-muted-foreground/80 text-xs">
                           {formatDateTime(booking.startTime)}
                         </p>
                       </div>
@@ -242,9 +242,9 @@ const TutorOverview: React.FC<TutorOverviewProps> = () => {
               </div>
             ) : (
               <div className="text-center py-8">
-                <BookOpen className="w-12 h-12 text-gray-600 mx-auto mb-4" />
-                <p className="text-gray-400">No recent bookings</p>
-                <p className="text-gray-500 text-sm mt-1">
+                <BookOpen className="w-12 h-12 text-muted-foreground/50 mx-auto mb-4" />
+                <p className="text-muted-foreground">No recent bookings</p>
+                <p className="text-muted-foreground/80 text-sm mt-1">
                   Students will appear here once they book sessions with you
                 </p>
               </div>
@@ -254,28 +254,28 @@ const TutorOverview: React.FC<TutorOverviewProps> = () => {
       </div>
 
       {/* Upcoming Sessions Preview */}
-      <Card className="bg-gray-900 border-gray-800">
+      <Card className="bg-card border-border">
         <CardHeader>
-          <CardTitle className="text-white flex items-center">
+          <CardTitle className="text-foreground flex items-center">
             <Calendar className="w-5 h-5 mr-2 text-purple-400" />
             Session Calendar Preview
           </CardTitle>
-          <CardDescription className="text-gray-400">
+          <CardDescription className="text-muted-foreground">
             Your upcoming tutoring sessions this week
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-7 gap-2 mb-4">
             {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day) => (
-              <div key={day} className="text-center text-gray-400 text-sm font-medium py-2">
+              <div key={day} className="text-center text-muted-foreground text-sm font-medium py-2">
                 {day}
               </div>
             ))}
           </div>
           <div className="grid grid-cols-7 gap-2">
             {Array.from({ length: 7 }, (_, i) => (
-              <div key={i} className="aspect-square bg-gray-800 rounded-lg p-2 hover:bg-gray-700 transition-colors">
-                <div className="text-white text-sm font-medium">{i + 15}</div>
+              <div key={i} className="aspect-square bg-muted rounded-lg p-2 hover:bg-accent transition-colors">
+                <div className="text-foreground text-sm font-medium">{i + 15}</div>
                 {i === 2 && (
                   <div className="mt-1">
                     <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
@@ -294,21 +294,21 @@ const TutorOverview: React.FC<TutorOverviewProps> = () => {
             <div className="flex items-center space-x-4 text-sm">
               <div className="flex items-center space-x-2">
                 <div className="w-3 h-3 bg-blue-400 rounded-full"></div>
-                <span className="text-gray-400">Confirmed</span>
+                <span className="text-muted-foreground">Confirmed</span>
               </div>
               <div className="flex items-center space-x-2">
                 <div className="w-3 h-3 bg-green-400 rounded-full"></div>
-                <span className="text-gray-400">Completed</span>
+                <span className="text-muted-foreground">Completed</span>
               </div>
               <div className="flex items-center space-x-2">
                 <div className="w-3 h-3 bg-yellow-400 rounded-full"></div>
-                <span className="text-gray-400">Pending</span>
+                <span className="text-muted-foreground">Pending</span>
               </div>
             </div>
             <Button
               variant="outline"
               size="sm"
-              className="bg-gray-800 border-gray-700 text-white hover:bg-gray-700"
+              className="bg-muted border-border text-foreground hover:bg-accent"
             >
               <PlusCircle className="w-4 h-4 mr-2" />
               Add Availability
