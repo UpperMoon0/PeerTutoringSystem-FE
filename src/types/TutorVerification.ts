@@ -1,7 +1,9 @@
 export interface TutorVerification {
   verificationID: string; 
   userID: string;
-  fullName?: string; 
+  fullName?: string;
+  email?: string;
+  avatar?: string;
   citizenID: string;
   studentID: string;
   university: string;
