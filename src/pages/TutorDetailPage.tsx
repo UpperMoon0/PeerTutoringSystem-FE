@@ -439,7 +439,7 @@ const TutorDetailPage: React.FC = () => {
                 onClick={() => navigate(`/student/chat?userId=${tutorId}`)}
                 variant="outline"
                 size="sm"
-                className="bg-primary hover:bg-ring text-primary-foreground ml-auto"
+                className="bg-primary hover:bg-ring text-primary-foreground ml-auto mt-4"
               >
                 <MessageCircle className="w-4 h-4 mr-2" /> Chat
               </Button>
@@ -552,10 +552,22 @@ const TutorDetailPage: React.FC = () => {
                   </PopoverContent>
                 </Popover>
               </div>
-              {/* Removed the "View Slots" button as slots fetch automatically */}
+              <div className="flex-shrink-0">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setDateRangeStart(undefined);
+                    setDateRangeEnd(undefined);
+                  }}
+                  className="text-muted-foreground hover:text-foreground"
+                >
+                  Clear
+                </Button>
+              </div>
             </div>
 
-            {bookingError && <Alert variant="destructive" className="bg-destructive border-destructive !text-destructive-foreground"><AlertDescription className="!text-destructive-foreground">{bookingError}</AlertDescription></Alert>}
+            {bookingError && <Alert variant="destructive" className="bg-destructive border-destructive !text-primary-foreground"><AlertDescription className="!text-primary-foreground">{bookingError}</AlertDescription></Alert>}
             {bookingSuccess && <Alert variant="default" className="bg-primary border-primary text-primary-foreground"><AlertDescription>{bookingSuccess}</AlertDescription></Alert>}
             
             {isFetchingSlots && <p className="text-center text-muted-foreground py-3">Fetching available slots...</p>}

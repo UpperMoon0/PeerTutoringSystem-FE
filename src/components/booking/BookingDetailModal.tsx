@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import type { Booking } from '@/types/booking.types';
+import type { EnrichedTutor } from '@/types/enrichedTutor.types';
 import type { Session, CreateSessionDto, UpdateSessionDto } from '@/types/session.types';
 import { BookingService } from '@/services/BookingService';
 import { SessionService } from '@/services/SessionService';
+import PaymentService from '@/services/PaymentService';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -19,6 +21,7 @@ interface BookingWithSession extends Booking {
 
 interface BookingDetailModalProps {
   booking: BookingWithSession | null;
+  tutorDetails?: EnrichedTutor | null;
   isOpen: boolean;
   onClose: () => void;
   onBookingCancelled: () => void;
@@ -28,6 +31,7 @@ interface BookingDetailModalProps {
 
 export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
   booking,
+  tutorDetails,
   isOpen,
   onClose,
   onBookingCancelled,
@@ -41,6 +45,7 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
   const [currentBooking, setCurrentBooking] = useState<BookingWithSession | null>(booking);
   const [currentSession, setCurrentSession] = useState<Session | undefined>(booking?.session);
   const [isSubmittingSessionUpdate, setIsSubmittingSessionUpdate] = useState(false);
+  const [isProcessingPayment, setIsProcessingPayment] = useState(false);
 
   // Update internal state when the `booking` prop changes
   React.useEffect(() => {
@@ -86,29 +91,6 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
     }
   };
 
-  const handleCreateSession = async (sessionData: CreateSessionDto) => {
-    if (!booking) return;
-
-    setError(null);
-    try {
-      const result = await SessionService.createSession(sessionData);
-      if (result.success && result.data) {
-        setCurrentSession(result.data);
-        setCurrentBooking(prev => prev ? { ...prev, session: result.data } : null);
-        toast.success('Session created successfully!');
-        onUpdateStatus?.('Confirmed'); // Assuming creating a session implies confirming the booking
-        onClose(); // Close modal after successful creation
-      } else {
-        const errorMessage = typeof result.error === 'string' ? result.error : (result.error as { message?: string })?.message || 'Failed to create session.';
-        setError(errorMessage);
-        toast.error(`Session creation failed: ${errorMessage}`);
-      }
-    } catch (err: unknown) {
-      const errorMessage = (err as Error)?.message || "An unexpected error occurred during session creation.";
-      setError(errorMessage);
-      toast.error(`Session creation error: ${errorMessage}`);
-    }
-  };
 
   const getStatusBadgeVariant = (status: Booking['status']) => {
     switch (status) {
@@ -165,18 +147,11 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
         if (status === 'Cancelled') {
           onBookingCancelled(); // This will close modal & refresh list via parent
         } else if (status === 'Confirmed') {
-          // Automatically create session upon confirmation
-          const sessionData: CreateSessionDto = {
-            bookingId: booking.bookingId,
-            videoCallLink: `https://meet.google.com/${booking.bookingId.substring(0, 10)}`, // Placeholder
-            sessionNotes: `Session for booking ${booking.bookingId} on topic: ${booking.topic}.`, // Placeholder
-            startTime: booking.startTime,
-            endTime: booking.endTime,
-          };
-          await handleCreateSession(sessionData);
+          onUpdateStatus?.(status);
+          onClose();
         } else {
           onUpdateStatus?.(status);
-          onClose(); // Close modal after successful update for other statuses
+          onClose();
         }
       } else {
         const errorMessage = typeof result.error === 'string' ? result.error : (result.error as { message?: string })?.message || `Failed to update booking to ${status}.`;
@@ -192,6 +167,31 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
     }
   };
 
+  const handlePayment = async () => {
+    if (!booking) return;
+
+    setIsProcessingPayment(true);
+    setError(null);
+
+    try {
+      const returnUrl = window.location.href;
+      const result = await PaymentService.createPayment(booking.bookingId, returnUrl);
+
+      if (result.paymentUrl) {
+        window.location.href = result.paymentUrl;
+      } else {
+        setError('Failed to retrieve payment URL.');
+        toast.error('Payment initiation failed.');
+      }
+    } catch (err) {
+      const errorMessage = (err as Error)?.message || 'An unexpected error occurred during payment.';
+      setError(errorMessage);
+      toast.error(`Payment error: ${errorMessage}`);
+    } finally {
+      setIsProcessingPayment(false);
+    }
+  };
+
   const isCurrentUserTutor = currentUser?.userId === booking.tutorId;
   const isSessionUpcoming = booking.status === 'Confirmed' && isAfter(new Date(booking.startTime), new Date());
   const isSessionCompleted = booking.status === 'Completed';
@@ -200,6 +200,15 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
   const canAcceptReject = isCurrentUserTutor && booking.status === 'Pending';
   const canComplete = isCurrentUserTutor && booking.status === 'Confirmed' && new Date(booking.endTime) < new Date();
   const showCompleteButton = isCurrentUserTutor && booking.status === 'Confirmed';
+  const showPaymentButton = !isCurrentUserTutor && booking.status === 'Confirmed' && !hasSessionInfo;
+
+  const calculatePrice = () => {
+    if (!booking || !tutorDetails) return 0;
+    const durationInHours = differenceInHours(new Date(booking.endTime), new Date(booking.startTime));
+    return durationInHours * (tutorDetails.hourlyRate ?? 0);
+  };
+
+  const price = calculatePrice();
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -288,6 +297,14 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
                 <p className="text-muted-foreground bg-input p-3 rounded-md whitespace-pre-wrap">
                   {booking.description}
                 </p>
+              </div>
+            )}
+            {price > 0 && (
+              <div>
+                <h3 className="font-semibold text-muted-foreground mb-1 flex items-center">
+                  <Tag className="w-4 h-4 mr-1.5 text-muted-foreground" /> Price:
+                </h3>
+                <p className="text-foreground">{price.toLocaleString()} VND</p>
               </div>
             )}
 
@@ -461,6 +478,17 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
                  )}
                  
                </div>
+               {showPaymentButton && (
+                 <div className="mt-4">
+                   <Button
+                     onClick={handlePayment}
+                     disabled={isProcessingPayment}
+                     className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
+                   >
+                     {isProcessingPayment ? 'Processing...' : 'Proceed to Payment'}
+                   </Button>
+                 </div>
+               )}
              </div>
            </div>
          </div>
