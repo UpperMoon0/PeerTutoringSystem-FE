@@ -119,6 +119,16 @@ const StudentBookingHistoryPage: React.FC = () => {
           })
         );
         
+        if (statusFilter === 'All') {
+          const statusOrder: { [key: string]: number } = {
+            'Pending': 1,
+            'Confirmed': 2,
+            'Completed': 3,
+            'Rejected': 4,
+            'Cancelled': 5,
+          };
+          bookingsWithSessions.sort((a, b) => (statusOrder[a.status] || 99) - (statusOrder[b.status] || 99));
+        }
         setBookings(bookingsWithSessions);
         setTotalPages(Math.ceil(response.data.totalCount / response.data.pageSize));
         setTotalBookings(response.data.totalCount);
@@ -270,8 +280,8 @@ const StudentBookingHistoryPage: React.FC = () => {
                   <SelectItem value="Pending" className="text-popover-foreground hover:bg-accent">Pending</SelectItem>
                   <SelectItem value="Confirmed" className="text-popover-foreground hover:bg-accent">Confirmed</SelectItem>
                   <SelectItem value="Completed" className="text-popover-foreground hover:bg-accent">Completed</SelectItem>
-                  <SelectItem value="Cancelled" className="text-popover-foreground hover:bg-accent">Cancelled</SelectItem>
                   <SelectItem value="Rejected" className="text-popover-foreground hover:bg-accent">Rejected</SelectItem>
+                  <SelectItem value="Cancelled" className="text-popover-foreground hover:bg-accent">Cancelled</SelectItem>
                 </SelectContent>
               </Select>
               <DatePickerWithRange
