@@ -183,26 +183,38 @@ const getAllTutors = async (): Promise<ApiResult<User[]>> => {
   }
 };
 
-const getAllEnrichedTutors = async (): Promise<ApiResult<EnrichedTutor[]>> => {
-  const url = `${API_BASE_URL}/tutors/enriched-list`;
+const getAllEnrichedTutors = async (params?: {
+  sortBy?: string;
+  limit?: number;
+}): Promise<ApiResult<EnrichedTutor[]>> => {
+  const url = new URL(`${API_BASE_URL}/tutors/enriched-list`);
+  if (params) {
+    if (params.sortBy) {
+      url.searchParams.append('sortBy', params.sortBy);
+    }
+    if (params.limit) {
+      url.searchParams.append('limit', String(params.limit));
+    }
+  }
+
   try {
-    const response = await fetch(url, { method: 'GET' });
+    const response = await fetch(url.toString(), { method: 'GET' });
 
     if (!response.ok) {
       const errorBody = await getErrorBody(response);
-      console.error(`API Error ${response.status} for URL ${url}:`, errorBody);
+      console.error(`API Error ${response.status} for URL ${url.toString()}:`, errorBody);
       const finalErrorMessageApi = extractErrorMessage(errorBody, response.status);
       return { success: false, error: finalErrorMessageApi };
     }
 
-    const data = await response.json() as EnrichedTutor[];
+    const data = (await response.json()) as EnrichedTutor[];
     return { success: true, data };
   } catch (networkOrOtherError) {
-    console.error(`Request processing failed for URL ${url}:`, networkOrOtherError);
+    console.error(`Request processing failed for URL ${url.toString()}:`, networkOrOtherError);
     const errorString = networkOrOtherError instanceof Error ? networkOrOtherError.message : String(networkOrOtherError);
     return {
       success: false,
-      error: errorString
+      error: errorString,
     };
   }
 };
