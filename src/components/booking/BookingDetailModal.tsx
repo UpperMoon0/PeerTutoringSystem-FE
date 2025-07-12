@@ -42,6 +42,7 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
   const [isCancelling, setIsCancelling] = useState(false);
   const [isEditingSession, setIsEditingSession] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isCreatingSession, setIsCreatingSession] = useState(false);
   const [currentBooking, setCurrentBooking] = useState<BookingWithSession | null>(booking);
   const [currentSession, setCurrentSession] = useState<Session | undefined>(booking?.session);
   const [isSubmittingSessionUpdate, setIsSubmittingSessionUpdate] = useState(false);
@@ -57,10 +58,42 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
   React.useEffect(() => {
     if (isOpen || booking) { // Trigger reset if modal opens or booking changes
       setIsEditingSession(false);
+      setIsCreatingSession(false);
     }
   }, [isOpen, booking]);
 
   if (!booking) return null;
+
+  const handleCreateSession = async (sessionData: CreateSessionDto) => {
+    setIsSubmittingSessionUpdate(true);
+    try {
+      const result = await SessionService.createSession(sessionData);
+
+      if (result.success && result.data) {
+        toast.success('Session created successfully!');
+        setCurrentSession(result.data);
+        if (currentBooking) {
+          setCurrentBooking({
+            ...currentBooking,
+            session: result.data,
+            status: 'Confirmed'
+          });
+        }
+        setIsCreatingSession(false);
+        onClose(); // Close the modal on success
+      } else {
+        const errorMessage = typeof result.error === 'string'
+          ? result.error
+          : result.error?.message || 'Failed to create session';
+        toast.error(errorMessage);
+      }
+    } catch (error) {
+      console.error('Error creating session:', error);
+      toast.error('Failed to create session');
+    } finally {
+      setIsSubmittingSessionUpdate(false);
+    }
+  };
 
   const handleUpdateSession = async (sessionData: UpdateSessionDto) => {
     setIsSubmittingSessionUpdate(true);
@@ -148,7 +181,7 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
           onBookingCancelled(); // This will close modal & refresh list via parent
         } else if (status === 'Confirmed') {
           onUpdateStatus?.(status);
-          onClose();
+          setIsCreatingSession(true);
         } else {
           onUpdateStatus?.(status);
           onClose();
@@ -174,33 +207,30 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
     setError(null);
 
     try {
-      const returnUrl = window.location.href;
-      const result = await PaymentService.createPayment(booking.bookingId, returnUrl);
-
-      if (result.paymentUrl) {
-        window.location.href = result.paymentUrl;
-      } else {
-        setError('Failed to retrieve payment URL.');
-        toast.error('Payment initiation failed.');
-      }
+      // Use the placeholder URL as per instructions
+      const returnUrl = 'http://localhost:5173/payment-success';
+      await PaymentService.createPayment(booking.bookingId, returnUrl);
+      // The PaymentService will handle the redirect.
     } catch (err) {
       const errorMessage = (err as Error)?.message || 'An unexpected error occurred during payment.';
       setError(errorMessage);
       toast.error(`Payment error: ${errorMessage}`);
-    } finally {
-      setIsProcessingPayment(false);
+      setIsProcessingPayment(false); // Only set to false on error
     }
   };
 
   const isCurrentUserTutor = currentUser?.userId === booking.tutorId;
+  const isCurrentUserStudent = currentUser?.userId === booking.studentId;
   const isSessionUpcoming = booking.status === 'Confirmed' && isAfter(new Date(booking.startTime), new Date());
   const isSessionCompleted = booking.status === 'Completed';
   const hasSessionInfo = (booking.status === 'Confirmed' || booking.status === 'Completed') && currentSession;
   const canEditSession = isCurrentUserTutor && hasSessionInfo && currentSession;
   const canAcceptReject = isCurrentUserTutor && booking.status === 'Pending';
+  const showCreateSessionForm = isCurrentUserTutor && booking.status === 'Confirmed' && !currentSession;
+  const canCancel = isCurrentUserStudent && booking.status === 'Pending';
   const canComplete = isCurrentUserTutor && booking.status === 'Confirmed' && new Date(booking.endTime) < new Date();
   const showCompleteButton = isCurrentUserTutor && booking.status === 'Confirmed';
-  const showPaymentButton = !isCurrentUserTutor && booking.status === 'Confirmed' && !hasSessionInfo;
+  const showPaymentButton = isCurrentUserStudent && booking.status === 'Confirmed';
 
   const calculatePrice = () => {
     if (!booking || !tutorDetails) return 0;
@@ -308,7 +338,15 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
               </div>
             )}
 
-            {hasSessionInfo ? (
+            {isCreatingSession || showCreateSessionForm ? (
+              <SessionForm
+                booking={booking}
+                onSubmit={handleCreateSession as (data: CreateSessionDto | UpdateSessionDto) => Promise<void>}
+                isSubmitting={isSubmittingSessionUpdate}
+                error={error || undefined}
+                onCancel={onClose}
+              />
+            ) : hasSessionInfo ? (
               <div className="border-t border-border pt-4">
                 <div className="flex items-center justify-between mb-3">
                   <h3 className="font-semibold text-muted-foreground flex items-center">
@@ -458,12 +496,23 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
                        onClick={() => handleUpdateStatus('Rejected')}
                        disabled={isCancelling}
                        variant="destructive"
+                       className="text-primary-foreground"
                      >
                        {isCancelling ? 'Rejecting...' : 'Reject Booking'}
                      </Button>
                    </>
                  )}
- 
+                 {canCancel && (
+                   <Button
+                     onClick={() => handleUpdateStatus('Cancelled')}
+                     disabled={isCancelling}
+                     variant="destructive"
+                     className="text-primary-foreground"
+                   >
+                     {isCancelling ? 'Cancelling...' : 'Cancel Booking'}
+                   </Button>
+                 )}
+
                  {showCompleteButton && (
                    <Button
                      onClick={() => handleUpdateStatus('Completed')}
@@ -478,23 +527,21 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
                  )}
                  
                </div>
-               {showPaymentButton && (
-                 <div className="mt-4">
-                   <Button
-                     onClick={handlePayment}
-                     disabled={isProcessingPayment}
-                     className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
-                   >
-                     {isProcessingPayment ? 'Processing...' : 'Proceed to Payment'}
-                   </Button>
-                 </div>
-               )}
              </div>
            </div>
          </div>
          
          {(!isEditingSession) && (
            <DialogFooter className="mt-2 pt-4 border-t border-border">
+             {showPaymentButton && (
+               <Button
+                 onClick={handlePayment}
+                 disabled={isProcessingPayment}
+                 className="bg-primary text-primary-foreground hover:bg-primary/90"
+               >
+                 {isProcessingPayment ? 'Processing...' : 'Pay Now'}
+               </Button>
+             )}
              <Button
                variant="outline"
                onClick={onClose}

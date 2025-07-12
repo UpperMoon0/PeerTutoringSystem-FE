@@ -21,7 +21,7 @@ const HeaderUserProfile: React.FC = () => {
           {getInitials(currentUser.fullName)}
         </AvatarFallback>
       </Avatar>
-      <span className="text-foreground hover:text-muted-foreground transition-colors">{currentUser.fullName}</span>
+      <span className="text-primary-foreground hover:text-primary-foreground/80 transition-colors">{currentUser.fullName}</span>
     </Link>
   );
 };

@@ -3,11 +3,13 @@ import { apiClient } from './AuthService';
 const PaymentService = {
   createPayment: async (bookingId: string, returnUrl: string) => {
     try {
-      const response = await apiClient.post('/payment/create-payment', {
+      const response = await apiClient.post('/api/Payment', {
         bookingId,
-        returnUrl,
+        returnUrl
       });
-      return response.data;
+      if (response.data) {
+        window.location.href = response.data;
+      }
     } catch (error) {
       console.error('Error creating payment:', error);
       throw error;

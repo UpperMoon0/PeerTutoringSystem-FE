@@ -115,7 +115,7 @@ const Header: React.FC = () => {
           </div>
           <nav className="flex items-center space-x-3">
             {loading ? (
-              <div className="text-muted-foreground">Loading...</div>
+              <div className="text-primary-foreground">Loading...</div>
             ) : currentUser ? (
               <>
                 {(currentUser.role === 'Tutor' || currentUser.role === 'Student') && (
