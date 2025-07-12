@@ -31,7 +31,6 @@ const FeaturedTutorsCarousel: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
   const carouselRef = useRef<HTMLDivElement>(null);
-
   const itemsPerView = 3; // Show 3 cards at a time
   const totalSlides = Math.max(0, tutors.length - itemsPerView + 1);
 
@@ -70,9 +69,8 @@ const FeaturedTutorsCarousel: React.FC = () => {
         } else {
           setError('Failed to load featured tutors');
         }
-      } catch (err) {
+      } catch {
         setError('An error occurred while loading tutors');
-        console.error('Error fetching featured tutors:', err);
       } finally {
         setIsLoading(false);
       }
@@ -98,6 +96,7 @@ const FeaturedTutorsCarousel: React.FC = () => {
 
     return () => clearInterval(interval);
   }, [tutors.length, totalSlides, nextSlide]);
+
 
   if (isLoading) {
     return (
@@ -155,17 +154,16 @@ const FeaturedTutorsCarousel: React.FC = () => {
           {/* Carousel container */}
           <div className="overflow-hidden" ref={carouselRef}>
             <div 
-              className="flex transition-transform duration-300 ease-in-out"
-              style={{ 
+              className="flex transition-transform duration-300 ease-in-out gap-4"
+              style={{
                 transform: `translateX(-${currentIndex * (100 / itemsPerView)}%)`,
-                width: `${(tutors.length / itemsPerView) * 100}%`
               }}
             >
               {tutors.map((tutor) => (
-                <div 
-                  key={tutor.tutorId} 
-                  className="flex-shrink-0 px-3"
-                  style={{ width: `${100 / tutors.length}%` }}
+                <div
+                  key={tutor.tutorId}
+                  className="flex-shrink-0"
+                  style={{ width: `calc(${100 / itemsPerView}% - 1rem)` }}
                 >
                   <Card className="bg-card border-border text-card-foreground h-full flex flex-col">
                     <CardHeader className="text-center pb-4">
