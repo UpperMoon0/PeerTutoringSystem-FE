@@ -15,6 +15,7 @@ export interface Booking {
   updatedAt?: string;
   studentName?: string;
   tutorName?: string;
+  price?: number;
   topic: string;
   description: string;
   skillId?: string;

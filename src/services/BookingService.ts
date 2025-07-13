@@ -28,15 +28,17 @@ const convertBookingFromBackend = (backendBooking: Record<string, unknown>): Boo
     startTime: backendBooking.startTime as string,
     endTime: backendBooking.endTime as string,
     status: backendBooking.status as "Pending" | "Confirmed" | "Cancelled" | "Completed" | "Rejected",
+    paymentStatus: backendBooking.paymentStatus as "Unpaid" | "Paid",
     createdAt: backendBooking.createdAt as string,
     updatedAt: backendBooking.updatedAt as string,
     studentName: backendBooking.studentName as string,
     tutorName: backendBooking.tutorName as string,
+    price: backendBooking.price as number,
     topic: backendBooking.topic as string,
     description: backendBooking.description as string,
     skillId: backendBooking.skillId as string,
     student: backendBooking.student as undefined,
-    tutor: backendBooking.tutor as undefined
+    tutor: backendBooking.tutor as undefined,
   };
 };
 

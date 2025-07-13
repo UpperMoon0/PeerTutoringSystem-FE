@@ -4,7 +4,6 @@ import type { EnrichedTutor } from '@/types/enrichedTutor.types';
 import type { Session, CreateSessionDto, UpdateSessionDto } from '@/types/session.types';
 import { BookingService } from '@/services/BookingService';
 import { SessionService } from '@/services/SessionService';
-import PaymentService from '@/services/PaymentService';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -12,6 +11,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AlertCircle, ListChecks, CalendarDays, Clock, User, Tag, FileText, CheckCircle2, Video, MessageCircle, Timer, ExternalLink, Pencil } from 'lucide-react';
 import { format, isAfter, differenceInHours, differenceInMinutes } from 'date-fns';
 import { toast } from 'sonner';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import SessionForm from '@/components/session/SessionForm';
 
@@ -39,6 +39,7 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
   onUpdateStatus
 }) => {
   const { currentUser } = useAuth();
+  const navigate = useNavigate();
   const [isCancelling, setIsCancelling] = useState(false);
   const [isEditingSession, setIsEditingSession] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -46,7 +47,6 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
   const [currentBooking, setCurrentBooking] = useState<BookingWithSession | null>(booking);
   const [currentSession, setCurrentSession] = useState<Session | undefined>(booking?.session);
   const [isSubmittingSessionUpdate, setIsSubmittingSessionUpdate] = useState(false);
-  const [isProcessingPayment, setIsProcessingPayment] = useState(false);
 
   // Update internal state when the `booking` prop changes
   React.useEffect(() => {
@@ -200,23 +200,9 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
     }
   };
 
-  const handlePayment = async () => {
+  const handlePayment = () => {
     if (!booking) return;
-
-    setIsProcessingPayment(true);
-    setError(null);
-
-    try {
-      // Use the placeholder URL as per instructions
-      const returnUrl = 'http://localhost:5173/payment-success';
-      await PaymentService.createPayment(booking.bookingId, returnUrl);
-      // The PaymentService will handle the redirect.
-    } catch (err) {
-      const errorMessage = (err as Error)?.message || 'An unexpected error occurred during payment.';
-      setError(errorMessage);
-      toast.error(`Payment error: ${errorMessage}`);
-      setIsProcessingPayment(false); // Only set to false on error
-    }
+    navigate('/checkout', { state: { bookingId: booking.bookingId } });
   };
 
   const isCurrentUserTutor = currentUser?.userId === booking.tutorId;
@@ -230,7 +216,8 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
   const canCancel = isCurrentUserStudent && booking.status === 'Pending';
   const canComplete = isCurrentUserTutor && booking.status === 'Confirmed' && new Date(booking.endTime) < new Date();
   const showCompleteButton = isCurrentUserTutor && booking.status === 'Confirmed';
-  const showPaymentButton = isCurrentUserStudent && booking.status === 'Confirmed' && !!currentSession && booking.paymentStatus === 'Unpaid';
+  const showPaymentButton = isCurrentUserStudent && booking.status === 'Confirmed' && !!currentSession && booking.paymentStatus !== 'Paid';
+
 
   const calculatePrice = () => {
     if (!currentSession || !tutorDetails) return 0;
@@ -536,10 +523,9 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
              {showPaymentButton && (
                <Button
                  onClick={handlePayment}
-                 disabled={isProcessingPayment}
                  className="bg-primary text-primary-foreground hover:bg-primary/90"
                >
-                 {isProcessingPayment ? 'Processing...' : 'Pay Now'}
+                 Pay Now
                </Button>
              )}
              <Button

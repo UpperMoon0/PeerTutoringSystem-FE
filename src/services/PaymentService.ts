@@ -1,20 +1,26 @@
-import { apiClient } from './AuthService';
+import { AuthService } from "./AuthService";
+import type { ApiResult } from "@/types/api.types";
+import type { ProcessPaymentDto, ProcessPaymentResponse } from "@/types/payment.types";
 
-const PaymentService = {
-  createPayment: async (bookingId: string, returnUrl: string) => {
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
+export const PaymentService = {
+  processPayment: async (data: ProcessPaymentDto): Promise<ApiResult<ProcessPaymentResponse>> => {
     try {
-      const response = await apiClient.post('/Payment', {
-        bookingId,
-        returnUrl
+      const response = await AuthService.fetchWithAuth(`${API_BASE_URL}/payment/process`, {
+        method: 'POST',
+        body: JSON.stringify(data),
+        headers: { 'Content-Type': 'application/json' },
       });
-      if (response.data && response.data.data && response.data.data.paymentUrl) {
-        window.location.href = response.data.data.paymentUrl;
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: "Failed to parse error response." }));
+        throw new Error(errorData.error || `Failed to process payment: ${response.statusText}`);
       }
-    } catch (error) {
-      console.error('Error creating payment:', error);
-      throw error;
+      const responseData = await response.json();
+      return { success: true, data: responseData.data };
+    } catch (error: unknown) {
+      console.error('Error processing payment:', error);
+      return { success: false, error: error instanceof Error ? error.message : "Failed to process payment." };
     }
   },
 };
-
-export default PaymentService;

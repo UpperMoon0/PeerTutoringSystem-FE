@@ -15,6 +15,7 @@ import StudentBookingHistoryPage from '@/pages/StudentBookingHistoryPage';
 import StudentUpcomingSessionsPage from '@/pages/StudentUpcomingSessionsPage';
 import ChatPage from '../pages/ChatPage';
 import PaymentSuccessPage from '@/pages/PaymentSuccessPage';
+import CheckoutPage from '@/pages/CheckoutPage';
 
 const router = createBrowserRouter([
   {
@@ -51,6 +52,10 @@ const router = createBrowserRouter([
       {
         path: 'payment-success',
         element: <PaymentSuccessPage />,
+      },
+      {
+        path: 'checkout',
+        element: <CheckoutPage />,
       },
       {
         path: 'student',
