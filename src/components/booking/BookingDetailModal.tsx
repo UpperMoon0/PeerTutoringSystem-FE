@@ -230,11 +230,11 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
   const canCancel = isCurrentUserStudent && booking.status === 'Pending';
   const canComplete = isCurrentUserTutor && booking.status === 'Confirmed' && new Date(booking.endTime) < new Date();
   const showCompleteButton = isCurrentUserTutor && booking.status === 'Confirmed';
-  const showPaymentButton = isCurrentUserStudent && booking.status === 'Confirmed';
+  const showPaymentButton = isCurrentUserStudent && booking.status === 'Confirmed' && !!currentSession && booking.paymentStatus === 'Unpaid';
 
   const calculatePrice = () => {
-    if (!booking || !tutorDetails) return 0;
-    const durationInHours = differenceInHours(new Date(booking.endTime), new Date(booking.startTime));
+    if (!currentSession || !tutorDetails) return 0;
+    const durationInHours = differenceInHours(new Date(currentSession.endTime), new Date(currentSession.startTime));
     return durationInHours * (tutorDetails.hourlyRate ?? 0);
   };
 
@@ -329,7 +329,7 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
                 </p>
               </div>
             )}
-            {price > 0 && (
+            {hasSessionInfo && price > 0 && (
               <div>
                 <h3 className="font-semibold text-muted-foreground mb-1 flex items-center">
                   <Tag className="w-4 h-4 mr-1.5 text-muted-foreground" /> Price:

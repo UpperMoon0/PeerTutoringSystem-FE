@@ -10,6 +10,7 @@ export interface Booking {
   startTime: string;
   endTime: string;
   status: 'Pending' | 'Confirmed' | 'Cancelled' | 'Completed' | 'Rejected';
+  paymentStatus: 'Unpaid' | 'Paid';
   createdAt: string;
   updatedAt?: string;
   studentName?: string;

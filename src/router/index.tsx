@@ -14,6 +14,7 @@ import TutorDashboardPage from '@/pages/tutor/TutorDashboardPage';
 import StudentBookingHistoryPage from '@/pages/StudentBookingHistoryPage';
 import StudentUpcomingSessionsPage from '@/pages/StudentUpcomingSessionsPage';
 import ChatPage from '../pages/ChatPage';
+import PaymentSuccessPage from '@/pages/PaymentSuccessPage';
 
 const router = createBrowserRouter([
   {
@@ -46,6 +47,10 @@ const router = createBrowserRouter([
       {
         path: '/tutors/:tutorId',
         element: <TutorDetailPage />,
+      },
+      {
+        path: 'payment-success',
+        element: <PaymentSuccessPage />,
       },
       {
         path: 'student',
