@@ -14,7 +14,7 @@ const HeaderUserProfile: React.FC = () => {
   return (
     <Link to={`/profile/${currentUser.userId}`} className="flex items-center space-x-2 cursor-pointer">
       <Avatar>
-        <AvatarImage src={currentUser.avatarUrl} alt={currentUser.fullName} />
+        <AvatarImage src={currentUser.avatarUrl || undefined} alt={currentUser.fullName} />
         <AvatarFallback
           className={`bg-gradient-to-br ${generateGradient(currentUser.fullName)} text-primary-foreground font-bold`}
         >
