@@ -54,7 +54,7 @@ const TutorProfileDisplay: React.FC<TutorProfileDisplayProps> = ({ tutorProfile 
                 <p className="text-sm text-muted-foreground">Hourly Rate</p>
                 <p className="font-semibold text-foreground">
                   {typeof tutorProfile.hourlyRate === 'number'
-                    ? `$${tutorProfile.hourlyRate.toFixed(2)}`
+                    ? `${tutorProfile.hourlyRate.toLocaleString()} VND`
                     : 'N/A'}
                 </p>
               </div>

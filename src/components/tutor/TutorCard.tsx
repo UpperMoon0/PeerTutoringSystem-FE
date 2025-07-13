@@ -49,7 +49,7 @@ const TutorCard: React.FC<TutorCardProps> = ({ tutor }) => {
           )}
           {tutor.hourlyRate !== undefined && (
             <p>
-              <strong className="text-foreground">Rate:</strong> ${tutor.hourlyRate}/hr
+              <strong className="text-foreground">Rate:</strong> {tutor.hourlyRate.toLocaleString()} VND/hr
             </p>
           )}
         </div>

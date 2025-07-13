@@ -174,7 +174,7 @@ const FeaturedTutorsCarousel: React.FC = () => {
                           <p><strong className="text-foreground">Experience:</strong> {tutor.experience}</p>
                         )}
                         {tutor.hourlyRate !== undefined && (
-                          <p><strong className="text-foreground">Rate:</strong> ${tutor.hourlyRate}/hr</p>
+                          <p><strong className="text-foreground">Rate:</strong> {tutor.hourlyRate.toLocaleString()} VND/hr</p>
                         )}
                       </div>
                       

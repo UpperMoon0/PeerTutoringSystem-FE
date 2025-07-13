@@ -157,11 +157,11 @@ const TutorProfileForm: React.FC<TutorProfileFormProps> = ({ initialData, onSubm
           <div>
             <Label htmlFor="hourlyRate" className="text-sm font-medium text-muted-foreground mb-2 flex items-center gap-2">
               Hourly Rate
-              <span className="text-xs text-muted-foreground">(USD per hour)</span>
+              <span className="text-xs text-muted-foreground">(VND per hour)</span>
             </Label>
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <span className="text-muted-foreground">$</span>
+                <span className="text-muted-foreground">VND</span>
               </div>
               <Input
                 id="hourlyRate"

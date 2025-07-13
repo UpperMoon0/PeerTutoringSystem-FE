@@ -313,7 +313,7 @@ const TutorListPage: React.FC = () => {
             {/* Hourly Rate Filter */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <Label className="text-foreground font-medium mb-2 block">Min Hourly Rate ($)</Label>
+                <Label className="text-foreground font-medium mb-2 block">Min Hourly Rate (VND)</Label>
                 <Input
                   type="number"
                   placeholder="0"
@@ -323,7 +323,7 @@ const TutorListPage: React.FC = () => {
                 />
               </div>
               <div>
-                <Label className="text-foreground font-medium mb-2 block">Max Hourly Rate ($)</Label>
+                <Label className="text-foreground font-medium mb-2 block">Max Hourly Rate (VND)</Label>
                 <Input
                   type="number"
                   placeholder="1000"

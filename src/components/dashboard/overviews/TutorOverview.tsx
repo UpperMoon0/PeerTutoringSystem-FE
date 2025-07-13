@@ -162,7 +162,7 @@ const TutorOverview: React.FC<TutorOverviewProps> = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-muted-foreground text-sm font-medium">Total Earnings</p>
-                <p className="text-3xl font-bold text-foreground mt-2">${stats.totalEarnings}</p>
+                <p className="text-3xl font-bold text-foreground mt-2">{stats.totalEarnings.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}</p>
                 <p className="text-green-500 text-sm mt-1 flex items-center">
                   <DollarSign className="w-4 h-4 mr-1" />
                   +15% from last month

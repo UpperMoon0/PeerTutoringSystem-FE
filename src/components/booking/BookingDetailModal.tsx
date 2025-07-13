@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import type { Booking } from '@/types/booking.types';
-import type { EnrichedTutor } from '@/types/enrichedTutor.types';
 import type { Session, CreateSessionDto, UpdateSessionDto } from '@/types/session.types';
 import { BookingService } from '@/services/BookingService';
 import { SessionService } from '@/services/SessionService';
@@ -8,7 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { AlertCircle, ListChecks, CalendarDays, Clock, User, Tag, FileText, CheckCircle2, Video, MessageCircle, Timer, ExternalLink, Pencil } from 'lucide-react';
+import { AlertCircle, ListChecks, CalendarDays, Clock, User, Tag, FileText, CheckCircle2, Video, MessageCircle, Timer, ExternalLink, Pencil, DollarSign } from 'lucide-react';
 import { format, isAfter, differenceInHours, differenceInMinutes } from 'date-fns';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
@@ -21,7 +20,6 @@ interface BookingWithSession extends Booking {
 
 interface BookingDetailModalProps {
   booking: BookingWithSession | null;
-  tutorDetails?: EnrichedTutor | null;
   isOpen: boolean;
   onClose: () => void;
   onBookingCancelled: () => void;
@@ -31,7 +29,6 @@ interface BookingDetailModalProps {
 
 export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
   booking,
-  tutorDetails,
   isOpen,
   onClose,
   onBookingCancelled,
@@ -219,13 +216,6 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
   const showPaymentButton = isCurrentUserStudent && booking.status === 'Confirmed' && !!currentSession && booking.paymentStatus !== 'Paid';
 
 
-  const calculatePrice = () => {
-    if (!currentSession || !tutorDetails) return 0;
-    const durationInHours = differenceInHours(new Date(currentSession.endTime), new Date(currentSession.startTime));
-    return durationInHours * (tutorDetails.hourlyRate ?? 0);
-  };
-
-  const price = calculatePrice();
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -316,12 +306,13 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
                 </p>
               </div>
             )}
-            {hasSessionInfo && price > 0 && (
+            
+            {booking.price && (
               <div>
                 <h3 className="font-semibold text-muted-foreground mb-1 flex items-center">
-                  <Tag className="w-4 h-4 mr-1.5 text-muted-foreground" /> Price:
+                  <DollarSign className="w-4 h-4 mr-1.5 text-muted-foreground" /> Price:
                 </h3>
-                <p className="text-foreground">{price.toLocaleString()} VND</p>
+                <p className="text-foreground font-semibold text-lg">{booking.price.toLocaleString()} VND</p>
               </div>
             )}
 

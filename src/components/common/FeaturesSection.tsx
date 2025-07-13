@@ -26,7 +26,7 @@ const FeaturesSection: React.FC = () => {
       icon: DollarSign,
       title: "Affordable Rates",
       description: "Access quality tutoring at student-friendly prices with transparent pricing and no hidden fees.",
-      highlight: "From $15/hr"
+      highlight: "From 150,000 VND/hr"
     },
     {
       icon: Shield,

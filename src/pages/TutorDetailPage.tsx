@@ -35,7 +35,6 @@ const TutorDetailPage: React.FC = () => {
   const { currentUser } = useAuth();
   const [tutor, setTutor] = useState<TutorProfile | null>(null);
   const [tutorAccount] = useState<User | null>(null);
-  const [userSkills, setUserSkills] = useState<UserSkill[]>([]);
   const [skills, setSkills] = useState<Skill[]>([]);
   const [availabilities, setAvailabilities] = useState<TutorAvailability[]>([]);
   const [selectedAvailability, setSelectedAvailability] = useState<TutorAvailability | null>(null);
@@ -146,19 +145,6 @@ const TutorDetailPage: React.FC = () => {
     return getProcessedAvailabilities(unbookedSlots);
   }, [availabilities, getProcessedAvailabilities]);
 
-  const enrichedTutor = useMemo(() => {
-    if (!tutor) return null;
-    return {
-      ...tutor,
-      bio: tutor.bio || '',
-      experience: tutor.experience || '',
-      hourlyRate: tutor.hourlyRate ?? 0,
-      availability: tutor.availability || '',
-      averageRating: rating.averageRating,
-      reviewCount: rating.reviewCount,
-      skills: userSkills,
-    };
-  }, [tutor, rating, skills]);
 
   useEffect(() => {
     const fetchTutorDetails = async () => {
@@ -200,19 +186,16 @@ const TutorDetailPage: React.FC = () => {
         const skillsResponse = await UserSkillService.getUserSkills(tutorId);
         if (skillsResponse.success && skillsResponse.data) {
           const tutorUserSkills = skillsResponse.data.filter((userSkill: UserSkill) => userSkill.isTutor);
-          setUserSkills(tutorUserSkills);
           // Extract the Skill objects from UserSkill objects
           const tutorSkills = tutorUserSkills.map((userSkill: UserSkill) => userSkill.skill);
           setSkills(tutorSkills);
         } else {
           console.warn('Failed to fetch tutor skills:', skillsResponse.error);
           setSkills([]);
-          setUserSkills([]);
         }
       } catch (err) {
         console.warn('Error fetching tutor skills:', err);
         setSkills([]);
-        setUserSkills([]);
       }
     };
     
@@ -476,7 +459,7 @@ const TutorDetailPage: React.FC = () => {
         </CardHeader>
         <CardContent className="p-6 space-y-3">
           {tutor.bio && <p className="text-muted-foreground"><strong className="text-foreground">Bio:</strong> {tutor.bio}</p>}
-          {tutor.hourlyRate !== undefined && <p className="text-muted-foreground"><strong className="text-foreground">Hourly Rate:</strong> ${tutor.hourlyRate.toFixed(2)}</p>}
+          {tutor.hourlyRate !== undefined && <p className="text-muted-foreground"><strong className="text-foreground">Hourly Rate:</strong> {tutor.hourlyRate.toLocaleString()} VND</p>}
           {tutor.experience && <p className="text-muted-foreground"><strong className="text-foreground">Experience:</strong> {tutor.experience}</p>}
           {tutor.availability && <p className="text-muted-foreground mb-3"><strong className="text-foreground">General Availability:</strong> {tutor.availability}</p>}
           
@@ -767,7 +750,6 @@ const TutorDetailPage: React.FC = () => {
           handleFetchAvailabilities();
         }}
         userRole="student"
-        tutorDetails={enrichedTutor}
       />
       )}
     </div>

@@ -27,7 +27,8 @@ import {
   ListChecks,
   Star,
   Bell,
-  MessageSquareHeart
+  MessageSquareHeart,
+  DollarSign
 } from 'lucide-react';
 import { format } from 'date-fns';
 import type { DateRange } from 'react-day-picker';
@@ -219,6 +220,19 @@ const StudentBookingHistoryPage: React.FC = () => {
     return booking.status === 'Completed' && !reviewedBookings.has(booking.bookingId);
   };
 
+  const isHighlighted = (booking: BookingWithSession) => {
+    if (booking.status === 'Confirmed' && booking.session) {
+      return 'bg-green-100/50 border-l-4 border-l-green-500';
+    }
+    if (booking.status === 'Completed' && booking.paymentStatus !== 'Paid') {
+      return 'bg-amber-100/50 border-l-4 border-l-amber-500';
+    }
+    if (canLeaveReview(booking)) {
+      return 'bg-gradient-to-r from-chart-1/20 to-transparent border-l-4 border-l-chart-1';
+    }
+    return '';
+  };
+
   // Get count of completed bookings without reviews
   const pendingReviewsCount = bookings.filter(canLeaveReview).length;
 
@@ -330,6 +344,7 @@ const StudentBookingHistoryPage: React.FC = () => {
                     <TableHead className="text-muted-foreground">Date</TableHead>
                     <TableHead className="text-muted-foreground">Time</TableHead>
                     <TableHead className="text-muted-foreground">Status</TableHead>
+                    <TableHead className="text-muted-foreground">Price</TableHead>
                     <TableHead className="text-muted-foreground text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -337,11 +352,7 @@ const StudentBookingHistoryPage: React.FC = () => {
                   {bookings.map((booking) => (
                     <TableRow
                       key={booking.bookingId}
-                      className={`border-border hover:bg-accent/50 cursor-pointer transition-colors ${
-                        canLeaveReview(booking)
-                          ? 'bg-gradient-to-r from-chart-1/20 to-transparent border-l-4 border-l-chart-1'
-                          : ''
-                      }`}
+                      className={`border-border hover:bg-accent/50 cursor-pointer transition-colors ${isHighlighted(booking)}`}
                       onClick={() => handleViewDetails(booking)}
                     >
                       <TableCell className="text-foreground font-medium">
@@ -412,6 +423,12 @@ const StudentBookingHistoryPage: React.FC = () => {
                               📝 Click to leave a review
                             </div>
                           )}
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-foreground">
+                        <div className="flex items-center">
+                          <DollarSign className="w-4 h-4 mr-1.5 text-muted-foreground" />
+                          {booking.price ? `${booking.price.toLocaleString()} VND` : '-'}
                         </div>
                       </TableCell>
                       <TableCell className="text-right">
