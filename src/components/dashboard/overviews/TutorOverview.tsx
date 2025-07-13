@@ -3,6 +3,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { BookingService } from '@/services/BookingService';
+import { TutorService } from '@/services/TutorService';
+import { Skeleton } from '@/components/ui/skeleton';
 import {
   Calendar,
   BookOpen,
@@ -16,31 +18,17 @@ import {
   PlusCircle
 } from 'lucide-react';
 import type { Booking } from '@/types/booking.types';
-
-interface DashboardStats {
-  totalBookings: number;
-  availableSlots: number;
-  completedSessions: number;
-  totalEarnings: number;
-  pendingBookings: number;
-  confirmedBookings: number;
-}
+import type { TutorDashboardStats } from '@/types/tutor.types';
 
 interface TutorOverviewProps {
   onNavigateToSection?: (section: string) => void;
 }
 
 const TutorOverview: React.FC<TutorOverviewProps> = () => {
-  const [stats, setStats] = useState<DashboardStats>({
-    totalBookings: 0,
-    availableSlots: 0,
-    completedSessions: 0,
-    totalEarnings: 0,
-    pendingBookings: 0,
-    confirmedBookings: 0
-  });
+  const [stats, setStats] = useState<TutorDashboardStats | null>(null);
   const [recentBookings, setRecentBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     loadDashboardData();
@@ -49,11 +37,14 @@ const TutorOverview: React.FC<TutorOverviewProps> = () => {
   const loadDashboardData = async () => {
     try {
       setLoading(true);
+      setError(null);
       
-      // Load dashboard stats
-      const statsResult = await BookingService.getTutorDashboardStats();
+      const statsResult = await TutorService.getTutorDashboardStats();
       if (statsResult.success && statsResult.data) {
         setStats(statsResult.data);
+      } else {
+        const errorMessage = typeof statsResult.error === 'string' ? statsResult.error : 'Failed to load dashboard stats.';
+        setError(errorMessage);
       }
       
       // Load recent bookings
@@ -63,6 +54,7 @@ const TutorOverview: React.FC<TutorOverviewProps> = () => {
       }
     } catch (error) {
       console.error('Error loading dashboard data:', error);
+      setError('An unexpected error occurred.');
     } finally {
       setLoading(false);
     }
@@ -99,81 +91,118 @@ const TutorOverview: React.FC<TutorOverviewProps> = () => {
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        {/* Total Bookings */}
-        <Card className="bg-card border-border">
-          <CardContent className="p-4 lg:p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-muted-foreground text-sm font-medium">Total Bookings</p>
-                <p className="text-3xl font-bold text-foreground mt-2">{stats.totalBookings}</p>
-                <p className="text-green-500 text-sm mt-1 flex items-center">
-                  <TrendingUp className="w-4 h-4 mr-1" />
-                  +12% from last month
-                </p>
-              </div>
-              <div className="p-3 bg-blue-600 bg-opacity-20 rounded-lg">
-                <BookOpen className="w-6 h-6 text-blue-400" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        {loading ? (
+          <>
+            <Card className="bg-card border-border">
+              <CardContent className="p-4 lg:p-6">
+                <Skeleton className="h-8 w-3/4" />
+                <Skeleton className="h-12 w-1/2 mt-2" />
+                <Skeleton className="h-4 w-1/4 mt-1" />
+              </CardContent>
+            </Card>
+            <Card className="bg-card border-border">
+              <CardContent className="p-4 lg:p-6">
+                <Skeleton className="h-8 w-3/4" />
+                <Skeleton className="h-12 w-1/2 mt-2" />
+                <Skeleton className="h-4 w-1/4 mt-1" />
+              </CardContent>
+            </Card>
+            <Card className="bg-card border-border">
+              <CardContent className="p-4 lg:p-6">
+                <Skeleton className="h-8 w-3/4" />
+                <Skeleton className="h-12 w-1/2 mt-2" />
+                <Skeleton className="h-4 w-1/4 mt-1" />
+              </CardContent>
+            </Card>
+            <Card className="bg-card border-border">
+              <CardContent className="p-4 lg:p-6">
+                <Skeleton className="h-8 w-3/4" />
+                <Skeleton className="h-12 w-1/2 mt-2" />
+                <Skeleton className="h-4 w-1/4 mt-1" />
+              </CardContent>
+            </Card>
+          </>
+        ) : stats ? (
+          <>
+            {/* Total Bookings */}
+            <Card className="bg-card border-border">
+              <CardContent className="p-4 lg:p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-muted-foreground text-sm font-medium">Total Bookings</p>
+                    <p className="text-3xl font-bold text-foreground mt-2">{stats.totalBookings}</p>
+                    <p className="text-green-500 text-sm mt-1 flex items-center">
+                      <TrendingUp className="w-4 h-4 mr-1" />
+                      +12% from last month
+                    </p>
+                  </div>
+                  <div className="p-3 bg-blue-600 bg-opacity-20 rounded-lg">
+                    <BookOpen className="w-6 h-6 text-blue-400" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
 
-        {/* Available Slots */}
-        <Card className="bg-card border-border">
-          <CardContent className="p-4 lg:p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-muted-foreground text-sm font-medium">Available Slots</p>
-                <p className="text-3xl font-bold text-foreground mt-2">{stats.availableSlots}</p>
-                <p className="text-blue-500 text-sm mt-1 flex items-center">
-                  <Calendar className="w-4 h-4 mr-1" />
-                  This week
-                </p>
-              </div>
-              <div className="p-3 bg-purple-600 bg-opacity-20 rounded-lg">
-                <Clock className="w-6 h-6 text-purple-400" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+            {/* Available Slots */}
+            <Card className="bg-card border-border">
+              <CardContent className="p-4 lg:p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-muted-foreground text-sm font-medium">Available Slots</p>
+                    <p className="text-3xl font-bold text-foreground mt-2">{stats.availableSlots}</p>
+                    <p className="text-blue-500 text-sm mt-1 flex items-center">
+                      <Calendar className="w-4 h-4 mr-1" />
+                      This week
+                    </p>
+                  </div>
+                  <div className="p-3 bg-purple-600 bg-opacity-20 rounded-lg">
+                    <Clock className="w-6 h-6 text-purple-400" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
 
-        {/* Completed Sessions */}
-        <Card className="bg-card border-border">
-          <CardContent className="p-4 lg:p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-muted-foreground text-sm font-medium">Completed Sessions</p>
-                <p className="text-3xl font-bold text-foreground mt-2">{stats.completedSessions}</p>
-                <p className="text-green-500 text-sm mt-1 flex items-center">
-                  <CheckCircle className="w-4 h-4 mr-1" />
-                  +8% from last month
-                </p>
-              </div>
-              <div className="p-3 bg-green-600 bg-opacity-20 rounded-lg">
-                <Users className="w-6 h-6 text-green-400" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+            {/* Completed Sessions */}
+            <Card className="bg-card border-border">
+              <CardContent className="p-4 lg:p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-muted-foreground text-sm font-medium">Completed Sessions</p>
+                    <p className="text-3xl font-bold text-foreground mt-2">{stats.completedSessions}</p>
+                    <p className="text-green-500 text-sm mt-1 flex items-center">
+                      <CheckCircle className="w-4 h-4 mr-1" />
+                      +8% from last month
+                    </p>
+                  </div>
+                  <div className="p-3 bg-green-600 bg-opacity-20 rounded-lg">
+                    <Users className="w-6 h-6 text-green-400" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
 
-        {/* Earnings */}
-        <Card className="bg-card border-border">
-          <CardContent className="p-4 lg:p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-muted-foreground text-sm font-medium">Total Earnings</p>
-                <p className="text-3xl font-bold text-foreground mt-2">{stats.totalEarnings.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}</p>
-                <p className="text-green-500 text-sm mt-1 flex items-center">
-                  <DollarSign className="w-4 h-4 mr-1" />
-                  +15% from last month
-                </p>
-              </div>
-              <div className="p-3 bg-green-600 bg-opacity-20 rounded-lg">
-                <DollarSign className="w-6 h-6 text-green-400" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+            {/* Earnings */}
+            <Card className="bg-card border-border">
+              <CardContent className="p-4 lg:p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-muted-foreground text-sm font-medium">Total Earnings</p>
+                    <p className="text-3xl font-bold text-foreground mt-2">{stats.totalEarnings.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}</p>
+                    <p className="text-green-500 text-sm mt-1 flex items-center">
+                      <DollarSign className="w-4 h-4 mr-1" />
+                      +15% from last month
+                    </p>
+                  </div>
+                  <div className="p-3 bg-green-600 bg-opacity-20 rounded-lg">
+                    <DollarSign className="w-6 h-6 text-green-400" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </>
+        ) : (
+          <div className="col-span-full text-center text-red-500">{error}</div>
+        )}
       </div>
 
       <div className="grid grid-cols-1 gap-6">

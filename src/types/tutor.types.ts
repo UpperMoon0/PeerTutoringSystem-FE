@@ -1,0 +1,25 @@
+export interface TutorDashboardStats {
+  totalBookings: number;
+  availableSlots: number;
+  completedSessions: number;
+  totalEarnings: number;
+}
+
+export interface Transaction {
+  id: number;
+  date: string;
+  amount: number;
+  description: string;
+  status: 'Completed' | 'Pending' | 'Failed';
+}
+
+export interface ChartDataPoint {
+  month: string;
+  earnings: number;
+}
+
+export interface TutorFinanceDetails {
+  totalEarnings?: number;
+  monthlyEarnings?: ChartDataPoint[];
+  recentTransactions?: Transaction[];
+}

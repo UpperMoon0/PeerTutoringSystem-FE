@@ -6,6 +6,7 @@ import type { ApiResult } from '@/types/api.types';
 import type { DocumentUploadDto, FileUploadResponse } from '@/types/file.types';
 import type { User, ProfileDto } from '@/types/user.types';
 import type { EnrichedTutor } from '@/types/enrichedTutor.types';
+import type { TutorDashboardStats, TutorFinanceDetails } from "@/types/tutor.types";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -254,6 +255,46 @@ const getTutorById = async (tutorId: string): Promise<ApiResult<ProfileDto>> => 
   }
 };
 
+const getTutorDashboardStats = async (): Promise<ApiResult<TutorDashboardStats>> => {
+  try {
+    const response = await AuthService.fetchWithAuth(`${API_BASE_URL}/Tutors/dashboard-stats`, {
+      method: 'GET',
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({ error: "Failed to parse error response." }));
+      throw new Error(errorData.error || `Failed to fetch tutor dashboard stats: ${response.statusText}`);
+    }
+
+    const responseData = await response.json();
+    
+    return { success: true, data: responseData };
+  } catch (error: unknown) {
+    console.error('Error fetching tutor dashboard stats:', error);
+    return { success: false, error: error instanceof Error ? error.message : "Failed to fetch tutor dashboard stats." };
+  }
+};
+
+const getTutorFinanceDetails = async (): Promise<ApiResult<TutorFinanceDetails>> => {
+  try {
+    const response = await AuthService.fetchWithAuth(`${API_BASE_URL}/Tutors/finance-details`, {
+      method: 'GET',
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({ error: "Failed to parse error response." }));
+      throw new Error(errorData.error || `Failed to fetch tutor finance details: ${response.statusText}`);
+    }
+
+    const responseData = await response.json();
+    
+    return { success: true, data: responseData };
+  } catch (error: unknown) {
+    console.error('Error fetching tutor finance details:', error);
+    return { success: false, error: error instanceof Error ? error.message : "Failed to fetch tutor finance details." };
+  }
+};
+
 export const TutorService = {
   requestTutor,
   uploadDocument,
@@ -261,4 +302,6 @@ export const TutorService = {
   getAllTutors,
   getAllEnrichedTutors,
   getTutorById,
+  getTutorDashboardStats,
+  getTutorFinanceDetails,
 };

@@ -16,6 +16,7 @@ import StudentUpcomingSessionsPage from '@/pages/StudentUpcomingSessionsPage';
 import ChatPage from '../pages/ChatPage';
 import PaymentSuccessPage from '@/pages/PaymentSuccessPage';
 import CheckoutPage from '@/pages/CheckoutPage';
+import TutorFinancePage from '@/pages/tutor/TutorFinancePage';
 
 const router = createBrowserRouter([
   {
@@ -91,6 +92,10 @@ const router = createBrowserRouter([
           {
             path: 'bookings/:bookingId',
             element: <Navigate to="/tutor?section=bookings" replace />
+          },
+          {
+            path: 'finance',
+            element: <TutorFinancePage />,
           },
         ],
       },

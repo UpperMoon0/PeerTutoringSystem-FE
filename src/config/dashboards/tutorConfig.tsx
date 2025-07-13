@@ -1,9 +1,11 @@
-import { User, BookOpen, Calendar, Briefcase } from 'lucide-react';
+import { User, BookOpen, Calendar, Briefcase, DollarSign } from 'lucide-react';
 import type { DashboardConfigFactory } from './types';
 import TutorOverview from '@/components/dashboard/overviews/TutorOverview';
 import ManageBookingsSection from '@/components/tutor/ManageBookingsSection';
 import ManageAvailabilitySection from '@/components/tutor/ManageAvailabilitySection';
 import ProfileSection from '@/components/tutor/ProfileSection';
+import TutorFinancePage from '@/pages/tutor/TutorFinancePage';
+import React from 'react';
 
 export const tutorConfig: DashboardConfigFactory = {
   role: 'tutor',
@@ -46,7 +48,15 @@ export const tutorConfig: DashboardConfigFactory = {
       subtitle: 'Update your tutor profile and skills',
       icon: Briefcase,
       path: '/tutor?section=profile',
-      component: ProfileSection,
+      component: ProfileSection as React.ComponentType<unknown>,
+    },
+    {
+      id: 'finance',
+      title: 'Finance',
+      subtitle: 'View your financial details',
+      icon: DollarSign,
+      path: '/tutor?section=finance',
+      component: TutorFinancePage,
     },
   ],
 };
