@@ -2,13 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import ConversationList from '@/components/chat/ConversationList';
 import ChatWindow from '@/components/chat/ChatWindow';
+import AiChat from '@/components/chat/AiChat';
 import type { Conversation, ChatMessage } from '@/types/chat';
 import { ChatService } from '@/services/ChatService';
 import { useAuth } from '@/contexts/AuthContext';
 
 const ChatPage: React.FC = () => {
   const [conversations, setConversations] = useState<Conversation[]>([]);
-  const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null);
+  const [selectedConversation, setSelectedConversation] = useState<Conversation | { id: 'ai' } | null>(null);
   const [searchParams, setSearchParams] = useSearchParams();
   const { currentUser } = useAuth();
 
@@ -77,7 +78,11 @@ const ChatPage: React.FC = () => {
           />
         </div>
         <div className="md:col-span-2">
-          <ChatWindow conversation={selectedConversation} onNewMessage={handleNewMessage} />
+          {selectedConversation?.id === 'ai' ? (
+            <AiChat />
+          ) : (
+            <ChatWindow conversation={selectedConversation as Conversation} onNewMessage={handleNewMessage} />
+          )}
         </div>
       </div>
     </div>
