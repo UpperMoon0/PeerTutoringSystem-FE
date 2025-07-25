@@ -172,7 +172,7 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
     setIsCancelling(true);
     setError(null);
     try {
-      const result = await BookingService.updateBookingStatus(booking.bookingId, status);
+      const result = await BookingService.updateBookingStatus(booking.bookingId, status, 'Unpaid');
       if (result.success) {
         if (status === 'Cancelled') {
           onBookingCancelled(); // This will close modal & refresh list via parent

@@ -1,10 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AlertCircle, Calendar, Clock, User, Tag } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
 import { PaymentService } from '@/services/PaymentService';
 import type { Booking } from '@/types/booking.types';
 import { format } from 'date-fns';
@@ -17,54 +14,27 @@ interface CheckoutFormProps {
 const CheckoutForm: React.FC<CheckoutFormProps> = ({ booking }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [cardDetails, setCardDetails] = useState({
-    cardNumber: '',
-    expiryDate: '',
-    cvc: '',
-    cardHolder: '',
-  });
-  const navigate = useNavigate();
+  const [qrDataURL, setQrDataURL] = useState<string | null>(null);
 
   const price = useMemo(() => {
     if (!booking || booking.price === undefined) return 0;
     return booking.price;
   }, [booking]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setCardDetails(prev => ({ ...prev, [name]: value }));
-  };
-
-  const handleSubmit = async (event: React.FormEvent) => {
-    event.preventDefault();
+  const handleGenerateQR = async () => {
     setIsLoading(true);
     setError(null);
-
     try {
-      const paymentData = {
-        bookingId: booking.bookingId,
+      const qrData = {
         amount: price,
-        paymentMethod: 'Card', // This would be more dynamic in a real app
+        addInfo: `Payment for tutoring session with ${booking.tutorName}`,
       };
-
-      const result = await PaymentService.processPayment(paymentData);
-
-      if (result.success) {
-        toast.success('Payment successful!');
-        navigate(`/payment-success?bookingId=${booking.bookingId}`);
+      const result = await PaymentService.generateQrCode(qrData);
+      if (result.success && result.data) {
+        setQrDataURL(result.data.qrDataURL);
       } else {
-        const getErrorMessage = (error: unknown): string => {
-          if (typeof error === 'string') {
-            return error;
-          }
-          if (error && typeof error === 'object' && 'message' in error) {
-            return (error as { message: string }).message;
-          }
-          return 'Payment failed. Please try again.';
-        };
-        const errorMessage = getErrorMessage(result.error);
-        setError(errorMessage);
-        toast.error(errorMessage);
+        setError('Failed to generate QR code.');
+        toast.error('Failed to generate QR code.');
       }
     } catch (err) {
       const errorMessage = (err as Error).message || 'An unexpected error occurred.';
@@ -109,65 +79,31 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ booking }) => {
           </div>
         </div>
       </div>
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <h3 className="text-lg font-semibold">Payment Details</h3>
+      <div className="space-y-4">
+        <h3 className="text-lg font-semibold">QR Code Payment</h3>
         {error && (
           <Alert variant="destructive">
             <AlertCircle className="h-4 w-4" />
-            <AlertTitle>Payment Error</AlertTitle>
+            <AlertTitle>Error</AlertTitle>
             <AlertDescription>{error}</AlertDescription>
           </Alert>
         )}
-        <div>
-          <Label htmlFor="cardHolder">Card Holder</Label>
-          <Input
-            id="cardHolder"
-            name="cardHolder"
-            value={cardDetails.cardHolder}
-            onChange={handleChange}
-            placeholder="John Doe"
-            required
-          />
-        </div>
-        <div>
-          <Label htmlFor="cardNumber">Card Number</Label>
-          <Input
-            id="cardNumber"
-            name="cardNumber"
-            value={cardDetails.cardNumber}
-            onChange={handleChange}
-            placeholder="**** **** **** ****"
-            required
-          />
-        </div>
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <Label htmlFor="expiryDate">Expiry Date</Label>
-            <Input
-              id="expiryDate"
-              name="expiryDate"
-              value={cardDetails.expiryDate}
-              onChange={handleChange}
-              placeholder="MM/YY"
-              required
-            />
+        {qrDataURL ? (
+          <div className="flex flex-col items-center space-y-4">
+            <img src={qrDataURL} alt="QR Code" className="w-64 h-64 border rounded-lg" />
+            <p className="text-center text-muted-foreground">
+              Scan this QR code with your banking app to complete the payment.
+            </p>
           </div>
-          <div>
-            <Label htmlFor="cvc">CVC</Label>
-            <Input
-              id="cvc"
-              name="cvc"
-              value={cardDetails.cvc}
-              onChange={handleChange}
-              placeholder="123"
-              required
-            />
+        ) : (
+          <div className="flex flex-col items-center justify-center p-8 border-2 border-dashed rounded-lg">
+            <p className="mb-4 text-center text-muted-foreground">Click the button to generate a payment QR code.</p>
+            <Button onClick={handleGenerateQR} disabled={isLoading}>
+              {isLoading ? 'Generating...' : 'Generate QR Code'}
+            </Button>
           </div>
-        </div>
-        <Button disabled={isLoading} className="w-full mt-6">
-          {isLoading ? 'Processing...' : `Pay ${price.toLocaleString()} VND`}
-        </Button>
-      </form>
+        )}
+      </div>
     </div>
   );
 };

@@ -267,11 +267,15 @@ export const BookingService = {
     }
   },
 
-  async updateBookingStatus(bookingId: string, status: string): Promise<ApiResult<Booking>> {
+  async updateBookingStatus(bookingId: string, status: string, paymentStatus?: string): Promise<ApiResult<Booking>> {
     try {
+      const payload: { status: string, paymentStatus?: string } = { status };
+      if (paymentStatus) {
+        payload.paymentStatus = paymentStatus;
+      }
       const response = await AuthService.fetchWithAuth(`${API_BASE_URL}/Bookings/${bookingId}/status`, {
         method: 'PUT',
-        body: JSON.stringify({ Status: status }),
+        body: JSON.stringify(payload),
         headers: { 'Content-Type': 'application/json' },
       });
       if (!response.ok) {
