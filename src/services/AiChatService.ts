@@ -7,7 +7,7 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 export const AiChatService = {
   sendMessage: async (message: string): Promise<ApiResult<ChatMessage>> => {
     try {
-      const response = await AuthService.fetchWithAuth(`${API_BASE_URL}/AiChat`, {
+      const response = await AuthService.fetchWithAuth(`${API_BASE_URL}/chat/ai-response`, {
         method: 'POST',
         body: JSON.stringify({ message }),
         headers: { 'Content-Type': 'application/json' },
