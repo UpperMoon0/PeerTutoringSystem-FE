@@ -33,13 +33,13 @@ export const createDashboardConfig: CreateDashboardConfig = (
   }
 
   // Convert config sections to the format expected by DashboardConfig
-  const sections: Record<string, { title: string; subtitle: string; component?: React.ComponentType<unknown> }> = {};
+  const sections: Record<string, import('@/types/dashboard.types').SectionConfig> = {};
   
   config.sections.forEach((section) => {
     sections[section.id] = {
       title: section.title,
       subtitle: section.subtitle,
-      component: section.component as React.ComponentType<unknown>,
+      component: section.component as React.ComponentType<import('@/types/dashboard.types').SectionComponentProps>,
     };
   });
 
