@@ -10,12 +10,12 @@ export interface ProcessPaymentResponse {
 }
 
 export interface GenerateQrCodeDto {
-  amount: number;
-  addInfo: string;
+  bookingId: string;
+  ReturnUrl: string;
 }
 
 export interface GenerateQrCodeResponse {
-  qrDataURL: string;
+  qrCode: string;
 }
 
 export interface AdminFinanceDetails {

@@ -1,5 +1,4 @@
-import React, { useState, useMemo } from 'react';
-import { Button } from '@/components/ui/button';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AlertCircle, Calendar, Clock, User, Tag } from 'lucide-react';
 import { PaymentService } from '@/services/PaymentService';
@@ -14,7 +13,7 @@ interface CheckoutFormProps {
 const CheckoutForm: React.FC<CheckoutFormProps> = ({ booking }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [qrDataURL, setQrDataURL] = useState<string | null>(null);
+  const [qrCode, setQrCode] = useState<string | null>(null);
 
   const price = useMemo(() => {
     if (!booking || booking.price === undefined) return 0;
@@ -25,13 +24,12 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ booking }) => {
     setIsLoading(true);
     setError(null);
     try {
-      const qrData = {
-        amount: price,
-        addInfo: `Payment for tutoring session with ${booking.tutorName}`,
-      };
-      const result = await PaymentService.generateQrCode(qrData);
+      const result = await PaymentService.generateQrCode({
+        bookingId: booking.bookingId,
+        ReturnUrl: 'http://localhost:5173/payment/success',
+      });
       if (result.success && result.data) {
-        setQrDataURL(result.data.qrDataURL);
+        setQrCode(result.data.qrCode);
       } else {
         setError('Failed to generate QR code.');
         toast.error('Failed to generate QR code.');
@@ -44,6 +42,10 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ booking }) => {
       setIsLoading(false);
     }
   };
+
+  useEffect(() => {
+    handleGenerateQR();
+  }, [booking.bookingId]);
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -88,19 +90,20 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ booking }) => {
             <AlertDescription>{error}</AlertDescription>
           </Alert>
         )}
-        {qrDataURL ? (
+        {qrCode ? (
           <div className="flex flex-col items-center space-y-4">
-            <img src={qrDataURL} alt="QR Code" className="w-64 h-64 border rounded-lg" />
+            <img src={qrCode} alt="QR Code" className="w-64 h-64 border rounded-lg" />
             <p className="text-center text-muted-foreground">
               Scan this QR code with your banking app to complete the payment.
             </p>
           </div>
         ) : (
           <div className="flex flex-col items-center justify-center p-8 border-2 border-dashed rounded-lg">
-            <p className="mb-4 text-center text-muted-foreground">Click the button to generate a payment QR code.</p>
-            <Button onClick={handleGenerateQR} disabled={isLoading}>
-              {isLoading ? 'Generating...' : 'Generate QR Code'}
-            </Button>
+            {isLoading ? (
+              <p>Generating QR Code...</p>
+            ) : (
+              <p className="text-center text-muted-foreground">Could not generate QR code. Please try again later.</p>
+            )}
           </div>
         )}
       </div>
