@@ -28,7 +28,6 @@ import {
   Star,
   Bell,
   MessageSquareHeart,
-  DollarSign
 } from 'lucide-react';
 import { format } from 'date-fns';
 import type { DateRange } from 'react-day-picker';
@@ -427,7 +426,6 @@ const StudentBookingHistoryPage: React.FC = () => {
                       </TableCell>
                       <TableCell className="text-foreground">
                         <div className="flex items-center">
-                          <DollarSign className="w-4 h-4 mr-1.5 text-muted-foreground" />
                           {booking.price ? `${booking.price.toLocaleString()} VND` : '-'}
                         </div>
                       </TableCell>

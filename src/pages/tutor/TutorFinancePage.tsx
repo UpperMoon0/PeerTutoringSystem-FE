@@ -22,6 +22,10 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { TutorService } from '@/services/TutorService';
 import type { TutorFinanceDetails } from '@/types/tutor.types';
 
+const formatCurrency = (amount: number) => {
+  return `${amount.toLocaleString()} VND`;
+};
+
 const TutorFinancePage = () => {
   const [financeDetails, setFinanceDetails] = useState<TutorFinanceDetails | null>(null);
   const [loading, setLoading] = useState(true);
@@ -101,7 +105,7 @@ const TutorFinancePage = () => {
             <CardTitle>Current Month ({currentMonthData.month})</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-2xl font-bold">${currentMonthData.earnings.toFixed(2)}</p>
+            <p className="text-2xl font-bold">{formatCurrency(currentMonthData.earnings)}</p>
           </CardContent>
         </Card>
         <Card>
@@ -109,7 +113,7 @@ const TutorFinancePage = () => {
             <CardTitle>Last Month ({lastMonthData.month})</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-2xl font-bold">${lastMonthData.earnings.toFixed(2)}</p>
+            <p className="text-2xl font-bold">{formatCurrency(lastMonthData.earnings)}</p>
           </CardContent>
         </Card>
         <Card>
@@ -117,7 +121,7 @@ const TutorFinancePage = () => {
             <CardTitle>Lifetime Earnings</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-2xl font-bold">${totalEarnings.toFixed(2)}</p>
+            <p className="text-2xl font-bold">{formatCurrency(totalEarnings)}</p>
           </CardContent>
         </Card>
       </div>
@@ -158,7 +162,7 @@ const TutorFinancePage = () => {
                 <TableRow key={transaction.id}>
                   <TableCell>{new Date(transaction.date).toLocaleDateString()}</TableCell>
                   <TableCell>{transaction.description}</TableCell>
-                  <TableCell className="text-right">${transaction.amount.toFixed(2)}</TableCell>
+                  <TableCell className="text-right">{formatCurrency(transaction.amount)}</TableCell>
                 </TableRow>
               ))}
             </TableBody>

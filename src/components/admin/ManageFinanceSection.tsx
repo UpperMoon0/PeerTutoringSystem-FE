@@ -6,6 +6,10 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { PaymentService } from '@/services/PaymentService';
 import type { AdminFinanceDetails } from '@/types/payment.types';
 
+const formatCurrency = (amount: number) => {
+  return `${amount.toLocaleString()} VND`;
+};
+
 const ManageFinanceSection = () => {
   const [financeDetails, setFinanceDetails] = useState<AdminFinanceDetails | null>(null);
   const [loading, setLoading] = useState(true);
@@ -79,7 +83,7 @@ const ManageFinanceSection = () => {
             <CardTitle>Total Revenue</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-2xl font-bold">${totalRevenue.toFixed(2)}</p>
+            <p className="text-2xl font-bold">{formatCurrency(totalRevenue)}</p>
           </CardContent>
         </Card>
         <Card>
@@ -95,7 +99,7 @@ const ManageFinanceSection = () => {
             <CardTitle>Average Transaction</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-2xl font-bold">${averageTransactionValue.toFixed(2)}</p>
+            <p className="text-2xl font-bold">{formatCurrency(averageTransactionValue)}</p>
           </CardContent>
         </Card>
       </div>
@@ -138,7 +142,7 @@ const ManageFinanceSection = () => {
                   <TableCell>{new Date(transaction.transactionDate).toLocaleDateString()}</TableCell>
                   <TableCell>{transaction.bookingId}</TableCell>
                   <TableCell>{transaction.status}</TableCell>
-                  <TableCell className="text-right">${transaction.amount.toFixed(2)}</TableCell>
+                  <TableCell className="text-right">{formatCurrency(transaction.amount)}</TableCell>
                 </TableRow>
               ))}
             </TableBody>
