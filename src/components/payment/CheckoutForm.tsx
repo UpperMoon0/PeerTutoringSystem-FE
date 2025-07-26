@@ -13,7 +13,7 @@ interface CheckoutFormProps {
 const CheckoutForm: React.FC<CheckoutFormProps> = ({ booking }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [qrCode, setQrCode] = useState<string | null>(null);
+  const [qrCodeUrl, setQrCodeUrl] = useState<string | null>(null);
 
   const price = useMemo(() => {
     if (!booking || booking.price === undefined) return 0;
@@ -29,7 +29,7 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ booking }) => {
         ReturnUrl: 'http://localhost:5173/payment/success',
       });
       if (result.success && result.data) {
-        setQrCode(result.data.qrCode);
+        setQrCodeUrl(result.data.qrCode);
       } else {
         setError('Failed to generate QR code.');
         toast.error('Failed to generate QR code.');
@@ -90,9 +90,13 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ booking }) => {
             <AlertDescription>{error}</AlertDescription>
           </Alert>
         )}
-        {qrCode ? (
+        {qrCodeUrl ? (
           <div className="flex flex-col items-center space-y-4">
-            <img src={qrCode} alt="QR Code" className="w-64 h-64 border rounded-lg" />
+            <img
+              src={qrCodeUrl}
+              alt="QR Code"
+              className="w-64 object-contain border rounded-lg"
+            />
             <p className="text-center text-muted-foreground">
               Scan this QR code with your banking app to complete the payment.
             </p>
