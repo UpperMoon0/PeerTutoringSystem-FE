@@ -1,10 +1,11 @@
-import { Shield, UserCheck, Users, BookOpen, Calendar } from 'lucide-react';
+import { Shield, UserCheck, Users, BookOpen, Calendar, DollarSign } from 'lucide-react';
 import type { DashboardConfigFactory } from './types';
 import AdminOverview from '@/components/dashboard/overviews/AdminOverview';
 import ManageUsersSection from '@/components/admin/ManageUsersSection';
 import ManageSkillsSection from '@/components/admin/ManageSkillsSection';
 import TutorVerificationSection from '@/components/admin/TutorVerificationSection';
 import ManageBookingsSection from '@/components/admin/ManageBookingsSection';
+import ManageFinanceSection from '@/components/admin/ManageFinanceSection';
 
 export const adminConfig: DashboardConfigFactory = {
   role: 'admin',
@@ -56,6 +57,14 @@ export const adminConfig: DashboardConfigFactory = {
       icon: Calendar,
       path: '/admin?section=manage-bookings',
       component: ManageBookingsSection,
+    },
+    {
+      id: 'manage-finance',
+      title: 'Manage Finance',
+      subtitle: 'System-wide finance oversight',
+      icon: DollarSign,
+      path: '/admin?section=manage-finance',
+      component: ManageFinanceSection,
     },
   ],
 };

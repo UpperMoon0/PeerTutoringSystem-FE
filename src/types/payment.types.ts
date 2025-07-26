@@ -17,3 +17,17 @@ export interface GenerateQrCodeDto {
 export interface GenerateQrCodeResponse {
   qrDataURL: string;
 }
+
+export interface AdminFinanceDetails {
+  totalRevenue: number;
+  averageTransactionValue: number;
+  totalTransactions: number;
+  monthlyRevenue: { month: string; revenue: number }[];
+  recentTransactions: {
+    transactionId: string;
+    transactionDate: string;
+    amount: number;
+    status: string;
+    bookingId: string;
+  }[];
+}
