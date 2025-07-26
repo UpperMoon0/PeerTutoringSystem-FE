@@ -187,7 +187,7 @@ const DashboardSidebar: React.FC<SidebarProps> = ({
                 <>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">This Month</span>
-                    <span className="text-green-400 font-medium">$1,250</span>
+                    <span className="text-green-400 font-medium">1,250 VND</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Sessions</span>

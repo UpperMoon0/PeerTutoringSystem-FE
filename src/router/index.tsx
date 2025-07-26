@@ -14,6 +14,9 @@ import TutorDashboardPage from '@/pages/tutor/TutorDashboardPage';
 import StudentBookingHistoryPage from '@/pages/StudentBookingHistoryPage';
 import StudentUpcomingSessionsPage from '@/pages/StudentUpcomingSessionsPage';
 import ChatPage from '../pages/ChatPage';
+import PaymentSuccessPage from '@/pages/PaymentSuccessPage';
+import CheckoutPage from '@/pages/CheckoutPage';
+import TutorFinancePage from '@/pages/tutor/TutorFinancePage';
 
 const router = createBrowserRouter([
   {
@@ -46,6 +49,14 @@ const router = createBrowserRouter([
       {
         path: '/tutors/:tutorId',
         element: <TutorDetailPage />,
+      },
+      {
+        path: 'payment-success',
+        element: <PaymentSuccessPage />,
+      },
+      {
+        path: 'checkout',
+        element: <CheckoutPage />,
       },
       {
         path: 'student',
@@ -81,6 +92,10 @@ const router = createBrowserRouter([
           {
             path: 'bookings/:bookingId',
             element: <Navigate to="/tutor?section=bookings" replace />
+          },
+          {
+            path: 'finance',
+            element: <TutorFinancePage />,
           },
         ],
       },

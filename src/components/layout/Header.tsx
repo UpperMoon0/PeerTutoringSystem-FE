@@ -16,11 +16,11 @@ const Header: React.FC = () => {
   };
 
   return (
-    <header className="bg-background border-b border-border text-foreground shadow-lg">
+    <header className="bg-primary text-primary-foreground shadow-lg">
       <div className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-6">
-            <Link to="/" className="flex items-center space-x-3 text-xl font-bold text-foreground hover:text-muted-foreground transition-colors">
+            <Link to="/" className="flex items-center space-x-3 text-xl font-bold text-primary-foreground hover:text-primary-foreground/80 transition-colors">
               <img
                 src="/src/assets/images/icon.png"
                 alt="TheTutorGroup Icon"
@@ -37,8 +37,8 @@ const Header: React.FC = () => {
                 to="/tutors"
                 className={`px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
                   location.pathname === '/tutors'
-                    ? 'bg-primary text-primary-foreground shadow-lg'
-                    : 'text-muted-foreground hover:text-foreground hover:bg-muted'
+                    ? 'bg-highlight text-primary-foreground shadow-lg'
+                    : 'text-primary-foreground/80 hover:text-primary-foreground'
                 }`}
               >
                 Find Tutors
@@ -51,8 +51,8 @@ const Header: React.FC = () => {
                     to="/student/upcoming-sessions"
                     className={`px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
                       location.pathname === '/student/upcoming-sessions'
-                        ? 'bg-primary text-primary-foreground shadow-lg'
-                        : 'text-muted-foreground hover:text-foreground hover:bg-muted'
+                        ? 'bg-highlight text-primary-foreground shadow-lg'
+                        : 'text-primary-foreground/80 hover:text-primary-foreground'
                     }`}
                   >
                     Upcoming Sessions
@@ -61,8 +61,8 @@ const Header: React.FC = () => {
                     to="/student/booking-history"
                     className={`px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
                       location.pathname === '/student/booking-history'
-                        ? 'bg-primary text-primary-foreground shadow-lg'
-                        : 'text-muted-foreground hover:text-foreground hover:bg-muted'
+                        ? 'bg-highlight text-primary-foreground shadow-lg'
+                        : 'text-primary-foreground/80 hover:text-primary-foreground'
                     }`}
                   >
                     My Bookings
@@ -76,8 +76,8 @@ const Header: React.FC = () => {
                   to="/tutor"
                   className={`px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
                     (location.pathname === '/tutor' || location.pathname.startsWith('/tutor/'))
-                      ? 'bg-primary text-primary-foreground shadow-lg'
-                      : 'text-muted-foreground hover:text-foreground hover:bg-muted'
+                      ? 'bg-highlight text-primary-foreground shadow-lg'
+                      : 'text-primary-foreground/80 hover:text-primary-foreground'
                   }`}
                 >
                   Tutor Dashboard
@@ -90,8 +90,8 @@ const Header: React.FC = () => {
                   to="/admin"
                   className={`px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
                     location.pathname.startsWith('/admin')
-                      ? 'bg-primary text-primary-foreground shadow-lg'
-                      : 'text-muted-foreground hover:text-foreground hover:bg-muted'
+                      ? 'bg-highlight text-primary-foreground shadow-lg'
+                      : 'text-primary-foreground/80 hover:text-primary-foreground'
                   }`}
                 >
                   Admin Dashboard
@@ -104,8 +104,8 @@ const Header: React.FC = () => {
                   to="/register-tutor"
                   className={`px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
                     location.pathname === '/register-tutor'
-                      ? 'bg-primary text-primary-foreground shadow-lg'
-                      : 'text-muted-foreground hover:text-foreground hover:bg-muted'
+                      ? 'bg-highlight text-primary-foreground shadow-lg'
+                      : 'text-primary-foreground/80 hover:text-primary-foreground'
                   }`}
                 >
                   Become a Tutor
@@ -115,7 +115,7 @@ const Header: React.FC = () => {
           </div>
           <nav className="flex items-center space-x-3">
             {loading ? (
-              <div className="text-muted-foreground">Loading...</div>
+              <div className="text-primary-foreground">Loading...</div>
             ) : currentUser ? (
               <>
                 {(currentUser.role === 'Tutor' || currentUser.role === 'Student') && (
@@ -123,7 +123,7 @@ const Header: React.FC = () => {
                     variant="ghost"
                     size="icon"
                     onClick={() => navigate('/student/chat')}
-                    className="text-muted-foreground hover:text-primary"
+                    className="text-primary-foreground/80 hover:text-primary-foreground"
                   >
                     <MessageSquare className="h-5 w-5" />
                   </Button>
@@ -140,15 +140,15 @@ const Header: React.FC = () => {
             ) : (
               <>
                 <Button
-                  variant="default"
+                  variant="secondary"
                   className="text-sm px-4 py-2 rounded-lg transition-colors duration-200 shadow-lg"
                   asChild
                 >
                   <Link to="/login">Sign In</Link>
                 </Button>
                 <Button
-                  variant="default"
-                  className="bg-gradient-to-r from-primary to-purple-600 hover:from-primary/90 hover:to-purple-600/90 text-primary-foreground text-sm px-4 py-2 rounded-lg transition-all duration-200 shadow-lg"
+                  variant="secondary"
+                  className="bg-card text-card-foreground hover:bg-card/90 text-sm px-4 py-2 rounded-lg transition-all duration-200 shadow-lg"
                   asChild
                 >
                   <Link to="/register/student">Sign Up</Link>

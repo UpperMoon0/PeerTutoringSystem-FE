@@ -54,7 +54,7 @@ const SessionForm: React.FC<SessionFormProps> = ({
       return {
         bookingId: booking.bookingId,
         videoCallLink: session.videoCallLink,
-        sessionNotes: session.sessionNotes,
+        sessionNotes: session.sessionNotes || '',
         startTime: toLocalOffsetString(new Date(session.startTime)),
         endTime: toLocalOffsetString(new Date(session.endTime))
       };
@@ -75,7 +75,7 @@ const SessionForm: React.FC<SessionFormProps> = ({
       setFormData({
         bookingId: booking.bookingId,
         videoCallLink: session.videoCallLink,
-        sessionNotes: session.sessionNotes,
+        sessionNotes: session.sessionNotes || '',
         startTime: toLocalOffsetString(new Date(session.startTime)),
         endTime: toLocalOffsetString(new Date(session.endTime))
       });
@@ -270,7 +270,7 @@ const SessionForm: React.FC<SessionFormProps> = ({
       const sessionDto: UpdateSessionDto = {
         sessionId: session.sessionId,
         videoCallLink: formData.videoCallLink,
-        sessionNotes: formData.sessionNotes,
+        sessionNotes: formData.sessionNotes || '',
         startTime: formData.startTime,
         endTime: formData.endTime
       };
@@ -280,7 +280,7 @@ const SessionForm: React.FC<SessionFormProps> = ({
       const sessionDto: CreateSessionDto = {
         bookingId: formData.bookingId,
         videoCallLink: formData.videoCallLink,
-        sessionNotes: formData.sessionNotes,
+        sessionNotes: formData.sessionNotes || '',
         startTime: formData.startTime,
         endTime: formData.endTime
       };
@@ -338,12 +338,12 @@ const SessionForm: React.FC<SessionFormProps> = ({
           <div className="space-y-2">
             <Label htmlFor="sessionNotes" className="text-muted-foreground flex items-center">
               <FileText className="w-4 h-4 mr-1" />
-              Session Notes *
+              Session Notes
             </Label>
             <Textarea
               id="sessionNotes"
               placeholder="Add any preparation notes, agenda, or materials the student should review before the session..."
-              value={formData.sessionNotes}
+              value={formData.sessionNotes || ''}
               onChange={(e) => handleInputChange('sessionNotes', e.target.value)}
               className="bg-input border-border text-foreground placeholder-muted-foreground min-h-[100px]"
               disabled={isSubmitting}
@@ -352,7 +352,7 @@ const SessionForm: React.FC<SessionFormProps> = ({
               <p className="text-destructive-foreground text-sm">{formErrors.sessionNotes}</p>
             )}
             <p className="text-muted-foreground text-xs">
-              Minimum 10 characters. Include session agenda, preparation materials, or any special instructions.
+              Include session agenda, preparation materials, or any special instructions.
             </p>
           </div>
 

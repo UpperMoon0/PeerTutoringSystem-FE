@@ -107,7 +107,7 @@ const CallToActionSection: React.FC = () => {
                   <ArrowRight className="w-4 h-4 ml-2" />
                 </Button>
                 <p className="text-center text-primary/80 text-sm">
-                  Apply now • Earn up to $30/hour
+                  Apply now • Earn up to 750,000 VND/hour
                 </p>
               </div>
             </CardContent>

@@ -1,5 +1,5 @@
 import { AuthService } from "./AuthService";
-import type { ApiResult } from "@/types/api.types"; // Changed ApiResponse to ApiResult
+import type { ApiResult } from "@/types/api.types"; 
 import type { TutorAvailabilitiesPayload } from "@/types/tutorAvailability.types";
 import type { Booking, CreateBookingDto, StudentBookingHistoryParams } from "@/types/booking.types";
 
@@ -28,15 +28,17 @@ const convertBookingFromBackend = (backendBooking: Record<string, unknown>): Boo
     startTime: backendBooking.startTime as string,
     endTime: backendBooking.endTime as string,
     status: backendBooking.status as "Pending" | "Confirmed" | "Cancelled" | "Completed" | "Rejected",
+    paymentStatus: backendBooking.paymentStatus as "Unpaid" | "Paid",
     createdAt: backendBooking.createdAt as string,
     updatedAt: backendBooking.updatedAt as string,
     studentName: backendBooking.studentName as string,
     tutorName: backendBooking.tutorName as string,
+    price: backendBooking.price as number,
     topic: backendBooking.topic as string,
     description: backendBooking.description as string,
     skillId: backendBooking.skillId as string,
     student: backendBooking.student as undefined,
-    tutor: backendBooking.tutor as undefined
+    tutor: backendBooking.tutor as undefined,
   };
 };
 
@@ -267,9 +269,10 @@ export const BookingService = {
 
   async updateBookingStatus(bookingId: string, status: string): Promise<ApiResult<Booking>> {
     try {
+      const payload = { status };
       const response = await AuthService.fetchWithAuth(`${API_BASE_URL}/Bookings/${bookingId}/status`, {
         method: 'PUT',
-        body: JSON.stringify({ Status: status }),
+        body: JSON.stringify(payload),
         headers: { 'Content-Type': 'application/json' },
       });
       if (!response.ok) {

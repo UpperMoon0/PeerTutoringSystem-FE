@@ -1,21 +1,22 @@
 export interface ChatMessage {
-  id: string;
-  senderId: string;
-  receiverId: string;
-  message: string;
-  timestamp: string;
-}
-
-export interface UserInfo {
     id: string;
-    fullName: string;
-    avatarUrl: string | null;
-}
-
-export interface Conversation {
-  id: string;
-  participant: UserInfo;
-  lastMessage: ChatMessage | null;
-}
-
-export type SendMessagePayload = Omit<ChatMessage, 'id' | 'timestamp'>;
+    message: string;
+    senderId: string;
+    receiverId: string;
+    timestamp: string;
+  }
+  
+  export interface Conversation {
+    id: number;
+    participant: {
+      id: string;
+      fullName: string;
+    };
+    lastMessage: ChatMessage | null;
+  }
+  
+  export interface SendMessagePayload {
+    senderId: string;
+    receiverId: string;
+    message: string;
+  }

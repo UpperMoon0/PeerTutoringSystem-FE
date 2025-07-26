@@ -6,6 +6,8 @@ import { ChatService } from '@/services/ChatService';
 import type { Conversation, ChatMessage, SendMessagePayload } from '@/types/chat';
 import { HubConnectionState } from '@microsoft/signalr';
 import { useAuth } from '@/contexts/AuthContext';
+import ReactMarkdown from 'react-markdown';
+import rehypeRaw from 'rehype-raw';
 
 interface ChatWindowProps {
   conversation: Conversation | null;
@@ -22,7 +24,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ conversation, onNewMessage }) =
   useEffect(() => {
     if (conversation) {
       const fetchMessages = async () => {
-        const result = await ChatService.getMessages(conversation.id);
+        const result = await ChatService.getMessages(conversation.id.toString());
         if (result.success && result.data) {
           setMessages(result.data);
         } else {
@@ -146,7 +148,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ conversation, onNewMessage }) =
                     : 'bg-primary text-primary-foreground'
                 } p-3 rounded-lg max-w-xs shadow-md`}
               >
-                <p>{msg.message}</p>
+                <ReactMarkdown rehypePlugins={[rehypeRaw]}>{msg.message}</ReactMarkdown>
                 <span className="text-xs text-muted-foreground mt-1 block">
                   {new Date(msg.timestamp).toLocaleTimeString()} - {msg.senderId === currentUser?.userId ? 'You' : 'Other User'}
                 </span>

@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import type { TutorVerification } from '@/types/TutorVerification';
+import { generateGradient, getInitials } from '@/lib/utils';
 import { TutorVerificationService } from '@/services/TutorVerificationService';
 import {
   Select,
@@ -186,7 +188,20 @@ const TutorVerificationSection: React.FC = () => {
         <div className="space-y-6">
           {filteredVerifications.map((verification) => (
             <div key={verification.verificationID} className="p-6 bg-card border border-border rounded-lg shadow-md">
-              <h3 className="text-xl font-semibold text-foreground mb-2">{verification.fullName || verification.userID} ({verification.studentID})</h3>
+              <div className="flex items-center mb-4">
+                <Avatar className="w-16 h-16 rounded-full mr-4">
+                  <AvatarImage src={verification.avatar} alt={verification.fullName || verification.userID} />
+                  <AvatarFallback
+                    className={`bg-gradient-to-br ${generateGradient(verification.fullName || verification.userID)} text-primary-foreground text-xl font-bold`}
+                  >
+                    {getInitials(verification.fullName || verification.userID)}
+                  </AvatarFallback>
+                </Avatar>
+                <div>
+                  <h3 className="text-xl font-semibold text-foreground">{verification.fullName || verification.userID} ({verification.studentID})</h3>
+                  <p className="text-muted-foreground">{verification.email}</p>
+                </div>
+              </div>
               <p className="text-muted-foreground"><strong>University:</strong> {verification.university}</p>
               <p className="text-muted-foreground"><strong>Major:</strong> {verification.major}</p>
               <p className="text-muted-foreground"><strong>Citizen ID:</strong> {verification.citizenID}</p>
@@ -224,7 +239,7 @@ const TutorVerificationSection: React.FC = () => {
                   <Button
                     onClick={() => handleStatusClick(verification.verificationID, 'Rejected', verification.fullName || verification.userID)}
                     variant="destructive"
-                    className="bg-destructive hover:bg-destructive-foreground text-destructive-foreground"
+                    className="bg-destructive hover:bg-destructive-foreground text-primary-foreground"
                   >
                     Reject
                   </Button>

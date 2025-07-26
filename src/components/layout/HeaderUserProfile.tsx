@@ -14,14 +14,14 @@ const HeaderUserProfile: React.FC = () => {
   return (
     <Link to={`/profile/${currentUser.userId}`} className="flex items-center space-x-2 cursor-pointer">
       <Avatar>
-        <AvatarImage src={currentUser.avatarUrl} alt={currentUser.fullName} />
+        <AvatarImage src={currentUser.avatarUrl || undefined} alt={currentUser.fullName} />
         <AvatarFallback
           className={`bg-gradient-to-br ${generateGradient(currentUser.fullName)} text-primary-foreground font-bold`}
         >
           {getInitials(currentUser.fullName)}
         </AvatarFallback>
       </Avatar>
-      <span className="text-foreground hover:text-muted-foreground transition-colors">{currentUser.fullName}</span>
+      <span className="text-primary-foreground hover:text-primary-foreground/80 transition-colors">{currentUser.fullName}</span>
     </Link>
   );
 };

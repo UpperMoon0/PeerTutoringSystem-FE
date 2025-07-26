@@ -7,9 +7,10 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { AlertCircle, ListChecks, CalendarDays, Clock, User, Tag, FileText, CheckCircle2, Video, MessageCircle, Timer, ExternalLink, Pencil } from 'lucide-react';
+import { AlertCircle, ListChecks, CalendarDays, Clock, User, Tag, FileText, CheckCircle2, Video, MessageCircle, Timer, ExternalLink, Pencil, DollarSign } from 'lucide-react';
 import { format, isAfter, differenceInHours, differenceInMinutes } from 'date-fns';
 import { toast } from 'sonner';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import SessionForm from '@/components/session/SessionForm';
 
@@ -35,9 +36,11 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
   onUpdateStatus
 }) => {
   const { currentUser } = useAuth();
+  const navigate = useNavigate();
   const [isCancelling, setIsCancelling] = useState(false);
   const [isEditingSession, setIsEditingSession] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isCreatingSession, setIsCreatingSession] = useState(false);
   const [currentBooking, setCurrentBooking] = useState<BookingWithSession | null>(booking);
   const [currentSession, setCurrentSession] = useState<Session | undefined>(booking?.session);
   const [isSubmittingSessionUpdate, setIsSubmittingSessionUpdate] = useState(false);
@@ -52,10 +55,42 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
   React.useEffect(() => {
     if (isOpen || booking) { // Trigger reset if modal opens or booking changes
       setIsEditingSession(false);
+      setIsCreatingSession(false);
     }
   }, [isOpen, booking]);
 
   if (!booking) return null;
+
+  const handleCreateSession = async (sessionData: CreateSessionDto) => {
+    setIsSubmittingSessionUpdate(true);
+    try {
+      const result = await SessionService.createSession(sessionData);
+
+      if (result.success && result.data) {
+        toast.success('Session created successfully!');
+        setCurrentSession(result.data);
+        if (currentBooking) {
+          setCurrentBooking({
+            ...currentBooking,
+            session: result.data,
+            status: 'Confirmed'
+          });
+        }
+        setIsCreatingSession(false);
+        onClose(); // Close the modal on success
+      } else {
+        const errorMessage = typeof result.error === 'string'
+          ? result.error
+          : result.error?.message || 'Failed to create session';
+        toast.error(errorMessage);
+      }
+    } catch (error) {
+      console.error('Error creating session:', error);
+      toast.error('Failed to create session');
+    } finally {
+      setIsSubmittingSessionUpdate(false);
+    }
+  };
 
   const handleUpdateSession = async (sessionData: UpdateSessionDto) => {
     setIsSubmittingSessionUpdate(true);
@@ -86,29 +121,6 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
     }
   };
 
-  const handleCreateSession = async (sessionData: CreateSessionDto) => {
-    if (!booking) return;
-
-    setError(null);
-    try {
-      const result = await SessionService.createSession(sessionData);
-      if (result.success && result.data) {
-        setCurrentSession(result.data);
-        setCurrentBooking(prev => prev ? { ...prev, session: result.data } : null);
-        toast.success('Session created successfully!');
-        onUpdateStatus?.('Confirmed'); // Assuming creating a session implies confirming the booking
-        onClose(); // Close modal after successful creation
-      } else {
-        const errorMessage = typeof result.error === 'string' ? result.error : (result.error as { message?: string })?.message || 'Failed to create session.';
-        setError(errorMessage);
-        toast.error(`Session creation failed: ${errorMessage}`);
-      }
-    } catch (err: unknown) {
-      const errorMessage = (err as Error)?.message || "An unexpected error occurred during session creation.";
-      setError(errorMessage);
-      toast.error(`Session creation error: ${errorMessage}`);
-    }
-  };
 
   const getStatusBadgeVariant = (status: Booking['status']) => {
     switch (status) {
@@ -160,23 +172,16 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
     setIsCancelling(true);
     setError(null);
     try {
-      const result = await BookingService.updateBookingStatus(booking.bookingId, status);
+      const result = await BookingService.updateBookingStatus(booking.bookingId, status, 'Unpaid');
       if (result.success) {
         if (status === 'Cancelled') {
           onBookingCancelled(); // This will close modal & refresh list via parent
         } else if (status === 'Confirmed') {
-          // Automatically create session upon confirmation
-          const sessionData: CreateSessionDto = {
-            bookingId: booking.bookingId,
-            videoCallLink: `https://meet.google.com/${booking.bookingId.substring(0, 10)}`, // Placeholder
-            sessionNotes: `Session for booking ${booking.bookingId} on topic: ${booking.topic}.`, // Placeholder
-            startTime: booking.startTime,
-            endTime: booking.endTime,
-          };
-          await handleCreateSession(sessionData);
+          onUpdateStatus?.(status);
+          setIsCreatingSession(true);
         } else {
           onUpdateStatus?.(status);
-          onClose(); // Close modal after successful update for other statuses
+          onClose();
         }
       } else {
         const errorMessage = typeof result.error === 'string' ? result.error : (result.error as { message?: string })?.message || `Failed to update booking to ${status}.`;
@@ -192,14 +197,25 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
     }
   };
 
+  const handlePayment = () => {
+    if (!booking) return;
+    navigate('/checkout', { state: { bookingId: booking.bookingId } });
+  };
+
   const isCurrentUserTutor = currentUser?.userId === booking.tutorId;
+  const isCurrentUserStudent = currentUser?.userId === booking.studentId;
   const isSessionUpcoming = booking.status === 'Confirmed' && isAfter(new Date(booking.startTime), new Date());
   const isSessionCompleted = booking.status === 'Completed';
   const hasSessionInfo = (booking.status === 'Confirmed' || booking.status === 'Completed') && currentSession;
   const canEditSession = isCurrentUserTutor && hasSessionInfo && currentSession;
   const canAcceptReject = isCurrentUserTutor && booking.status === 'Pending';
+  const showCreateSessionForm = isCurrentUserTutor && booking.status === 'Confirmed' && !currentSession;
+  const canCancel = isCurrentUserStudent && booking.status === 'Pending';
   const canComplete = isCurrentUserTutor && booking.status === 'Confirmed' && new Date(booking.endTime) < new Date();
   const showCompleteButton = isCurrentUserTutor && booking.status === 'Confirmed';
+  const showPaymentButton = isCurrentUserStudent && booking.status === 'Confirmed' && !!currentSession && booking.paymentStatus !== 'Paid';
+
+
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -290,8 +306,25 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
                 </p>
               </div>
             )}
+            
+            {booking.price && (
+              <div>
+                <h3 className="font-semibold text-muted-foreground mb-1 flex items-center">
+                  <DollarSign className="w-4 h-4 mr-1.5 text-muted-foreground" /> Price:
+                </h3>
+                <p className="text-foreground font-semibold text-lg">{booking.price.toLocaleString()} VND</p>
+              </div>
+            )}
 
-            {hasSessionInfo ? (
+            {isCreatingSession || showCreateSessionForm ? (
+              <SessionForm
+                booking={booking}
+                onSubmit={handleCreateSession as (data: CreateSessionDto | UpdateSessionDto) => Promise<void>}
+                isSubmitting={isSubmittingSessionUpdate}
+                error={error || undefined}
+                onCancel={onClose}
+              />
+            ) : hasSessionInfo ? (
               <div className="border-t border-border pt-4">
                 <div className="flex items-center justify-between mb-3">
                   <h3 className="font-semibold text-muted-foreground flex items-center">
@@ -441,12 +474,23 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
                        onClick={() => handleUpdateStatus('Rejected')}
                        disabled={isCancelling}
                        variant="destructive"
+                       className="text-primary-foreground"
                      >
                        {isCancelling ? 'Rejecting...' : 'Reject Booking'}
                      </Button>
                    </>
                  )}
- 
+                 {canCancel && (
+                   <Button
+                     onClick={() => handleUpdateStatus('Cancelled')}
+                     disabled={isCancelling}
+                     variant="destructive"
+                     className="text-primary-foreground"
+                   >
+                     {isCancelling ? 'Cancelling...' : 'Cancel Booking'}
+                   </Button>
+                 )}
+
                  {showCompleteButton && (
                    <Button
                      onClick={() => handleUpdateStatus('Completed')}
@@ -467,6 +511,14 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
          
          {(!isEditingSession) && (
            <DialogFooter className="mt-2 pt-4 border-t border-border">
+             {showPaymentButton && (
+               <Button
+                 onClick={handlePayment}
+                 className="bg-primary text-primary-foreground hover:bg-primary/90"
+               >
+                 Pay Now
+               </Button>
+             )}
              <Button
                variant="outline"
                onClick={onClose}

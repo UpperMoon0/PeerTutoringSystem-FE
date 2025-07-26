@@ -15,7 +15,7 @@ const TutorCard: React.FC<TutorCardProps> = ({ tutor }) => {
     <div className="border border-border p-4 rounded-lg shadow-lg hover:shadow-xl transition-shadow bg-card flex flex-col h-full">
       <div className="mx-auto mb-3">
         <Avatar className="w-24 h-24 border-2 border-accent">
-          <AvatarImage src={tutor.avatarUrl} alt={tutor.fullName} />
+          <AvatarImage src={tutor.avatarUrl || undefined} alt={tutor.fullName} />
           <AvatarFallback
             className={`bg-gradient-to-br ${generateGradient(tutor.fullName)} text-primary-foreground text-2xl font-bold`}
           >
@@ -49,7 +49,7 @@ const TutorCard: React.FC<TutorCardProps> = ({ tutor }) => {
           )}
           {tutor.hourlyRate !== undefined && (
             <p>
-              <strong className="text-foreground">Rate:</strong> ${tutor.hourlyRate}/hr
+              <strong className="text-foreground">Rate:</strong> {tutor.hourlyRate.toLocaleString()} VND/hr
             </p>
           )}
         </div>

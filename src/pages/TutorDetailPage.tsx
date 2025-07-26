@@ -8,8 +8,9 @@ import { ReviewService } from '@/services/ReviewService';
 import type { ProfileDto, User } from '@/types/user.types';
 import type { Skill, UserSkill } from '@/types/skill.types';
 import type { TutorAvailability } from '@/types/tutorAvailability.types';
-import type { CreateBookingDto } from '@/types/booking.types';
+import type { CreateBookingDto, Booking } from '@/types/booking.types';
 import type { ReviewDto } from '@/types/review.types';
+import { BookingDetailModal } from '@/components/booking/BookingDetailModal';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -20,7 +21,7 @@ import { CalendarIcon, MessageCircle } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import { cn, generateGradient, getInitials } from '@/lib/utils';
-import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import StarRating from '@/components/ui/StarRating';
@@ -51,9 +52,11 @@ const TutorDetailPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [bookingError, setBookingError] = useState<string | null>(null);
   const [bookingSuccess, setBookingSuccess] = useState<string | null>(null);
-  const [topic, setTopic] = useState<string>("");
-  const [description, setDescription] = useState<string>("");
-  const [selectedSkillId] = useState<string | undefined>(undefined);
+  const [topic, setTopic] = useState<string>('');
+  const [description, setDescription] = useState<string>('');
+  const [selectedSkillId, setSelectedSkillId] = useState<string | undefined>(undefined);
+  const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
+  const [newlyCreatedBooking, setNewlyCreatedBooking] = useState<Booking | null>(null);
 
 
   const getProcessedAvailabilities = useCallback((slotsToProcess: TutorAvailability[]): TutorAvailability[] => {
@@ -142,6 +145,7 @@ const TutorDetailPage: React.FC = () => {
     return getProcessedAvailabilities(unbookedSlots);
   }, [availabilities, getProcessedAvailabilities]);
 
+
   useEffect(() => {
     const fetchTutorDetails = async () => {
       if (!tutorId) {
@@ -181,10 +185,9 @@ const TutorDetailPage: React.FC = () => {
       try {
         const skillsResponse = await UserSkillService.getUserSkills(tutorId);
         if (skillsResponse.success && skillsResponse.data) {
+          const tutorUserSkills = skillsResponse.data.filter((userSkill: UserSkill) => userSkill.isTutor);
           // Extract the Skill objects from UserSkill objects
-          const tutorSkills = skillsResponse.data
-            .filter((userSkill: UserSkill) => userSkill.isTutor)
-            .map((userSkill: UserSkill) => userSkill.skill);
+          const tutorSkills = tutorUserSkills.map((userSkill: UserSkill) => userSkill.skill);
           setSkills(tutorSkills);
         } else {
           console.warn('Failed to fetch tutor skills:', skillsResponse.error);
@@ -358,8 +361,8 @@ const TutorDetailPage: React.FC = () => {
       setBookingError("Please select an availability slot and ensure you are logged in.");
       return;
     }
-    if (!topic.trim()) {
-      setBookingError("Please enter a topic for the session.");
+    if (!selectedSkillId) {
+      setBookingError('Please select a skill for the session.');
       return;
     }
     if (!description.trim()) {
@@ -385,11 +388,14 @@ const TutorDetailPage: React.FC = () => {
     try {
       const response = await BookingService.createBooking(bookingData);
       if (response.success && response.data) {
+        setNewlyCreatedBooking(response.data);
+        setIsBookingModalOpen(true);
         setBookingSuccess(`Booking confirmed for ${new Date(selectedAvailability.startTime).toLocaleString()}!`);
         setSelectedAvailability(null);
-        setTopic("");
-        setDescription("");
-        handleFetchAvailabilities(); 
+        setTopic('');
+        setDescription('');
+        setSelectedSkillId(undefined);
+        handleFetchAvailabilities();
       } else {
         setBookingError(response.error as string || 'Failed to create booking.');
       }
@@ -403,6 +409,11 @@ const TutorDetailPage: React.FC = () => {
   if (isLoading && !tutor) return <div className="min-h-screen bg-background text-foreground flex items-center justify-center p-6"><p>Loading tutor profile...</p></div>;
   if (error) return <div className="min-h-screen bg-background text-foreground p-6"><Alert variant="destructive" className="bg-destructive border-destructive text-destructive-foreground"><AlertDescription>{error}</AlertDescription></Alert></div>;
   if (!tutor) return <div className="min-h-screen bg-background text-foreground flex items-center justify-center p-6"><p>Tutor not found.</p></div>;
+
+  const handleCloseModal = () => {
+    setIsBookingModalOpen(false);
+    setNewlyCreatedBooking(null);
+  };
 
   return (
     <div className="min-h-screen bg-background text-foreground p-4 md:p-6 space-y-6">
@@ -439,7 +450,7 @@ const TutorDetailPage: React.FC = () => {
                 onClick={() => navigate(`/student/chat?userId=${tutorId}`)}
                 variant="outline"
                 size="sm"
-                className="bg-primary hover:bg-ring text-primary-foreground ml-auto"
+                className="bg-primary hover:bg-ring text-primary-foreground ml-auto mt-4"
               >
                 <MessageCircle className="w-4 h-4 mr-2" /> Chat
               </Button>
@@ -448,7 +459,7 @@ const TutorDetailPage: React.FC = () => {
         </CardHeader>
         <CardContent className="p-6 space-y-3">
           {tutor.bio && <p className="text-muted-foreground"><strong className="text-foreground">Bio:</strong> {tutor.bio}</p>}
-          {tutor.hourlyRate !== undefined && <p className="text-muted-foreground"><strong className="text-foreground">Hourly Rate:</strong> ${tutor.hourlyRate.toFixed(2)}</p>}
+          {tutor.hourlyRate !== undefined && <p className="text-muted-foreground"><strong className="text-foreground">Hourly Rate:</strong> {tutor.hourlyRate.toLocaleString()} VND</p>}
           {tutor.experience && <p className="text-muted-foreground"><strong className="text-foreground">Experience:</strong> {tutor.experience}</p>}
           {tutor.availability && <p className="text-muted-foreground mb-3"><strong className="text-foreground">General Availability:</strong> {tutor.availability}</p>}
           
@@ -468,10 +479,10 @@ const TutorDetailPage: React.FC = () => {
       {/* Only show booking section for authenticated users who are not admins */}
       {currentUser && currentUser.role !== 'Admin' && (
         <Card className="bg-card border-border shadow-xl">
-          <CardHeader className="p-6">
+          <CardHeader className="p-6 pb-2">
             <CardTitle className="text-2xl text-foreground">Book a Session</CardTitle>
           </CardHeader>
-          <CardContent className="p-6 space-y-6">
+          <CardContent className="p-6 pt-4 space-y-6">
             <div className="flex flex-col sm:flex-row gap-4 items-end">
               <div className="flex-1 space-y-1">
                 <Label htmlFor="startDate" className="block text-sm font-medium text-muted-foreground">
@@ -552,10 +563,22 @@ const TutorDetailPage: React.FC = () => {
                   </PopoverContent>
                 </Popover>
               </div>
-              {/* Removed the "View Slots" button as slots fetch automatically */}
+              <div className="flex-shrink-0">
+                <Button
+                  variant="default"
+                  size="sm"
+                  onClick={() => {
+                    setDateRangeStart(undefined);
+                    setDateRangeEnd(undefined);
+                  }}
+                  className="bg-primary text-primary-foreground hover:bg-primary/90"
+                >
+                  Clear
+                </Button>
+              </div>
             </div>
 
-            {bookingError && <Alert variant="destructive" className="bg-destructive border-destructive !text-destructive-foreground"><AlertDescription className="!text-destructive-foreground">{bookingError}</AlertDescription></Alert>}
+            {bookingError && <Alert variant="destructive" className="bg-destructive border-destructive !text-primary-foreground"><AlertDescription className="!text-primary-foreground">{bookingError}</AlertDescription></Alert>}
             {bookingSuccess && <Alert variant="default" className="bg-primary border-primary text-primary-foreground"><AlertDescription>{bookingSuccess}</AlertDescription></Alert>}
             
             {isFetchingSlots && <p className="text-center text-muted-foreground py-3">Fetching available slots...</p>}
@@ -579,7 +602,13 @@ const TutorDetailPage: React.FC = () => {
                           ? "bg-gradient-to-r from-primary to-ring hover:from-ring hover:to-ring text-primary-foreground border-transparent"
                           : "bg-input border-border hover:bg-accent text-muted-foreground hover:text-foreground"
                         )}
-                        onClick={() => setSelectedAvailability(avail)}
+                        onClick={() => {
+                          if (selectedAvailability?.availabilityId === avail.availabilityId && selectedAvailability?.startTime === avail.startTime) {
+                            setSelectedAvailability(null); // Deselect if already selected
+                          } else {
+                            setSelectedAvailability(avail); // Select new slot
+                          }
+                        }}
                       >
                         <div className="flex flex-col">
                           {avail.isRecurring ? (
@@ -624,14 +653,30 @@ const TutorDetailPage: React.FC = () => {
               <div className="mt-6 pt-6 border-t border-border space-y-4">
                 <h4 className="text-lg font-semibold text-foreground">Confirm Booking Details:</h4>
                 <div>
-                  <Label htmlFor="topic" className="text-muted-foreground">Topic</Label>
-                  <Input
-                    id="topic"
-                    value={topic}
-                    onChange={(e) => setTopic(e.target.value)}
-                    placeholder="e.g., Algebra Basics, React Hooks"
-                    className="bg-input border-border text-foreground placeholder-muted-foreground focus:ring-ring focus:border-ring"
-                  />
+                  <Label htmlFor="skill" className="text-muted-foreground">
+                    Skill
+                  </Label>
+                  <Select
+                    value={selectedSkillId}
+                    onValueChange={(value) => {
+                      const skill = skills.find((s) => s.skillID === value);
+                      if (skill) {
+                        setSelectedSkillId(skill.skillID);
+                        setTopic(skill.skillName);
+                      }
+                    }}
+                  >
+                    <SelectTrigger className="bg-input border-border text-foreground placeholder-muted-foreground focus:ring-ring focus:border-ring">
+                      <SelectValue placeholder="Select a skill" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {skills.map((skill) => (
+                        <SelectItem key={skill.skillID} value={skill.skillID}>
+                          {skill.skillName}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div>
                   <Label htmlFor="description" className="text-muted-foreground">Description</Label>
@@ -695,6 +740,18 @@ const TutorDetailPage: React.FC = () => {
         </CardContent>
       </Card>
 
+      {newlyCreatedBooking && (
+      <BookingDetailModal
+        isOpen={isBookingModalOpen}
+        onClose={handleCloseModal}
+        booking={newlyCreatedBooking}
+        onBookingCancelled={() => {
+          handleCloseModal();
+          handleFetchAvailabilities();
+        }}
+        userRole="student"
+      />
+      )}
     </div>
   );
 };

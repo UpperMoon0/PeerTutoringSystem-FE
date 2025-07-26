@@ -5,33 +5,16 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { ReviewService } from '@/services/ReviewService';
 import { TutorService } from '@/services/TutorService';
-import { TutorProfileService } from '@/services/TutorProfileService';
-import { UserSkillService } from '@/services/UserSkillService';
 import StarRating from '@/components/ui/StarRating';
-import type { User } from '@/types/user.types';
-import type { TutorProfileDto } from '@/types/TutorProfile';
-import type { UserSkill } from '@/types/skill.types';
-
-interface FeaturedTutor {
-  tutorId: string;
-  tutorName: string;
-  email: string;
-  averageRating: number;
-  reviewCount: number;
-  tutorProfile?: TutorProfileDto;
-  tutorAccount?: User;
-  skills?: UserSkill[];
-}
+import type { EnrichedTutor } from '@/types/enrichedTutor.types';
 
 const FeaturedTutorsCarousel: React.FC = () => {
-  const [tutors, setTutors] = useState<FeaturedTutor[]>([]);
+  const [tutors, setTutors] = useState<EnrichedTutor[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
   const carouselRef = useRef<HTMLDivElement>(null);
-
   const itemsPerView = 3; // Show 3 cards at a time
   const totalSlides = Math.max(0, tutors.length - itemsPerView + 1);
 
@@ -40,39 +23,25 @@ const FeaturedTutorsCarousel: React.FC = () => {
       setIsLoading(true);
       setError(null);
       try {
-        // Get top 10 tutors by rating
-        const topTutorsResult = await ReviewService.getTopTutorsByRating(10);
-        
-        if (topTutorsResult.success && topTutorsResult.data) {
-          const tutorsWithDetails = await Promise.all(
-            topTutorsResult.data.map(async (tutor) => {
-              // Fetch additional details for each tutor
-              const [userResult, profileResult, skillsResult] = await Promise.all([
-                TutorService.getAllTutors().then(result => 
-                  result.success && result.data ? 
-                    result.data.find(u => u.userID === tutor.tutorId) : 
-                    undefined
-                ),
-                TutorProfileService.getTutorProfileByUserId(tutor.tutorId),
-                UserSkillService.getUserSkills(tutor.tutorId)
-              ]);
+        const result = await TutorService.getAllEnrichedTutors({ sortBy: 'rating', limit: 10 });
 
-              return {
-                ...tutor,
-                tutorAccount: userResult,
-                tutorProfile: profileResult.success ? profileResult.data : undefined,
-                skills: skillsResult.success ? skillsResult.data : []
-              };
-            })
-          );
-
-          setTutors(tutorsWithDetails);
+        if (result.success && result.data) {
+          setTutors(result.data);
         } else {
-          setError('Failed to load featured tutors');
+          if (typeof result.error === 'string') {
+            setError(result.error);
+          } else if (result.error) {
+            setError(result.error.message);
+          } else {
+            setError('Failed to load featured tutors');
+          }
         }
-      } catch (err) {
-        setError('An error occurred while loading tutors');
-        console.error('Error fetching featured tutors:', err);
+      } catch (err: unknown) {
+        if (err instanceof Error) {
+          setError(err.message);
+        } else {
+          setError('An unexpected error occurred while loading tutors');
+        }
       } finally {
         setIsLoading(false);
       }
@@ -98,6 +67,7 @@ const FeaturedTutorsCarousel: React.FC = () => {
 
     return () => clearInterval(interval);
   }, [tutors.length, totalSlides, nextSlide]);
+
 
   if (isLoading) {
     return (
@@ -155,30 +125,29 @@ const FeaturedTutorsCarousel: React.FC = () => {
           {/* Carousel container */}
           <div className="overflow-hidden" ref={carouselRef}>
             <div 
-              className="flex transition-transform duration-300 ease-in-out"
-              style={{ 
+              className="flex transition-transform duration-300 ease-in-out gap-4"
+              style={{
                 transform: `translateX(-${currentIndex * (100 / itemsPerView)}%)`,
-                width: `${(tutors.length / itemsPerView) * 100}%`
               }}
             >
               {tutors.map((tutor) => (
-                <div 
-                  key={tutor.tutorId} 
-                  className="flex-shrink-0 px-3"
-                  style={{ width: `${100 / tutors.length}%` }}
+                <div
+                  key={tutor.userID}
+                  className="flex-shrink-0"
+                  style={{ width: `calc(${100 / itemsPerView}% - 1rem)` }}
                 >
                   <Card className="bg-card border-border text-card-foreground h-full flex flex-col">
                     <CardHeader className="text-center pb-4">
                       <Avatar className="h-20 w-20 mx-auto mb-3 border-2 border-border">
                         <AvatarImage
-                          src={tutor.tutorAccount?.avatarUrl}
-                          alt={tutor.tutorName}
+                          src={tutor.avatarUrl}
+                          alt={tutor.fullName}
                         />
                         <AvatarFallback className="bg-accent text-muted-foreground text-2xl">
-                          {tutor.tutorName.charAt(0)}
+                          {tutor.fullName.charAt(0)}
                         </AvatarFallback>
                       </Avatar>
-                      <CardTitle className="text-xl text-card-foreground">{tutor.tutorName}</CardTitle>
+                      <CardTitle className="text-xl text-card-foreground">{tutor.fullName}</CardTitle>
                       
                       {/* Rating */}
                       <div className="mt-2">
@@ -193,19 +162,19 @@ const FeaturedTutorsCarousel: React.FC = () => {
                     
                     <CardContent className="flex-grow pt-0">
                       {/* Bio */}
-                      {tutor.tutorProfile?.bio && (
+                      {tutor.bio && (
                         <p className="text-sm text-muted-foreground mb-3 line-clamp-3">
-                          {tutor.tutorProfile.bio}
+                          {tutor.bio}
                         </p>
                       )}
                       
                       {/* Experience and Rate */}
                       <div className="text-sm text-muted-foreground mb-3 space-y-1">
-                        {tutor.tutorProfile?.experience && (
-                          <p><strong className="text-foreground">Experience:</strong> {tutor.tutorProfile.experience}</p>
+                        {tutor.experience && (
+                          <p><strong className="text-foreground">Experience:</strong> {tutor.experience}</p>
                         )}
-                        {tutor.tutorProfile?.hourlyRate !== undefined && (
-                          <p><strong className="text-foreground">Rate:</strong> ${tutor.tutorProfile.hourlyRate}/hr</p>
+                        {tutor.hourlyRate !== undefined && (
+                          <p><strong className="text-foreground">Rate:</strong> {tutor.hourlyRate.toLocaleString()} VND/hr</p>
                         )}
                       </div>
                       
@@ -234,7 +203,7 @@ const FeaturedTutorsCarousel: React.FC = () => {
                       
                       {/* View Profile Button */}
                       <div className="mt-auto pt-4">
-                        <Link to={`/tutors/${tutor.tutorId}`}>
+                        <Link to={`/tutors/${tutor.userID}`}>
                           <Button className="w-full bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary/80 text-primary-foreground">
                             View Profile
                           </Button>

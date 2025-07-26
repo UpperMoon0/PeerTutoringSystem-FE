@@ -33,7 +33,7 @@ export function DatePickerWithRange({
             id="date"
             variant={"outline"}
             className={cn(
-              "w-full justify-start text-left font-normal bg-gray-800 border-gray-700 hover:bg-gray-700 hover:text-white text-white",
+              "w-full justify-start text-left font-normal",
               !date && "text-muted-foreground"
             )}
           >
@@ -52,25 +52,13 @@ export function DatePickerWithRange({
             )}
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-auto p-0 bg-gray-900 border-gray-700 text-white" align="start">
+        <PopoverContent className="w-auto p-0" align="start">
           <Calendar
             initialFocus
             mode="range"
             defaultMonth={date?.from}
             selected={date}
             onSelect={onDateChange}
-            numberOfMonths={2}
-            className="bg-gray-900"
-            classNames={{
-              day_selected: "bg-blue-600 text-white hover:bg-blue-500 focus:bg-blue-500",
-              day_today: "bg-gray-700 text-white",
-              day_range_middle: "aria-selected:bg-blue-700 aria-selected:text-white",
-              caption_label: "text-white",
-              nav_button: "text-white hover:bg-gray-700",
-              head_cell: "text-gray-400",
-              day: "text-white hover:bg-gray-700 rounded-md",
-              
-            }}
           />
         </PopoverContent>
       </Popover>

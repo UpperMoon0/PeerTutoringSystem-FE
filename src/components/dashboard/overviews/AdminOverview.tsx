@@ -63,8 +63,8 @@ const AdminOverview: React.FC<AdminOverviewProps> = () => {
     <div className="space-y-6">
       {/* Welcome Section */}
       <div>
-        <h2 className="text-2xl font-bold text-white mb-2">Welcome to Admin Portal</h2>
-        <p className="text-gray-400">Manage system operations, users, and maintain platform security.</p>
+        <h2 className="text-2xl font-bold text-foreground mb-2">Welcome to Admin Portal</h2>
+        <p className="text-muted-foreground">Manage system operations, users, and maintain platform security.</p>
       </div>
 
       {/* Error Alert */}
@@ -80,12 +80,12 @@ const AdminOverview: React.FC<AdminOverviewProps> = () => {
       {loading ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {[...Array(4)].map((_, i) => (
-            <Card key={i} className="bg-gray-900 border-gray-800">
+            <Card key={i} className="bg-card border-border">
               <CardContent className="p-4 lg:p-6">
                 <div className="animate-pulse">
-                  <div className="h-4 bg-gray-800 rounded mb-2"></div>
-                  <div className="h-8 bg-gray-800 rounded mb-2"></div>
-                  <div className="h-4 bg-gray-800 rounded w-24"></div>
+                  <div className="h-4 bg-muted rounded mb-2"></div>
+                  <div className="h-8 bg-muted rounded mb-2"></div>
+                  <div className="h-4 bg-muted rounded w-24"></div>
                 </div>
               </CardContent>
             </Card>
@@ -95,12 +95,12 @@ const AdminOverview: React.FC<AdminOverviewProps> = () => {
         /* Stats Grid */
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {/* Total Users */}
-          <Card className="bg-gray-900 border-gray-800">
+          <Card className="bg-card border-border">
             <CardContent className="p-4 lg:p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-gray-400 text-sm font-medium">Total Users</p>
-                  <p className="text-3xl font-bold text-white mt-2">{stats.totalUsers}</p>
+                  <p className="text-muted-foreground text-sm font-medium">Total Users</p>
+                  <p className="text-3xl font-bold text-foreground mt-2">{stats.totalUsers}</p>
                   <p className="text-green-500 text-sm mt-1 flex items-center">
                     <TrendingUp className="w-4 h-4 mr-1" />
                     +5% from last month
@@ -114,12 +114,12 @@ const AdminOverview: React.FC<AdminOverviewProps> = () => {
           </Card>
 
           {/* Pending Verifications */}
-          <Card className="bg-gray-900 border-gray-800">
+          <Card className="bg-card border-border">
             <CardContent className="p-4 lg:p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-gray-400 text-sm font-medium">Pending Verifications</p>
-                  <p className="text-3xl font-bold text-white mt-2">{stats.pendingVerifications}</p>
+                  <p className="text-muted-foreground text-sm font-medium">Pending Verifications</p>
+                  <p className="text-3xl font-bold text-foreground mt-2">{stats.pendingVerifications}</p>
                   <p className={`text-sm mt-1 flex items-center ${stats.pendingVerifications > 0 ? 'text-yellow-500' : 'text-green-500'}`}>
                     {stats.pendingVerifications > 0 ? (
                       <>
@@ -142,12 +142,12 @@ const AdminOverview: React.FC<AdminOverviewProps> = () => {
           </Card>
 
           {/* Total Skills */}
-          <Card className="bg-gray-900 border-gray-800">
+          <Card className="bg-card border-border">
             <CardContent className="p-4 lg:p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-gray-400 text-sm font-medium">Total Skills</p>
-                  <p className="text-3xl font-bold text-white mt-2">{stats.totalSkills}</p>
+                  <p className="text-muted-foreground text-sm font-medium">Total Skills</p>
+                  <p className="text-3xl font-bold text-foreground mt-2">{stats.totalSkills}</p>
                   <p className="text-green-500 text-sm mt-1 flex items-center">
                     <CheckCircle className="w-4 h-4 mr-1" />
                     Well managed
@@ -161,12 +161,12 @@ const AdminOverview: React.FC<AdminOverviewProps> = () => {
           </Card>
 
           {/* Active Admins */}
-          <Card className="bg-gray-900 border-gray-800">
+          <Card className="bg-card border-border">
             <CardContent className="p-4 lg:p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-gray-400 text-sm font-medium">Active Admins</p>
-                  <p className="text-3xl font-bold text-white mt-2">{stats.activeAdmins}</p>
+                  <p className="text-muted-foreground text-sm font-medium">Active Admins</p>
+                  <p className="text-3xl font-bold text-foreground mt-2">{stats.activeAdmins}</p>
                   <p className="text-green-500 text-sm mt-1 flex items-center">
                     <UserCheck className="w-4 h-4 mr-1" />
                     System secure
@@ -183,9 +183,9 @@ const AdminOverview: React.FC<AdminOverviewProps> = () => {
 
       <div className="grid grid-cols-1 gap-6">
         {/* System Status */}
-        <Card className="bg-gray-900 border-gray-800">
+        <Card className="bg-card border-border">
           <CardHeader>
-            <CardTitle className="text-white flex items-center justify-between">
+            <CardTitle className="text-foreground flex items-center justify-between">
               <span className="flex items-center">
                 <AlertCircle className="w-5 h-5 mr-2 text-yellow-400" />
                 System Status
@@ -194,7 +194,7 @@ const AdminOverview: React.FC<AdminOverviewProps> = () => {
                 All Systems Operational
               </Badge>
             </CardTitle>
-            <CardDescription className="text-gray-400">
+            <CardDescription className="text-muted-foreground">
               Current system health and alerts
             </CardDescription>
           </CardHeader>
@@ -203,20 +203,20 @@ const AdminOverview: React.FC<AdminOverviewProps> = () => {
               <div className="space-y-4">
                 {[...Array(3)].map((_, i) => (
                   <div key={i} className="animate-pulse">
-                    <div className="h-16 bg-gray-800 rounded-lg"></div>
+                    <div className="h-16 bg-muted rounded-lg"></div>
                   </div>
                 ))}
               </div>
             ) : (
               <div className="space-y-4">
-                <div className="flex items-center justify-between p-4 bg-gray-800 rounded-lg">
+                <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
                   <div className="flex items-center space-x-4">
                     <div className="p-2 bg-green-600 bg-opacity-20 rounded-lg">
                       <CheckCircle className="w-5 h-5 text-green-400" />
                     </div>
                     <div>
-                      <p className="text-white font-medium">Database Connection</p>
-                      <p className="text-gray-400 text-sm">All connections healthy</p>
+                      <p className="text-foreground font-medium">Database Connection</p>
+                      <p className="text-muted-foreground text-sm">All connections healthy</p>
                     </div>
                   </div>
                   <Badge variant="outline" className="text-green-400 border-green-400">
@@ -224,7 +224,7 @@ const AdminOverview: React.FC<AdminOverviewProps> = () => {
                   </Badge>
                 </div>
                 
-                <div className="flex items-center justify-between p-4 bg-gray-800 rounded-lg">
+                <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
                   <div className="flex items-center space-x-4">
                     <div className={`p-2 ${stats.pendingVerifications > 0 ? 'bg-yellow-600 bg-opacity-20' : 'bg-green-600 bg-opacity-20'} rounded-lg`}>
                       {stats.pendingVerifications > 0 ? (
@@ -234,8 +234,8 @@ const AdminOverview: React.FC<AdminOverviewProps> = () => {
                       )}
                     </div>
                     <div>
-                      <p className="text-white font-medium">Pending Verifications</p>
-                      <p className="text-gray-400 text-sm">
+                      <p className="text-foreground font-medium">Pending Verifications</p>
+                      <p className="text-muted-foreground text-sm">
                         {stats.pendingVerifications === 0
                           ? 'No pending verification requests'
                           : `${stats.pendingVerifications} requests awaiting review`
@@ -254,14 +254,14 @@ const AdminOverview: React.FC<AdminOverviewProps> = () => {
                   </Badge>
                 </div>
 
-                <div className="flex items-center justify-between p-4 bg-gray-800 rounded-lg">
+                <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
                   <div className="flex items-center space-x-4">
                     <div className="p-2 bg-green-600 bg-opacity-20 rounded-lg">
                       <Shield className="w-5 h-5 text-green-400" />
                     </div>
                     <div>
-                      <p className="text-white font-medium">Security Status</p>
-                      <p className="text-gray-400 text-sm">No security alerts</p>
+                      <p className="text-foreground font-medium">Security Status</p>
+                      <p className="text-muted-foreground text-sm">No security alerts</p>
                     </div>
                   </div>
                   <Badge variant="outline" className="text-green-400 border-green-400">

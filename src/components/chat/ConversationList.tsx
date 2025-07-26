@@ -5,8 +5,8 @@ import { generateGradient, getInitials } from '@/lib/utils';
 
 interface ConversationListProps {
   conversations: Conversation[];
-  onSelectConversation: (conversation: Conversation) => void;
-  selectedConversation: Conversation | null;
+  onSelectConversation: (conversation: Conversation | { id: 'ai' }) => void;
+  selectedConversation: Conversation | { id: 'ai' } | null;
 }
 
 const ConversationList: React.FC<ConversationListProps> = ({
@@ -14,7 +14,7 @@ const ConversationList: React.FC<ConversationListProps> = ({
   onSelectConversation,
   selectedConversation,
 }) => {
-  const handleSelectConversation = (conversation: Conversation) => {
+  const handleSelectConversation = (conversation: Conversation | { id: 'ai' }) => {
     onSelectConversation(conversation);
   };
 
@@ -24,10 +24,28 @@ const ConversationList: React.FC<ConversationListProps> = ({
         <h2 className="text-xl font-semibold">Chats</h2>
       </div>
       <div className="overflow-y-auto">
-        {conversations.length === 0 ? (
-          <p className="p-4 text-gray-500">No conversations yet.</p>
-        ) : (
-          conversations.map((conversation) => (
+        <div
+          className={`p-4 cursor-pointer hover:bg-gray-100 ${
+            selectedConversation?.id === 'ai' ? 'bg-gray-100' : ''
+          }`}
+          onClick={() => handleSelectConversation({ id: 'ai' })}
+        >
+          <div className="flex items-center">
+            <Avatar className="w-12 h-12 mr-4">
+              <AvatarImage src="/src/assets/images/ai-avatar.png" alt="AI" />
+              <AvatarFallback className="bg-blue-500 text-white font-bold">
+                AI
+              </AvatarFallback>
+            </Avatar>
+            <div className="flex-1">
+              <h3 className="font-semibold">Chat with AI</h3>
+              <p className="text-sm text-gray-600 truncate">
+                Ask me anything!
+              </p>
+            </div>
+          </div>
+        </div>
+        {conversations.map((conversation) => (
             <div
               key={conversation.id}
               className={`p-4 cursor-pointer hover:bg-gray-100 ${
@@ -62,7 +80,7 @@ const ConversationList: React.FC<ConversationListProps> = ({
               </div>
             </div>
           ))
-        )}
+        }
       </div>
     </div>
   );
