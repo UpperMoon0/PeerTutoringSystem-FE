@@ -1,8 +1,6 @@
 import { apiClient, publicApiClient } from './AuthService';
-import type { ServiceResult, ApiResult } from '@/types/api.types';
+import type { ServiceResult } from '@/types/api.types';
 import type { CreateReviewDto, ReviewDto } from '@/types/review.types';
-
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 /**
  * Creates a new review.
@@ -15,9 +13,9 @@ const createReview = async (payload: CreateReviewDto): Promise<ServiceResult<Rev
     const requestBody = { dto: payload };
     const response = await apiClient.post(`/Reviews`, requestBody);
     return { success: true, data: response.data as ReviewDto };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error creating review:', error);
-    const errorMessage = error.response?.data?.error || error.message || 'Failed to create review.';
+    const errorMessage = error instanceof Error ? error.message : 'Failed to create review.';
     return { success: false, error: errorMessage };
   }
 };
@@ -31,9 +29,9 @@ const getReviewById = async (reviewId: number): Promise<ServiceResult<ReviewDto>
   try {
     const response = await apiClient.get(`/Reviews/${reviewId}`);
     return { success: true, data: response.data as ReviewDto };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error(`Error fetching review with ID ${reviewId}:`, error);
-    const errorMessage = error.response?.data?.error || error.message || `Failed to fetch review ${reviewId}.`;
+    const errorMessage = error instanceof Error ? error.message : `Failed to fetch review ${reviewId}.`;
     return { success: false, error: errorMessage };
   }
 };
@@ -47,9 +45,9 @@ const getReviewsByTutorId = async (tutorId: string): Promise<ServiceResult<Revie
   try {
     const response = await publicApiClient.get(`/Reviews/tutor/${tutorId}`);
     return { success: true, data: response.data as ReviewDto[] };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error(`Error fetching reviews for tutor ID ${tutorId}:`, error);
-    const errorMessage = error.response?.data?.error || error.message || `Failed to fetch reviews for tutor ${tutorId}.`;
+    const errorMessage = error instanceof Error ? error.message : `Failed to fetch reviews for tutor ${tutorId}.`;
     return { success: false, error: errorMessage };
   }
 };
@@ -63,13 +61,9 @@ const checkReviewExistsForBooking = async (bookingId: string): Promise<ServiceRe
   try {
     const response = await apiClient.get(`/Reviews/booking/${bookingId}/exists`);
     return { success: true, data: response.data as boolean };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error(`Error checking review for booking ID ${bookingId}:`, error);
-    // If the endpoint doesn't exist or returns 404, assume no review exists
-    if (error.response?.status === 404) {
-      return { success: true, data: false };
-    }
-    const errorMessage = error.response?.data?.error || error.message || `Failed to check review for booking ${bookingId}.`;
+    const errorMessage = error instanceof Error ? error.message : `Failed to check review for booking ${bookingId}.`;
     return { success: false, error: errorMessage };
   }
 };
@@ -83,13 +77,9 @@ const getReviewByBookingId = async (bookingId: string): Promise<ServiceResult<Re
   try {
     const response = await apiClient.get(`/Reviews/booking/${bookingId}`);
     return { success: true, data: response.data as ReviewDto };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error(`Error fetching review for booking ID ${bookingId}:`, error);
-    // If 404, it means no review exists for this booking
-    if (error.response?.status === 404) {
-      return { success: true, data: null };
-    }
-    const errorMessage = error.response?.data?.error || error.message || `Failed to fetch review for booking ${bookingId}.`;
+    const errorMessage = error instanceof Error ? error.message : `Failed to fetch review for booking ${bookingId}.`;
     return { success: false, error: errorMessage };
   }
 };
@@ -103,9 +93,9 @@ const getAverageRatingByTutorId = async (tutorId: string): Promise<ServiceResult
   try {
     const response = await publicApiClient.get(`/Reviews/tutor/${tutorId}/average-rating`);
     return { success: true, data: response.data };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error(`Error fetching average rating for tutor ID ${tutorId}:`, error);
-    const errorMessage = error.response?.data?.error || error.message || `Failed to fetch average rating for tutor ${tutorId}.`;
+    const errorMessage = error instanceof Error ? error.message : `Failed to fetch average rating for tutor ${tutorId}.`;
     return { success: false, error: errorMessage };
   }
 };
@@ -125,9 +115,9 @@ const getTopTutorsByRating = async (count: number = 10): Promise<ServiceResult<A
   try {
     const response = await publicApiClient.get(`/Reviews/top-tutors?count=${count}`);
     return { success: true, data: response.data };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error(`Error fetching top ${count} tutors:`, error);
-    const errorMessage = error.response?.data?.error || error.message || `Failed to fetch top ${count} tutors.`;
+    const errorMessage = error instanceof Error ? error.message : `Failed to fetch top ${count} tutors.`;
     return { success: false, error: errorMessage };
   }
 };
