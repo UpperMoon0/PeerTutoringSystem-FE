@@ -1,5 +1,5 @@
 import { AuthService } from "./AuthService";
-import type { ApiResult } from "@/types/api.types"; // Changed ApiResponse to ApiResult
+import type { ApiResult } from "@/types/api.types"; 
 import type { TutorAvailabilitiesPayload } from "@/types/tutorAvailability.types";
 import type { Booking, CreateBookingDto, StudentBookingHistoryParams } from "@/types/booking.types";
 
@@ -267,12 +267,9 @@ export const BookingService = {
     }
   },
 
-  async updateBookingStatus(bookingId: string, status: string, paymentStatus?: string): Promise<ApiResult<Booking>> {
+  async updateBookingStatus(bookingId: string, status: string): Promise<ApiResult<Booking>> {
     try {
-      const payload: { status: string, paymentStatus?: string } = { status };
-      if (paymentStatus) {
-        payload.paymentStatus = paymentStatus;
-      }
+      const payload = { status };
       const response = await AuthService.fetchWithAuth(`${API_BASE_URL}/Bookings/${bookingId}/status`, {
         method: 'PUT',
         body: JSON.stringify(payload),
