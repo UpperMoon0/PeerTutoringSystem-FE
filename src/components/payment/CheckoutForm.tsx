@@ -8,9 +8,10 @@ import { toast } from 'sonner';
 
 interface CheckoutFormProps {
   booking: Booking;
+  onPaymentSuccess: () => void;
 }
 
-const CheckoutForm: React.FC<CheckoutFormProps> = ({ booking }) => {
+const CheckoutForm: React.FC<CheckoutFormProps> = ({ booking, onPaymentSuccess }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [qrCodeUrl, setQrCodeUrl] = useState<string | null>(null);
@@ -42,6 +43,25 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ booking }) => {
       setIsLoading(false);
     }
   };
+
+  useEffect(() => {
+    const handlePaymentResult = async () => {
+      // This is a mock implementation. In a real scenario, you would
+      // listen for a webhook or poll the backend to check for payment status.
+      // For this example, we'll just assume the payment is successful after a delay.
+      setTimeout(() => {
+        toast({
+          title: 'Payment Successful',
+          description: 'Your booking has been confirmed.',
+        });
+        onPaymentSuccess();
+      }, 5000); // 5 second delay to simulate payment processing
+    };
+
+    if (qrCodeUrl) {
+      handlePaymentResult();
+    }
+  }, [qrCodeUrl, onPaymentSuccess]);
 
   useEffect(() => {
     handleGenerateQR();

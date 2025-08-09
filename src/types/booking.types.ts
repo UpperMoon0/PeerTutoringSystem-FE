@@ -22,6 +22,7 @@ export interface Booking {
   student?: AuthResponse;
   tutor?: AuthResponse;
   session?: Session;
+  proofOfPaymentImageUrl?: string;
 }
 
 export interface CreateBookingDto {

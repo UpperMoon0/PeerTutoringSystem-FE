@@ -6,6 +6,7 @@ import TutorRegisterPage from '../pages/TutorRegisterPage';
 import App from '../App';
 import HomePage from '../pages/HomePage';
 import AdminDashboardPage from '@/pages/admin/AdminDashboardPage';
+import AdminBookingsPage from '@/pages/admin/AdminBookingsPage';
 import ProtectedRoute from './ProtectedRoute';
 import UserProfilePage from '@/pages/UserProfilePage';
 import TutorListPage from '@/pages/TutorListPage';
@@ -105,9 +106,10 @@ const router = createBrowserRouter([
       },
       {
         path: 'admin',
-        element: <ProtectedRoute allowedRoles={['Admin']} />, 
+        element: <ProtectedRoute allowedRoles={['Admin']} />,
         children: [
           { index: true, element: <AdminDashboardPage /> },
+          { path: 'bookings', element: <AdminBookingsPage /> },
         ],
       },
     ],
