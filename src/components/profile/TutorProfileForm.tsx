@@ -160,9 +160,6 @@ const TutorProfileForm: React.FC<TutorProfileFormProps> = ({ initialData, onSubm
               <span className="text-xs text-muted-foreground">(VND per hour)</span>
             </Label>
             <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <span className="text-muted-foreground">VND</span>
-              </div>
               <Input
                 id="hourlyRate"
                 name="hourlyRate"
@@ -173,7 +170,7 @@ const TutorProfileForm: React.FC<TutorProfileFormProps> = ({ initialData, onSubm
                 onChange={handleChange}
                 required
                 placeholder="25.00"
-                className="pl-8 bg-input border-border text-foreground placeholder:text-muted-foreground"
+                className="bg-input border-border text-foreground placeholder:text-muted-foreground"
                 disabled={isLoading}
               />
             </div>

@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AlertCircle, Calendar, Clock, User, Tag } from 'lucide-react';
-import { PayOSService } from '@/services/PayOSService';
+import { PaymentService } from '@/services/PaymentService';
 import type { Booking } from '@/types/booking.types';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
@@ -25,7 +25,7 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ booking, onPaymentSuccess }
     setIsLoading(true);
     setError(null);
     try {
-      const result = await PayOSService.createPaymentLink({
+      const result = await PaymentService.createPaymentLink({
         orderCode: new Date().getTime(),
         amount: price,
         description: `Payment for booking ${booking.bookingId}`,
