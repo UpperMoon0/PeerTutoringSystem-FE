@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { PaymentService } from '@/services/payment';
+import { PaymentService } from '@/services/PaymentService';
 import type { TransactionHistory } from '@/types/payment.types';
 import {
   Table,
@@ -24,9 +24,9 @@ const TransactionHistoryPage: React.FC = () => {
         setLoading(true);
         const result = await PaymentService.getTransactionHistory();
         if (result.success) {
-          setTransactions(result.data);
+          setTransactions(result.data || []);
         } else {
-          setError(result.error || 'Failed to fetch transaction history.');
+          setError(typeof result.error === 'string' ? result.error : 'Failed to fetch transaction history.');
         }
       } catch (err) {
         setError('An unexpected error occurred.');
@@ -86,7 +86,7 @@ const TransactionHistoryPage: React.FC = () => {
             <TableBody>
               {transactions.length > 0 ? (
                 transactions.map((tx) => (
-                  <TableRow key={tx.id}>
+                  <TableRow key={tx.transactionId}>
                     <TableCell>{new Date(tx.transactionDate).toLocaleDateString()}</TableCell>
                     <TableCell>{tx.amount.toLocaleString()} VND</TableCell>
                     <TableCell>{tx.status}</TableCell>

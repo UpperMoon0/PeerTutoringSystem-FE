@@ -8,6 +8,7 @@ import { toast } from 'sonner';
 
 interface CheckoutFormProps {
   booking: Booking;
+  onPaymentSuccess: () => void;
 }
 
 const CheckoutForm: React.FC<CheckoutFormProps> = ({ booking }) => {
@@ -24,7 +25,6 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ booking }) => {
     setError(null);
     try {
       const result = await PaymentService.createPaymentLink({
-        booking: { id: booking.bookingId },
         orderCode: new Date().getTime(),
         amount: totalPrice,
         description: `Payment for booking ${booking.bookingId}`,

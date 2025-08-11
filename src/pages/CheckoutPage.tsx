@@ -103,7 +103,7 @@ const CheckoutPage: React.FC = () => {
           {!paymentSuccess ? (
             <CheckoutForm booking={booking} onPaymentSuccess={handlePaymentSuccess} />
           ) : (
-            <ProofOfPaymentUploader bookingId={booking.id} onUploadSuccess={handleUploadSuccess} />
+            <ProofOfPaymentUploader bookingId={booking.bookingId} onUploadSuccess={handleUploadSuccess} />
           )}
         </CardContent>
       </Card>

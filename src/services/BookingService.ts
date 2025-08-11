@@ -33,7 +33,6 @@ const convertBookingFromBackend = (backendBooking: Record<string, unknown>): Boo
     updatedAt: backendBooking.updatedAt as string,
     studentName: backendBooking.studentName as string,
     tutorName: backendBooking.tutorName as string,
-    price: backendBooking.price as number,
     basePrice: backendBooking.basePrice as number,
     serviceFee: backendBooking.serviceFee as number,
     topic: backendBooking.topic as string,
