@@ -34,6 +34,8 @@ const convertBookingFromBackend = (backendBooking: Record<string, unknown>): Boo
     studentName: backendBooking.studentName as string,
     tutorName: backendBooking.tutorName as string,
     price: backendBooking.price as number,
+    basePrice: backendBooking.basePrice as number,
+    serviceFee: backendBooking.serviceFee as number,
     topic: backendBooking.topic as string,
     description: backendBooking.description as string,
     skillId: backendBooking.skillId as string,
@@ -375,6 +377,49 @@ export const BookingService = {
     } catch (error: unknown) {
       console.error('Error fetching tutor dashboard stats:', error);
       return { success: false, error: error instanceof Error ? error.message : "Failed to fetch tutor dashboard stats." };
+    }
+  },
+
+  async uploadProofOfPayment(bookingId: string, file: File): Promise<ApiResult<{ filePath: string }>> {
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const response = await AuthService.fetchWithAuth(`${API_BASE_URL}/bookings/${bookingId}/upload-proof`, {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: "Failed to parse error response." }));
+        throw new Error(errorData.error || `Failed to upload proof of payment: ${response.statusText}`);
+      }
+
+      const responseData = await response.json();
+      return { success: true, data: { filePath: responseData.filePath } };
+    } catch (error: unknown) {
+      console.error('Error uploading proof of payment:', error);
+      return { success: false, error: error instanceof Error ? error.message : "Failed to upload proof of payment." };
+    }
+  },
+
+  async confirmPayment(bookingId: string, data: { status: string }): Promise<ApiResult<null>> {
+    try {
+      const response = await AuthService.fetchWithAuth(`${API_BASE_URL}/admin/bookings/${bookingId}/confirm-payment`, {
+        method: 'PUT',
+        body: JSON.stringify(data),
+        headers: { 'Content-Type': 'application/json' },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: "Failed to parse error response." }));
+        throw new Error(errorData.error || `Failed to confirm payment: ${response.statusText}`);
+      }
+
+      return { success: true, data: null };
+    } catch (error: unknown) {
+      console.error('Error confirming payment:', error);
+      return { success: false, error: error instanceof Error ? error.message : "Failed to confirm payment." };
     }
   }
 };

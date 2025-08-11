@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Skeleton } from '@/components/ui/skeleton';
-import { PaymentService } from '@/services/PaymentService';
+import { Skeleton } from '../ui/skeleton';
+import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import type { AdminFinanceDetails } from '@/types/payment.types';
+import { PaymentService } from '@/services/PaymentService';
 
 const formatCurrency = (amount: number) => {
   return `${amount.toLocaleString()} VND`;

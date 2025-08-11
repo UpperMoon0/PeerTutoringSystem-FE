@@ -67,6 +67,16 @@ const Header: React.FC = () => {
                   >
                     My Bookings
                   </Link>
+                  <Link
+                    to="/transaction-history"
+                    className={`px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                      location.pathname === '/transaction-history'
+                        ? 'bg-highlight text-primary-foreground shadow-lg'
+                        : 'text-primary-foreground/80 hover:text-primary-foreground'
+                    }`}
+                  >
+                    Transaction History
+                  </Link>
                 </>
               )}
 

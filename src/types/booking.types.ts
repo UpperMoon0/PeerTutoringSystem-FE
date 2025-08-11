@@ -15,13 +15,15 @@ export interface Booking {
   updatedAt?: string;
   studentName?: string;
   tutorName?: string;
-  price?: number;
+  basePrice?: number;
+  serviceFee?: number;
   topic: string;
   description: string;
   skillId?: string;
   student?: AuthResponse;
   tutor?: AuthResponse;
   session?: Session;
+  proofOfPaymentImageUrl?: string;
 }
 
 export interface CreateBookingDto {

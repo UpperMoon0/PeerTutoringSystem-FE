@@ -362,7 +362,7 @@ const SessionForm: React.FC<SessionFormProps> = ({
               Session Time (within booking window)
             </h4>
             <p className="text-sm text-muted-foreground mb-4">
-              Booking window: {format(new Date(booking.startTime), 'HH:mm')} - {format(new Date(booking.endTime), 'HH:mm')}
+              Booking window: {formatTimeLocal(booking.startTime)} - {formatTimeLocal(booking.endTime)}
             </p>
             
             <div className="grid grid-cols-2 gap-4">

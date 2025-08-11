@@ -6,6 +6,7 @@ import TutorRegisterPage from '../pages/TutorRegisterPage';
 import App from '../App';
 import HomePage from '../pages/HomePage';
 import AdminDashboardPage from '@/pages/admin/AdminDashboardPage';
+import AdminBookingsPage from '@/pages/admin/AdminBookingsPage';
 import ProtectedRoute from './ProtectedRoute';
 import UserProfilePage from '@/pages/UserProfilePage';
 import TutorListPage from '@/pages/TutorListPage';
@@ -17,6 +18,7 @@ import ChatPage from '../pages/ChatPage';
 import PaymentSuccessPage from '@/pages/PaymentSuccessPage';
 import CheckoutPage from '@/pages/CheckoutPage';
 import TutorFinancePage from '@/pages/tutor/TutorFinancePage';
+import TransactionHistoryPage from '@/pages/transaction-history';
 
 const router = createBrowserRouter([
   {
@@ -57,6 +59,10 @@ const router = createBrowserRouter([
       {
         path: 'checkout',
         element: <CheckoutPage />,
+      },
+      {
+        path: 'transaction-history',
+        element: <TransactionHistoryPage />,
       },
       {
         path: 'student',
@@ -105,9 +111,10 @@ const router = createBrowserRouter([
       },
       {
         path: 'admin',
-        element: <ProtectedRoute allowedRoles={['Admin']} />, 
+        element: <ProtectedRoute allowedRoles={['Admin']} />,
         children: [
           { index: true, element: <AdminDashboardPage /> },
+          { path: 'bookings', element: <AdminBookingsPage /> },
         ],
       },
     ],

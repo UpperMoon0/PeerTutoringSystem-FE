@@ -8,31 +8,35 @@ import { toast } from 'sonner';
 
 interface CheckoutFormProps {
   booking: Booking;
+  onPaymentSuccess: () => void;
 }
 
-const CheckoutForm: React.FC<CheckoutFormProps> = ({ booking }) => {
+const CheckoutForm: React.FC<CheckoutFormProps> = ({ booking, onPaymentSuccess }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [qrCodeUrl, setQrCodeUrl] = useState<string | null>(null);
+  const [checkoutUrl, setCheckoutUrl] = useState<string | null>(null);
 
-  const price = useMemo(() => {
-    if (!booking || booking.price === undefined) return 0;
-    return booking.price;
-  }, [booking]);
+  const { basePrice = 0, serviceFee = 0 } = booking;
+  const totalPrice = useMemo(() => basePrice + serviceFee, [basePrice, serviceFee]);
+  const platformFee = serviceFee;
 
-  const handleGenerateQR = async () => {
+  const handleCreatePaymentLink = async () => {
     setIsLoading(true);
     setError(null);
     try {
-      const result = await PaymentService.generateQrCode({
+      const result = await PaymentService.createPaymentLink({
         bookingId: booking.bookingId,
-        ReturnUrl: 'http://localhost:5173/payment/success',
+        orderCode: new Date().getTime(),
+        amount: totalPrice,
+        description: `Payment for booking ${booking.bookingId}`,
+        cancelUrl: 'http://localhost:5173/payment/cancel',
+        returnUrl: `http://localhost:5173/payment-success?bookingId=${booking.bookingId}`,
       });
       if (result.success && result.data) {
-        setQrCodeUrl(result.data.qrCode);
+        setCheckoutUrl(result.data.data.checkoutUrl);
       } else {
-        setError('Failed to generate QR code.');
-        toast.error('Failed to generate QR code.');
+        setError('Failed to create payment link.');
+        toast.error('Failed to create payment link.');
       }
     } catch (err) {
       const errorMessage = (err as Error).message || 'An unexpected error occurred.';
@@ -44,7 +48,7 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ booking }) => {
   };
 
   useEffect(() => {
-    handleGenerateQR();
+    handleCreatePaymentLink();
   }, [booking.bookingId]);
 
   return (
@@ -75,14 +79,23 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ booking }) => {
             </span>
           </div>
           <div className="border-t my-2" />
+          <div className="flex items-center">
+            <span>Base Price:</span>
+            <span className="ml-auto">{basePrice.toLocaleString(undefined, { maximumFractionDigits: 0 })} VND</span>
+          </div>
+          <div className="flex items-center">
+            <span>Platform Service Fee (30%):</span>
+            <span className="ml-auto">{platformFee.toLocaleString(undefined, { maximumFractionDigits: 0 })} VND</span>
+          </div>
+          <div className="border-t my-2" />
           <div className="flex items-center text-xl font-bold">
             <span>Total:</span>
-            <span className="ml-auto">{price.toLocaleString()} VND</span>
+            <span className="ml-auto">{totalPrice.toLocaleString(undefined, { maximumFractionDigits: 0 })} VND</span>
           </div>
         </div>
       </div>
       <div className="space-y-4">
-        <h3 className="text-lg font-semibold">QR Code Payment</h3>
+        <h3 className="text-lg font-semibold">PayOS Payment</h3>
         {error && (
           <Alert variant="destructive">
             <AlertCircle className="h-4 w-4" />
@@ -90,23 +103,21 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ booking }) => {
             <AlertDescription>{error}</AlertDescription>
           </Alert>
         )}
-        {qrCodeUrl ? (
+        {checkoutUrl ? (
           <div className="flex flex-col items-center space-y-4">
-            <img
-              src={qrCodeUrl}
-              alt="QR Code"
-              className="w-64 object-contain border rounded-lg"
-            />
+            <a href={checkoutUrl} target="_blank" rel="noopener noreferrer" className="px-4 py-2 text-white bg-blue-600 rounded-md hover:bg-blue-700">
+              Proceed to Payment
+            </a>
             <p className="text-center text-muted-foreground">
-              Scan this QR code with your banking app to complete the payment.
+              You will be redirected to the PayOS payment gateway.
             </p>
           </div>
         ) : (
           <div className="flex flex-col items-center justify-center p-8 border-2 border-dashed rounded-lg">
             {isLoading ? (
-              <p>Generating QR Code...</p>
+              <p>Generating payment link...</p>
             ) : (
-              <p className="text-center text-muted-foreground">Could not generate QR code. Please try again later.</p>
+              <p className="text-center text-muted-foreground">Could not generate payment link. Please try again later.</p>
             )}
           </div>
         )}

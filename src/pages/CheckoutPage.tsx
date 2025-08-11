@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useParams } from 'react-router-dom';
 import CheckoutForm from '@/components/payment/CheckoutForm';
+import ProofOfPaymentUploader from '@/components/payment/ProofOfPaymentUploader';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { BookingService } from '@/services/BookingService';
 import type { Booking } from '@/types/booking.types';
@@ -15,6 +16,7 @@ const CheckoutPage: React.FC = () => {
   const bookingId = bookingIdFromState || bookingIdFromParams;
 
   const [booking, setBooking] = useState<Booking | null>(null);
+  const [paymentSuccess, setPaymentSuccess] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -81,6 +83,15 @@ const CheckoutPage: React.FC = () => {
     );
   }
 
+  const handlePaymentSuccess = () => {
+    setPaymentSuccess(true);
+  };
+
+  const handleUploadSuccess = (filePath: string) => {
+    // You can optionally update the booking state or show a success message
+    console.log('Upload successful:', filePath);
+  };
+
   return (
     <div className="container mx-auto my-10 max-w-2xl">
       <Card>
@@ -89,7 +100,11 @@ const CheckoutPage: React.FC = () => {
           <CardDescription>Review your booking and enter your card details to finalize.</CardDescription>
         </CardHeader>
         <CardContent>
-          <CheckoutForm booking={booking} />
+          {!paymentSuccess ? (
+            <CheckoutForm booking={booking} onPaymentSuccess={handlePaymentSuccess} />
+          ) : (
+            <ProofOfPaymentUploader bookingId={booking.id} onUploadSuccess={handleUploadSuccess} />
+          )}
         </CardContent>
       </Card>
     </div>

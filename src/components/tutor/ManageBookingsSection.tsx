@@ -153,20 +153,28 @@ const ManageBookingsSection: React.FC = () => {
 
   const handleUpdateStatus = async (bookingId: string, newStatus: Booking['status']) => {
     if (!bookingId || isUpdating) return;
-
-    // For accepting bookings, show the session creation form instead of directly updating status
-    if (newStatus === 'Confirmed') {
+  
+    const bookingToUpdate = bookings.find(b => b.bookingId === bookingId);
+  
+    if (newStatus === 'Confirmed' && bookingToUpdate) {
+      setSelectedBooking(bookingToUpdate);
       setIsSessionFormOpen(true);
       return;
     }
-
+  
     setIsUpdating(true);
     setError(null);
     try {
       const result: ApiResult<Booking> = await BookingService.updateBookingStatus(bookingId, newStatus);
       if (result.success && result.data) {
-        setSelectedBooking(result.data);
-        fetchBookings(); // Refresh the list
+        // Optimistically update the booking in the list
+        setBookings(prevBookings =>
+          prevBookings.map(b => (b.bookingId === bookingId ? { ...b, status: newStatus } : b))
+        );
+        if (isDetailModalOpen) {
+          setSelectedBooking(result.data);
+        }
+        fetchBookings();
       } else {
         setError(typeof result.error === 'string' ? result.error : result.error?.message || 'Failed to update booking status.');
       }
@@ -180,36 +188,40 @@ const ManageBookingsSection: React.FC = () => {
 
   const handleSessionCreation = async (sessionData: CreateSessionDto | UpdateSessionDto) => {
     if (!selectedBooking) return;
-
-    // Assert that sessionData is CreateSessionDto, as this form is only for creation
+  
     const createDto = sessionData as CreateSessionDto;
-
+  
     setIsUpdating(true);
     setSessionError(null);
     try {
-      // First, update booking status to Confirmed
+      // Step 1: Confirm the booking
       const bookingResult = await BookingService.updateBookingStatus(selectedBooking.bookingId, 'Confirmed');
-      if (!bookingResult.success) {
-        throw new Error(typeof bookingResult.error === 'string' ? bookingResult.error : bookingResult.error?.message || 'Failed to confirm booking');
+      if (!bookingResult.success || !bookingResult.data) {
+        throw new Error(bookingResult.error?.message || 'Failed to confirm booking. Please try again.');
       }
-
-      // Then create the session
-      const sessionResult = await SessionService.createSession(createDto);
-      if (!sessionResult.success) {
-        // If session creation fails, we might want to revert the booking status
-        // For now, we'll just show the error
-        throw new Error(typeof sessionResult.error === 'string' ? sessionResult.error : sessionResult.error?.message || 'Failed to create session');
-      }
-
-      // Success - update UI
-      if (bookingResult.data) {
+  
+      // Step 2: Create the session
+      try {
+        const sessionResult = await SessionService.createSession(createDto);
+        if (!sessionResult.success) {
+          // If session creation fails, revert the booking status to 'Pending'
+          await BookingService.updateBookingStatus(selectedBooking.bookingId, 'Pending');
+          throw new Error(sessionResult.error?.message || 'Failed to create session. The booking status has been reverted.');
+        }
+  
+        // On success, update UI and refresh data
         setSelectedBooking(bookingResult.data);
+        setIsSessionFormOpen(false);
+        setIsDetailModalOpen(false);
+        fetchBookings();
+      } catch (sessionError) {
+        // This catch block handles session creation failure and the subsequent booking status reversion.
+        // The error from this block will be displayed to the user.
+        throw sessionError;
       }
-      setIsSessionFormOpen(false);
-      setIsDetailModalOpen(false);
-      fetchBookings(); // Refresh the list
+  
     } catch (err: unknown) {
-      setSessionError((err as Error)?.message || 'An unexpected error occurred while creating session.');
+      setSessionError((err as Error)?.message || 'An unexpected error occurred.');
       console.error(err);
     } finally {
       setIsUpdating(false);
