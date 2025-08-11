@@ -197,7 +197,7 @@ const ManageBookingsSection: React.FC = () => {
       // Step 1: Confirm the booking
       const bookingResult = await BookingService.updateBookingStatus(selectedBooking.bookingId, 'Confirmed');
       if (!bookingResult.success || !bookingResult.data) {
-        throw new Error(bookingResult.error?.message || 'Failed to confirm booking. Please try again.');
+        throw new Error(typeof bookingResult.error === 'string' ? bookingResult.error : bookingResult.error?.message || 'Failed to confirm booking. Please try again.');
       }
   
       // Step 2: Create the session
@@ -206,7 +206,7 @@ const ManageBookingsSection: React.FC = () => {
         if (!sessionResult.success) {
           // If session creation fails, revert the booking status to 'Pending'
           await BookingService.updateBookingStatus(selectedBooking.bookingId, 'Pending');
-          throw new Error(sessionResult.error?.message || 'Failed to create session. The booking status has been reverted.');
+          throw new Error(typeof sessionResult.error === 'string' ? sessionResult.error : sessionResult.error?.message || 'Failed to create session. The booking status has been reverted.');
         }
   
         // On success, update UI and refresh data

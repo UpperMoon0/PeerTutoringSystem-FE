@@ -5,8 +5,7 @@ import {
   Clock,
   DollarSign,
   User,
-  Calendar,
-  BookOpen
+  Calendar
 } from 'lucide-react';
 
 interface TutorProfileDisplayProps {

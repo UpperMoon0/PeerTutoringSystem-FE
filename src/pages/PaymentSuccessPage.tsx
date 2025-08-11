@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { CheckCircle, Loader2, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
 import { useQuery } from '@tanstack/react-query';
-import { confirmPayment } from '../services/paymentService';
+import { PaymentService } from '@/services/PaymentService';
 
 const PaymentSuccessPage: React.FC = () => {
   const navigate = useNavigate();
@@ -13,7 +13,7 @@ const PaymentSuccessPage: React.FC = () => {
 
   const { data, error, isLoading } = useQuery({
     queryKey: ['paymentStatus', bookingId],
-    queryFn: () => confirmPayment(bookingId!),
+    queryFn: () => PaymentService.confirmPayment(bookingId!),
     enabled: !!bookingId,
     refetchInterval: (query) => (query.state.data ? false : 2000),
     refetchOnWindowFocus: false,

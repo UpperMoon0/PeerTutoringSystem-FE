@@ -6,8 +6,10 @@ import type {
   GenerateQrCodeDto,
   GenerateQrCodeResponse,
   AdminFinanceDetails,
+  TransactionHistory,
 } from '@/types/payment.types';
 import type { PayOSCreatePaymentLinkRequest, PayOSCreatePaymentLinkResponse } from '@/types/payos.types';
+import { apiClient } from './AuthService';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -92,18 +94,43 @@ export const PaymentService = {
     }
   },
 
-  getPaymentHistory: async (): Promise<ApiResult<any[]>> => {
+  confirmPayment: async (bookingId: string): Promise<ApiResult<any>> => {
     try {
-      const response = await AuthService.fetchWithAuth(`${API_BASE_URL}/payment/history`);
+      const response = await AuthService.fetchWithAuth(`${API_BASE_URL}/payment/confirm?bookingId=${bookingId}`);
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({ error: "Failed to parse error response." }));
-        throw new Error(errorData.error || `Failed to fetch payment history: ${response.statusText}`);
+        throw new Error(errorData.error || `Failed to confirm payment: ${response.statusText}`);
       }
       const responseData = await response.json();
       return { success: true, data: responseData };
     } catch (error: unknown) {
-      console.error('Error fetching payment history:', error);
-      return { success: false, error: error instanceof Error ? error.message : "Failed to fetch payment history." };
+      console.error('Error confirming payment:', error);
+      return { success: false, error: error instanceof Error ? error.message : "Failed to confirm payment." };
     }
+  },
+
+  getTransactionHistory: async (): Promise<ApiResult<TransactionHistory[]>> => {
+    try {
+      const response = await AuthService.fetchWithAuth(`${API_BASE_URL}/payment/history`);
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: 'Failed to parse error response.' }));
+        throw new Error(errorData.error || `Failed to fetch transaction history: ${response.statusText}`);
+      }
+      const responseData = await response.json();
+      return { success: true, data: responseData };
+    } catch (error: unknown) {
+      console.error('Error fetching transaction history:', error);
+      return { success: false, error: error instanceof Error ? error.message : 'Failed to fetch transaction history.' };
+    }
+  },
+
+  createPayment: async (bookingId: string) => {
+    const response = await apiClient.post('/payment/create', { bookingId });
+    return response.data;
+  },
+
+  getPaymentStatus: async (paymentId: string) => {
+    const response = await apiClient.get(`/payment/status/${paymentId}`);
+    return response.data;
   },
 };

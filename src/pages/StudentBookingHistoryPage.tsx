@@ -426,7 +426,7 @@ const StudentBookingHistoryPage: React.FC = () => {
                       </TableCell>
                       <TableCell className="text-foreground">
                         <div className="flex items-center">
-                          {booking.price ? `${booking.price.toLocaleString()} VND` : '-'}
+                          {booking.basePrice ? `${booking.basePrice.toLocaleString()} VND` : '-'}
                         </div>
                       </TableCell>
                       <TableCell className="text-right">

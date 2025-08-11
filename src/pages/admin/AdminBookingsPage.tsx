@@ -19,7 +19,7 @@ const AdminBookingsPage: React.FC = () => {
         if (result.success && result.data) {
           setBookings(result.data.bookings);
         } else {
-          setError(result.error?.message || 'Failed to fetch bookings.');
+          setError(typeof result.error === 'string' ? result.error : result.error?.message || 'Failed to fetch bookings.');
         }
       } catch (err: unknown) {
         setError((err as Error).message || 'An unexpected error occurred.');
@@ -37,7 +37,7 @@ const AdminBookingsPage: React.FC = () => {
         toast.success('Payment confirmed successfully.');
         setBookings(bookings.map(b => b.bookingId === bookingId ? { ...b, paymentStatus: 'Paid' } : b));
       } else {
-        toast.error(result.error?.message || 'Failed to confirm payment.');
+        toast.error(typeof result.error === 'string' ? result.error : result.error?.message || 'Failed to confirm payment.');
       }
     } catch (err: unknown) {
       toast.error((err as Error).message || 'An unexpected error occurred.');
