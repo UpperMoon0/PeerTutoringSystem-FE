@@ -20,7 +20,7 @@ interface ProfileSectionProps {
   onBioStatusChange?: () => Promise<void>;
 }
 
-const ProfileSection: React.FC<ProfileSectionProps> = ({ onBioStatusChange }) => {
+const TutorManageProfileSection: React.FC<ProfileSectionProps> = ({ onBioStatusChange }) => {
   const { currentUser } = useAuth();
   const navigate = useNavigate();
   const [tutorDisplayProfile, setTutorDisplayProfile] = useState<TutorProfileDto | null>(null);
@@ -28,58 +28,34 @@ const ProfileSection: React.FC<ProfileSectionProps> = ({ onBioStatusChange }) =>
   const [isSavingProfile, setIsSavingProfile] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchTutorDisplayProfileData = async () => {
-      if (currentUser?.userId) {
-        setLoading(true);
-        // Use suppressErrors=true to avoid console errors for missing bio
-        const result = await TutorProfileService.getTutorProfileByUserId(currentUser.userId, true);
-        if (result.success && result.data) {
-          // Fetch skills separately and merge
-          const skillsResult = await UserSkillService.getUserSkills(currentUser.userId);
-          if (skillsResult.success && skillsResult.data) {
-            setTutorDisplayProfile({ ...result.data, skills: skillsResult.data });
-          } else {
-            console.warn(`Failed to fetch skills for tutor ${currentUser.userId}:`, skillsResult.error);
-            setTutorDisplayProfile({ ...result.data, skills: [] }); // Set skills to empty array on error
-          }
+  const fetchTutorDisplayProfileData = React.useCallback(async (suppressErrors = true) => {
+    if (currentUser?.userId) {
+      setLoading(true);
+      const result = await TutorProfileService.getTutorProfileByUserId(currentUser.userId, suppressErrors);
+      if (result.success && result.data) {
+        const skillsResult = await UserSkillService.getUserSkills(currentUser.userId);
+        if (skillsResult.success && skillsResult.data) {
+          setTutorDisplayProfile({ ...result.data, skills: skillsResult.data });
         } else {
-          // Silently handle missing bio - this is normal for new tutors
-          setTutorDisplayProfile(null);
+          console.warn(`Failed to fetch skills for tutor ${currentUser.userId}:`, skillsResult.error);
+          setTutorDisplayProfile({ ...result.data, skills: [] });
         }
-        setLoading(false);
+      } else {
+        setTutorDisplayProfile(null);
       }
-    };
-
-    fetchTutorDisplayProfileData();
+      setLoading(false);
+    }
   }, [currentUser]);
+
+  useEffect(() => {
+    fetchTutorDisplayProfileData();
+  }, [fetchTutorDisplayProfileData]);
 
   const handleEditProfile = () => setIsEditingProfile(true);
   
   const handleCancelEditProfile = () => {
     setIsEditingProfile(false);
-    // Optionally re-fetch to discard any optimistic updates or ensure data consistency
-    if (currentUser?.userId) {
-      const fetchTutorDisplayProfileData = async () => {
-        if (currentUser?.userId) {
-          setLoading(true);
-          // Use suppressErrors=true to avoid console errors for missing bio
-          const result = await TutorProfileService.getTutorProfileByUserId(currentUser.userId, true);
-          if (result.success && result.data) {
-            const skillsResult = await UserSkillService.getUserSkills(currentUser.userId);
-            if (skillsResult.success && skillsResult.data) {
-              setTutorDisplayProfile({ ...result.data, skills: skillsResult.data });
-            } else {
-              setTutorDisplayProfile({ ...result.data, skills: [] });
-            }
-          } else {
-            setTutorDisplayProfile(null);
-          }
-          setLoading(false);
-        }
-      };
-      fetchTutorDisplayProfileData();
-    }
+    fetchTutorDisplayProfileData();
   };
 
   const handleSaveProfile = async (data: CreateTutorProfileDto | UpdateTutorProfileDto) => {
@@ -126,29 +102,10 @@ const ProfileSection: React.FC<ProfileSectionProps> = ({ onBioStatusChange }) =>
           }
         }
 
-        // Re-fetch profile data to show updated info
-        const fetchTutorDisplayProfileData = async () => {
-          if (currentUser?.userId) {
-            setLoading(true);
-            // Use suppressErrors=true to avoid console errors for missing bio
-            const result = await TutorProfileService.getTutorProfileByUserId(currentUser.userId, true);
-            if (result.success && result.data) {
-              const skillsResult = await UserSkillService.getUserSkills(currentUser.userId);
-              if (skillsResult.success && skillsResult.data) {
-                setTutorDisplayProfile({ ...result.data, skills: skillsResult.data });
-              } else {
-                setTutorDisplayProfile({ ...result.data, skills: [] });
-              }
-            } else {
-              setTutorDisplayProfile(null);
-            }
-            setLoading(false);
-          }
-        };
-        await fetchTutorDisplayProfileData(); // Re-fetch without global loading
+        // Re-fetch profile data to show updated info and notify parent
+        await fetchTutorDisplayProfileData(false); // Re-fetch and show errors if any
         setIsEditingProfile(false);
         
-        // Notify parent component that bio status has changed
         if (onBioStatusChange) {
           await onBioStatusChange();
         }
@@ -172,11 +129,6 @@ const ProfileSection: React.FC<ProfileSectionProps> = ({ onBioStatusChange }) =>
 
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-xl font-bold text-foreground mb-2">Tutor Profile Management</h2>
-        <p className="text-muted-foreground">Update your tutor profile and skills to attract more students.</p>
-      </div>
-
       <Card className="bg-card border-border">
         <CardHeader className="flex flex-row items-center justify-between">
           <div>
@@ -220,7 +172,34 @@ const ProfileSection: React.FC<ProfileSectionProps> = ({ onBioStatusChange }) =>
               isLoading={isSavingProfile}
             />
           ) : tutorDisplayProfile ? (
-            <TutorProfileDisplay tutorProfile={tutorDisplayProfile} />
+            <>
+              <TutorProfileDisplay tutorProfile={tutorDisplayProfile} />
+              {/* Skills Section */}
+              <Card className="bg-card border-border mt-6">
+                <CardHeader>
+                  <CardTitle className="text-foreground flex items-center">
+                    <Briefcase className="w-5 h-5 mr-2 text-primary" />
+                    Your Skills
+                  </CardTitle>
+                  <CardDescription>
+                    These are the skills that will be displayed on your tutor profile.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {tutorDisplayProfile.skills && tutorDisplayProfile.skills.length > 0 ? (
+                    <div className="flex flex-wrap gap-2">
+                      {tutorDisplayProfile.skills.map(userSkill => (
+                        <div key={userSkill.userSkillID} className="bg-muted text-muted-foreground px-3 py-1 rounded-full text-sm">
+                          {userSkill.skill.skillName}
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-muted-foreground">You have not added any skills yet.</p>
+                  )}
+                </CardContent>
+              </Card>
+            </>
           ) : (
             // Not loading, not editing, and no profile data
             <div className="text-center py-12 space-y-4">
@@ -242,4 +221,4 @@ const ProfileSection: React.FC<ProfileSectionProps> = ({ onBioStatusChange }) =>
   );
 };
 
-export default ProfileSection;
+export default TutorManageProfileSection;

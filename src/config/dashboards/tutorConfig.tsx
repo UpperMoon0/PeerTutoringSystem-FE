@@ -3,7 +3,7 @@ import type { DashboardConfigFactory } from './types';
 import TutorOverview from '@/components/dashboard/overviews/TutorOverview';
 import ManageBookingsSection from '@/components/tutor/ManageBookingsSection';
 import ManageAvailabilitySection from '@/components/tutor/ManageAvailabilitySection';
-import ProfileSection from '@/components/tutor/ProfileSection';
+import TutorManageProfileSection from '@/components/tutor/TutorManageProfileSection';
 import TutorFinancePage from '@/pages/tutor/TutorFinancePage';
 import React from 'react';
 
@@ -48,7 +48,7 @@ export const tutorConfig: DashboardConfigFactory = {
       subtitle: 'Update your tutor profile and skills',
       icon: Briefcase,
       path: '/tutor?section=profile',
-      component: ProfileSection as React.ComponentType<unknown>,
+      component: TutorManageProfileSection as React.ComponentType<unknown>,
     },
     {
       id: 'finance',

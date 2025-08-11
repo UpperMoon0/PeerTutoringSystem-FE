@@ -89,28 +89,6 @@ const TutorProfileDisplay: React.FC<TutorProfileDisplayProps> = ({ tutorProfile 
         </Card>
       </div>
 
-      {/* Skills Section */}
-      {tutorProfile.skills && tutorProfile.skills.length > 0 && (
-        <Card className="bg-card border-border">
-          <CardHeader className="pb-3">
-            <CardTitle className="flex items-center gap-2 text-lg text-foreground">
-              <BookOpen className="h-5 w-5 text-primary" />
-              Skills & Expertise
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-              {tutorProfile.skills.map((userSkill: UserSkill) => (
-                <SkillCard
-                  key={userSkill.userSkillID}
-                  skill={userSkill.skill}
-                  isDisplayMode={true} // Use display mode instead of disabled
-                />
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      )}
     </div>
   );
 };
