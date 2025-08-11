@@ -2,7 +2,7 @@ import * as React from 'react';
 import type { TutorProfileDto } from '../../types/TutorProfile';
 import type { UserSkill } from '../../types/skill.types'; // Added
 import SkillCard from '../common/SkillCard'; // Added
-import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../ui/card';
 import {
   Clock,
   DollarSign,
@@ -44,6 +44,7 @@ const TutorProfileDisplay: React.FC<TutorProfileDisplayProps> = ({ tutorProfile 
         <Card className="bg-card border-border">
           <CardHeader className="pb-3">
             <CardTitle className="text-lg text-foreground">Quick Info</CardTitle>
+            <CardDescription>Your public-facing information.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex items-center gap-3">
