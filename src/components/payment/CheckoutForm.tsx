@@ -26,6 +26,7 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ booking, onPaymentSuccess }
     setError(null);
     try {
       const result = await PaymentService.createPaymentLink({
+        bookingId: booking.bookingId,
         orderCode: new Date().getTime(),
         amount: price,
         description: `Payment for booking ${booking.bookingId}`,
