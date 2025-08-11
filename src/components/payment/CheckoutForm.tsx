@@ -16,10 +16,9 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ booking, onPaymentSuccess }
   const [error, setError] = useState<string | null>(null);
   const [checkoutUrl, setCheckoutUrl] = useState<string | null>(null);
 
-  const price = useMemo(() => {
-    if (!booking || booking.price === undefined) return 0;
-    return booking.price;
-  }, [booking]);
+  const { basePrice = 0, serviceFee = 0 } = booking;
+  const totalPrice = useMemo(() => basePrice + serviceFee, [basePrice, serviceFee]);
+  const platformFee = serviceFee;
 
   const handleCreatePaymentLink = async () => {
     setIsLoading(true);
@@ -28,7 +27,7 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ booking, onPaymentSuccess }
       const result = await PaymentService.createPaymentLink({
         bookingId: booking.bookingId,
         orderCode: new Date().getTime(),
-        amount: price,
+        amount: totalPrice,
         description: `Payment for booking ${booking.bookingId}`,
         cancelUrl: 'http://localhost:5173/payment/cancel',
         returnUrl: 'http://localhost:5173/payment/success',
@@ -80,9 +79,18 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ booking, onPaymentSuccess }
             </span>
           </div>
           <div className="border-t my-2" />
+          <div className="flex items-center">
+            <span>Base Price:</span>
+            <span className="ml-auto">{basePrice.toLocaleString(undefined, { maximumFractionDigits: 0 })} VND</span>
+          </div>
+          <div className="flex items-center">
+            <span>Platform Service Fee (30%):</span>
+            <span className="ml-auto">{platformFee.toLocaleString(undefined, { maximumFractionDigits: 0 })} VND</span>
+          </div>
+          <div className="border-t my-2" />
           <div className="flex items-center text-xl font-bold">
             <span>Total:</span>
-            <span className="ml-auto">{price.toLocaleString()} VND</span>
+            <span className="ml-auto">{totalPrice.toLocaleString(undefined, { maximumFractionDigits: 0 })} VND</span>
           </div>
         </div>
       </div>

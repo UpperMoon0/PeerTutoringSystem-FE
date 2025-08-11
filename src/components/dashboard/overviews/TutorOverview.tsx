@@ -81,6 +81,8 @@ const TutorOverview: React.FC<TutorOverviewProps> = () => {
     });
   };
 
+  const calculateProfit = (amount: number) => amount / 1.3;
+
   return (
     <div className="space-y-6">
       {/* Welcome Section */}
@@ -186,8 +188,8 @@ const TutorOverview: React.FC<TutorOverviewProps> = () => {
               <CardContent className="p-4 lg:p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-muted-foreground text-sm font-medium">Total Earnings</p>
-                    <p className="text-3xl font-bold text-foreground mt-2">{stats.totalEarnings.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}</p>
+                    <p className="text-muted-foreground text-sm font-medium">Total Profit</p>
+                    <p className="text-3xl font-bold text-foreground mt-2">{calculateProfit(stats.totalEarnings).toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}</p>
                     <p className="text-green-500 text-sm mt-1 flex items-center">
                       <DollarSign className="w-4 h-4 mr-1" />
                       +15% from last month

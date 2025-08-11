@@ -118,7 +118,7 @@ const TutorFinancePage = () => {
         </Card>
         <Card>
           <CardHeader>
-            <CardTitle>Lifetime Earnings</CardTitle>
+            <CardTitle>Current Balance</CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-2xl font-bold">{formatCurrency(totalEarnings)}</p>
