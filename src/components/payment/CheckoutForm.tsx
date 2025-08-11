@@ -30,7 +30,7 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ booking, onPaymentSuccess }
         amount: totalPrice,
         description: `Payment for booking ${booking.bookingId}`,
         cancelUrl: 'http://localhost:5173/payment/cancel',
-        returnUrl: 'http://localhost:5173/payment/success',
+        returnUrl: `http://localhost:5173/payment-success?bookingId=${booking.bookingId}`,
       });
       if (result.success && result.data) {
         setCheckoutUrl(result.data.data.checkoutUrl);
