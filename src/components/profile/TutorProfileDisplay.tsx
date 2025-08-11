@@ -1,7 +1,5 @@
 import * as React from 'react';
 import type { TutorProfileDto } from '../../types/TutorProfile';
-import type { UserSkill } from '../../types/skill.types'; // Added
-import SkillCard from '../common/SkillCard'; // Added
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../ui/card';
 import {
   Clock,

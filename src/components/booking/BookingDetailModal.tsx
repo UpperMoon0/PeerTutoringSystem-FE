@@ -307,12 +307,12 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
               </div>
             )}
             
-            {booking.price && (
+            {currentBooking?.session?.price && (
               <div>
                 <h3 className="font-semibold text-muted-foreground mb-1 flex items-center">
                   <DollarSign className="w-4 h-4 mr-1.5 text-muted-foreground" /> Price:
                 </h3>
-                <p className="text-foreground font-semibold text-lg">{booking.price.toLocaleString()} VND</p>
+                <p className="text-foreground font-semibold text-lg">{currentBooking.session.price.toLocaleString()} VND</p>
               </div>
             )}
 

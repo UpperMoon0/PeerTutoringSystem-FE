@@ -35,7 +35,11 @@ const ProofOfPaymentUploader: React.FC<ProofOfPaymentUploaderProps> = ({ booking
       if (result.success && result.data) {
         onUploadSuccess(result.data.filePath);
       } else {
-        setError(result.error?.message || 'Failed to upload proof of payment.');
+        if (typeof result.error === 'string') {
+          setError(result.error);
+        } else {
+          setError(result.error?.message || 'Failed to upload proof of payment.');
+        }
       }
     } catch (err: unknown) {
       setError((err as Error).message || 'An unexpected error occurred.');
