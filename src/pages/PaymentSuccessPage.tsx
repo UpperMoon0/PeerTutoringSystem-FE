@@ -1,43 +1,35 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { CheckCircle, Loader2, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
-import { useMutation } from '@tanstack/react-query';
-import { confirmPayment } from '@/services/paymentService';
+import { useQuery } from '@tanstack/react-query';
+import { confirmPayment } from '../services/paymentService';
 
 const PaymentSuccessPage: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
+  const bookingId = searchParams.get('bookingId');
 
-  const { mutate: confirmPaymentMutation } = useMutation({
-    mutationFn: confirmPayment,
-    onSuccess: () => {
-      setStatus('success');
+  const { data, error, isLoading } = useQuery({
+    queryKey: ['paymentStatus', bookingId],
+    queryFn: () => confirmPayment(bookingId!),
+    enabled: !!bookingId,
+    refetchInterval: (query) => (query.state.data ? false : 2000),
+    refetchOnWindowFocus: false,
+  });
+
+  useEffect(() => {
+    if (data) {
       toast.success('Payment successful! Your booking is confirmed.');
       const timer = setTimeout(() => {
         navigate('/student/booking-history');
       }, 5000);
       return () => clearTimeout(timer);
-    },
-    onError: () => {
-      setStatus('error');
-      toast.error('An error occurred while confirming your payment. Please contact support.');
-    },
-  });
-
-  useEffect(() => {
-    const bookingId = searchParams.get('bookingId');
-    if (bookingId) {
-      confirmPaymentMutation(bookingId);
-    } else {
-      setStatus('error');
-      toast.error('No booking ID found. Cannot confirm payment.');
     }
-  }, [searchParams, confirmPaymentMutation]);
+  }, [data, navigate]);
 
-  if (status === 'loading') {
+  if (isLoading) {
     return (
       <div className="container mx-auto mt-10 text-center flex flex-col items-center justify-center h-full">
         <Loader2 className="w-20 h-20 mx-auto text-primary animate-spin mb-6" />
@@ -49,7 +41,7 @@ const PaymentSuccessPage: React.FC = () => {
     );
   }
 
-  if (status === 'error') {
+  if (error) {
     return (
       <div className="container mx-auto mt-10 text-center flex flex-col items-center justify-center h-full">
         <AlertTriangle className="w-20 h-20 mx-auto text-destructive mb-6" />

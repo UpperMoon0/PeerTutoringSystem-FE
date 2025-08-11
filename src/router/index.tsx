@@ -18,6 +18,7 @@ import ChatPage from '../pages/ChatPage';
 import PaymentSuccessPage from '@/pages/PaymentSuccessPage';
 import CheckoutPage from '@/pages/CheckoutPage';
 import TutorFinancePage from '@/pages/tutor/TutorFinancePage';
+import TransactionHistoryPage from '@/pages/transaction-history';
 
 const router = createBrowserRouter([
   {
@@ -58,6 +59,10 @@ const router = createBrowserRouter([
       {
         path: 'checkout',
         element: <CheckoutPage />,
+      },
+      {
+        path: 'transaction-history',
+        element: <TransactionHistoryPage />,
       },
       {
         path: 'student',

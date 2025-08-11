@@ -31,3 +31,10 @@ export interface AdminFinanceDetails {
     bookingId: string;
   }[];
 }
+export interface TransactionHistory {
+  transactionId: string;
+  transactionDate: string;
+  amount: number;
+  status: string;
+  bookingId: string;
+}
