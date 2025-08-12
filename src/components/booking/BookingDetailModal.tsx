@@ -123,7 +123,8 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
 
 
   const getStatusBadgeVariant = (status: Booking['status']) => {
-    switch (status) {
+    const statusString = getStatusString(status);
+    switch (statusString) {
       case 'Pending': return 'secondary';
       case 'Confirmed': return 'default';
       case 'Cancelled':
@@ -131,6 +132,17 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
       case 'Completed': return 'outline';
       default: return 'secondary';
     }
+  };
+
+  const getStatusString = (status: Booking['status']): Booking['status'] => {
+    const statusMap: { [key: number]: Booking['status'] } = {
+      0: 'Pending',
+      1: 'Confirmed',
+      2: 'Completed',
+      3: 'Cancelled',
+      4: 'Rejected'
+    };
+    return typeof status === 'number' ? statusMap[status] : status;
   };
 
   const getTimeUntilSession = (sessionStartTime: string): string => {
@@ -204,19 +216,17 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
 
   const isCurrentUserTutor = currentUser?.userId === booking.tutorId;
   const isCurrentUserStudent = currentUser?.userId === booking.studentId;
-  const isSessionUpcoming = booking.status === 'Confirmed' && isAfter(new Date(booking.startTime), new Date());
-  const isSessionCompleted = booking.status === 'Completed';
-  const hasSessionInfo = (booking.status === 'Confirmed' || booking.status === 'Completed') && currentSession;
+  const bookingStatus = getStatusString(currentBooking?.status || booking.status);
+  const isSessionUpcoming = bookingStatus === 'Confirmed' && isAfter(new Date(booking.startTime), new Date());
+  const isSessionCompleted = bookingStatus === 'Completed';
+  const hasSessionInfo = (bookingStatus === 'Confirmed' || bookingStatus === 'Completed') && currentSession;
   const canEditSession = isCurrentUserTutor && hasSessionInfo && currentSession;
-  const canAcceptReject = isCurrentUserTutor && booking.status === 'Pending';
-  const showCreateSessionForm = isCurrentUserTutor && booking.status === 'Confirmed' && !currentSession;
-  const canCancel = isCurrentUserStudent && booking.status === 'Pending';
-  const canComplete = isCurrentUserTutor && booking.status === 'Confirmed' && new Date(booking.endTime) < new Date();
-  const showCompleteButton = isCurrentUserTutor && booking.status === 'Confirmed';
-  const showPaymentButton = isCurrentUserStudent && booking.status === 'Confirmed' && !!currentSession && booking.paymentStatus !== 'Paid';
-
-
-
+  const canAcceptReject = isCurrentUserTutor && bookingStatus === 'Pending';
+  const showCreateSessionForm = isCurrentUserTutor && bookingStatus === 'Confirmed' && !currentSession;
+  const canCancel = isCurrentUserStudent && bookingStatus === 'Pending';
+  const canComplete = isCurrentUserTutor && bookingStatus === 'Confirmed' && new Date(booking.endTime) < new Date();
+  const showCompleteButton = isCurrentUserTutor && bookingStatus === 'Confirmed';
+  const showPaymentButton = isCurrentUserStudent && bookingStatus === 'Confirmed' && !!currentSession && booking.paymentStatus !== 'Paid';
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="bg-card border-border text-foreground max-w-2xl md:max-w-3xl">
@@ -280,7 +290,7 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
               </h3>
               <div className="space-y-2">
                 <Badge variant={getStatusBadgeVariant(booking.status)} className="text-sm capitalize">
-                  {booking.status}
+                  {getStatusString(booking.status)}
                 </Badge>
                 {isSessionUpcoming && (
                   <div className="text-sm text-primary">
@@ -421,18 +431,6 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
               </div>
             )}
 
- 
-             {booking.skillId && (
-               <div>
-                 <h3 className="font-semibold text-muted-foreground mb-1">Skill ID:</h3>
-                 <p className="text-foreground">{booking.skillId}</p>
-               </div>
-             )}
-             
-             <div>
-               <h3 className="font-semibold text-muted-foreground mb-1">Booking ID:</h3>
-               <p className="text-xs text-muted-foreground">{booking.bookingId}</p>
-             </div>
  
              <div className="border-t border-border pt-4">
                <div className="flex flex-wrap gap-2">

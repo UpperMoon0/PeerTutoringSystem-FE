@@ -1,7 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { BookingService } from '@/services/BookingService';
 import { ReviewService } from '@/services/ReviewService';
-import { SessionService } from '@/services/SessionService';
 import type { Booking, StudentBookingHistoryParams } from '@/types/booking.types';
 import type { Session } from '@/types/session.types';
 import { useAuth } from '@/contexts/AuthContext';
@@ -37,6 +36,7 @@ type BookingStatusFilter = 'All' | 'Pending' | 'Confirmed' | 'Cancelled' | 'Comp
 
 interface BookingWithSession extends Booking {
   session?: Session;
+  totalPrice?: number;
 }
 
 const StudentBookingHistoryPage: React.FC = () => {
@@ -99,26 +99,14 @@ const StudentBookingHistoryPage: React.FC = () => {
       if (response.success && response.data) {
         const fetchedBookings = response.data.bookings;
         
-        // Fetch session details for confirmed and completed bookings
-        const bookingsWithSessions: BookingWithSession[] = await Promise.all(
-          fetchedBookings.map(async (booking) => {
-            if (booking.status === 'Confirmed' || booking.status === 'Completed') {
-              try {
-                const sessionResponse = await SessionService.getSessionByBookingId(booking.bookingId);
-                if (sessionResponse.success && sessionResponse.data) {
-                  return {
-                    ...booking,
-                    session: sessionResponse.data
-                  };
-                }
-              } catch (sessionError) {
-                console.warn(`Failed to fetch session for booking ${booking.bookingId}:`, sessionError);
-              }
-            }
-            return booking;
-          })
-        );
+        const bookingsWithSessions: BookingWithSession[] = fetchedBookings.map(booking => ({
+          ...booking,
+          session: booking.session,
+          totalPrice: booking.totalPrice,
+        }));
         
+        console.log('Transformed bookings with sessions:', bookingsWithSessions);
+
         if (statusFilter === 'All') {
           const statusOrder: { [key: string]: number } = {
             'Pending': 1,
