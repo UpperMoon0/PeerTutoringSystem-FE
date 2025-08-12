@@ -1,7 +1,5 @@
 export interface PayOSCreatePaymentLinkRequest {
     bookingId: string;
-    cancelUrl: string;
-    returnUrl: string;
   }
   
   export interface PayOSCreatePaymentLinkResponse {
