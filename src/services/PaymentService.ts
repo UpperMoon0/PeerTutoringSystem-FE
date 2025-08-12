@@ -3,8 +3,6 @@ import type { ApiResult } from "@/types/api.types";
 import type {
   ProcessPaymentDto,
   ProcessPaymentResponse,
-  GenerateQrCodeDto,
-  GenerateQrCodeResponse,
   AdminFinanceDetails,
   TransactionHistory,
 } from '@/types/payment.types';
@@ -30,33 +28,6 @@ export const PaymentService = {
     } catch (error: unknown) {
       console.error('Error processing payment:', error);
       return { success: false, error: error instanceof Error ? error.message : "Failed to process payment." };
-    }
-  },
-
-  /**
-   * @deprecated Use createPaymentLink instead.
-   */
-  generateQrCode: async (data: GenerateQrCodeDto): Promise<ApiResult<GenerateQrCodeResponse>> => {
-    try {
-      const response = await AuthService.fetchWithAuth(`${API_BASE_URL}/payment/create-payment`, {
-        method: 'POST',
-        body: JSON.stringify(data),
-        headers: { 'Content-Type': 'application/json' },
-      });
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ error: 'Failed to parse error response.' }));
-        throw new Error(errorData.error || `Failed to generate QR code: ${response.statusText}`);
-      }
-      const responseData = await response.json();
-      // The backend response is not wrapped in a 'data' object, so we construct it to match the ApiResult type.
-      if (responseData.success) {
-        return { success: true, data: { qrCode: responseData.qrCode } };
-      } else {
-        return { success: false, error: responseData.message || 'Failed to generate QR code.' };
-      }
-    } catch (error: unknown) {
-      console.error('Error generating QR code:', error);
-      return { success: false, error: error instanceof Error ? error.message : 'Failed to generate QR code.' };
     }
   },
 
