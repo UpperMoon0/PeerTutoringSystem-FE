@@ -17,6 +17,7 @@ export interface Booking {
   tutorName?: string;
   basePrice?: number;
   serviceFee?: number;
+  totalPrice?: number;
   topic: string;
   description: string;
   skillId?: string;

@@ -1,10 +1,7 @@
 export interface PayOSCreatePaymentLinkRequest {
-    orderCode: number;
-    amount: number;
-    description: string;
+    bookingId: string;
     cancelUrl: string;
     returnUrl: string;
-    items?: { name: string; quantity: number; price: number }[];
   }
   
   export interface PayOSCreatePaymentLinkResponse {

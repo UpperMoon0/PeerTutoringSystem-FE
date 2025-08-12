@@ -40,6 +40,7 @@ const convertBookingFromBackend = (backendBooking: Record<string, unknown>): Boo
     skillId: backendBooking.skillId as string,
     student: backendBooking.student as undefined,
     tutor: backendBooking.tutor as undefined,
+    session: backendBooking.session as undefined,
   };
 };
 

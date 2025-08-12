@@ -18,7 +18,7 @@ import ChatPage from '../pages/ChatPage';
 import PaymentSuccessPage from '@/pages/PaymentSuccessPage';
 import CheckoutPage from '@/pages/CheckoutPage';
 import TutorFinancePage from '@/pages/tutor/TutorFinancePage';
-import TransactionHistoryPage from '@/pages/transaction-history';
+import TransactionHistoryPage from '@/pages/TransactionHistoryPage';
 
 const router = createBrowserRouter([
   {

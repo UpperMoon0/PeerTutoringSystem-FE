@@ -25,9 +25,7 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ booking }) => {
     setError(null);
     try {
       const result = await PaymentService.createPaymentLink({
-        orderCode: new Date().getTime(),
-        amount: totalPrice,
-        description: `Payment for booking ${booking.bookingId}`,
+        bookingId: booking.bookingId,
         cancelUrl: 'http://localhost:5173/payment/cancel',
         returnUrl: `http://localhost:5173/payment-success?bookingId=${booking.bookingId}`,
       });
