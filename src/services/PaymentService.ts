@@ -48,7 +48,7 @@ export const PaymentService = {
 
   createPaymentLink: async (data: PayOSCreatePaymentLinkRequest): Promise<ApiResult<PayOSCreatePaymentLinkResponse>> => {
     try {
-      const response = await AuthService.fetchWithAuth(`${API_BASE_URL}/payos/create-payment-link`, {
+      const response = await AuthService.fetchWithAuth(`${API_BASE_URL}/payment/create-payment-link`, {
         method: 'POST',
         body: JSON.stringify(data),
         headers: { 'Content-Type': 'application/json' },
