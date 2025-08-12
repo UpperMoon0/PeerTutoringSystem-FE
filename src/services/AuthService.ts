@@ -48,7 +48,6 @@ const loginWithGooglePopup = async (): Promise<ServiceResult<AuthResponse>> => {
       return { success: false, error: errorMessage };
     }
     
-    console.log('Backend Google login successful after popup:', responseData);
     return { success: true, data: responseData as AuthResponse };
   } catch (error) {
     console.error('Error processing Google login popup:', error);
@@ -207,7 +206,8 @@ async function fetchWithAuth(input: RequestInfo | URL, init?: RequestInit): Prom
           return originalFetch(2); // Indicate second attempt
         } else {
           // Refresh failed or no new token, return original 401 response
-          return response; 
+          // Refresh failed, throw an error to notify the caller
+          throw new Error('Session expired or token refresh failed.');
         }
       }
     }
@@ -332,6 +332,82 @@ const apiClientInstance = {
     }
     return { data: responseData, status: response.status, headers: response.headers };
   },
+
+  async delete(url: string, config?: { params?: any }) {
+    let fullUrl = `${API_BASE_URL}${url}`;
+    if (config?.params) {
+      const queryParams = new URLSearchParams(config.params).toString();
+      if (queryParams) {
+        fullUrl += `?${queryParams}`;
+      }
+    }
+    const response = await fetchWithAuth(fullUrl, { method: 'DELETE' });
+
+    const responseText = await response.text();
+    let responseData: any;
+    try {
+      responseData = responseText ? JSON.parse(responseText) : {};
+    } catch (e) {
+      responseData = responseText;
+    }
+
+    if (!response.ok) {
+      const error: any = new Error(
+        (typeof responseData === 'object' && responseData?.error) ||
+        (typeof responseData === 'object' && responseData?.message) ||
+        (typeof responseData === 'string' && responseData) ||
+        `Request failed with status ${response.status}`
+      );
+      error.response = {
+        data: responseData,
+        status: response.status,
+        headers: response.headers
+      };
+      console.error(`API Client DELETE Error ${response.status} for URL ${fullUrl}:`, responseData);
+      throw error;
+    }
+    return { data: responseData, status: response.status, headers: response.headers };
+  },
+
+  async patch(url: string, body?: any, config?: { params?: any }) {
+    let fullUrl = `${API_BASE_URL}${url}`;
+    if (config?.params) {
+      const queryParams = new URLSearchParams(config.params).toString();
+      if (queryParams) {
+        fullUrl += `?${queryParams}`;
+      }
+    }
+    const response = await fetchWithAuth(fullUrl, {
+      method: 'PATCH',
+      body: JSON.stringify(body),
+      headers: { 'Content-Type': 'application/json' },
+    });
+
+    const responseText = await response.text();
+    let responseData: any;
+    try {
+      responseData = responseText ? JSON.parse(responseText) : {};
+    } catch (e) {
+      responseData = responseText;
+    }
+
+    if (!response.ok) {
+      const error: any = new Error(
+        (typeof responseData === 'object' && responseData?.error) ||
+        (typeof responseData === 'object' && responseData?.message) ||
+        (typeof responseData === 'string' && responseData) ||
+        `Request failed with status ${response.status}`
+      );
+      error.response = {
+        data: responseData,
+        status: response.status,
+        headers: response.headers
+      };
+      console.error(`API Client PATCH Error ${response.status} for URL ${fullUrl}:`, responseData);
+      throw error;
+    }
+    return { data: responseData, status: response.status, headers: response.headers };
+  }
 };
 
 // Public API client for endpoints that don't require authentication
