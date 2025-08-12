@@ -343,7 +343,7 @@ const StudentBookingHistoryPage: React.FC = () => {
                     <TableHead className="text-muted-foreground">Date</TableHead>
                     <TableHead className="text-muted-foreground">Time</TableHead>
                     <TableHead className="text-muted-foreground">Status</TableHead>
-                    <TableHead className="text-muted-foreground">Price</TableHead>
+                    <TableHead className="text-muted-foreground">Total Price</TableHead>
                     <TableHead className="text-muted-foreground text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -424,9 +424,9 @@ const StudentBookingHistoryPage: React.FC = () => {
                           )}
                         </div>
                       </TableCell>
-                      <TableCell className="text-foreground">
+                      <TableCell className="text-foreground font-semibold">
                         <div className="flex items-center">
-                          {booking.basePrice ? `${booking.basePrice.toLocaleString()} VND` : '-'}
+                          {booking.totalPrice ? `${booking.totalPrice.toLocaleString()} VND` : 'N/A'}
                         </div>
                       </TableCell>
                       <TableCell className="text-right">
