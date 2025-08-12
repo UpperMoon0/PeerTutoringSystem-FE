@@ -102,7 +102,7 @@ const StudentBookingHistoryPage: React.FC = () => {
         const bookingsWithSessions: BookingWithSession[] = fetchedBookings.map(booking => ({
           ...booking,
           session: booking.session,
-          totalPrice: booking.totalPrice,
+          totalPrice: (booking.basePrice ?? 0) + (booking.serviceFee ?? 0),
         }));
         
         console.log('Transformed bookings with sessions:', bookingsWithSessions);
