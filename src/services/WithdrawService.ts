@@ -45,8 +45,29 @@ const cancelWithdrawRequest = async (id: string): Promise<ApiResult<WithdrawRequ
   }
 };
 
+const getMyWithdrawRequests = async (): Promise<ApiResult<WithdrawRequest[]>> => {
+  const url = `${API_BASE_URL}/payment/withdraw/my-requests`;
+  try {
+    const response = await AuthService.fetchWithAuth(url, {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' },
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      return { success: false, error: errorData.message || 'Failed to get withdraw requests' };
+    }
+
+    const data: WithdrawRequest[] = await response.json();
+    return { success: true, data: data };
+  } catch (error) {
+    return { success: false, error: error instanceof Error ? error.message : 'An unexpected error occurred' };
+  }
+};
+
 
 export const WithdrawService = {
   createWithdrawRequest,
   cancelWithdrawRequest,
+  getMyWithdrawRequests,
 };
