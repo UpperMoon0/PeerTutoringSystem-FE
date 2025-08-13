@@ -3,6 +3,7 @@ import { TutorAvailabilityService } from '@/services/TutorAvailabilityService';
 import type { TutorAvailability, CreateTutorAvailabilityDto } from '@/types/availability.types';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
+import { EditAvailabilityForm } from './EditAvailabilityForm';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -21,6 +22,7 @@ const ManageAvailabilitySection: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [validationErrors, setValidationErrors] = useState<z.ZodError<CreateAvailabilityFormValues> | null>(null);
+  const [editingAvailability, setEditingAvailability] = useState<TutorAvailability | null>(null);
 
   // Form state
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
@@ -130,11 +132,6 @@ const ManageAvailabilitySection: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-xl font-bold text-foreground mb-2">Manage Your Availability</h2>
-        <p className="text-muted-foreground">Set your available time slots for tutoring sessions.</p>
-      </div>
-
       <Card className="bg-card border-border">
         <CardHeader>
           <CardTitle className="text-foreground">Add New Availability</CardTitle>
@@ -267,18 +264,40 @@ const ManageAvailabilitySection: React.FC = () => {
           {!isLoading && availabilities.length > 0 && (
             <div className="space-y-3">
               {availabilities.map(avail => (
-                <div key={avail.availabilityId} className="p-4 bg-card-secondary border border-border rounded-lg">
-                  <p className="text-foreground"><strong>From:</strong> {new Date(avail.startTime).toLocaleString()}</p>
-                  <p className="text-foreground"><strong>To:</strong> {new Date(avail.endTime).toLocaleString()}</p>
-                  {avail.isRecurring && (
-                    <p className="text-muted-foreground">
-                      Recurs on {avail.recurringDay}
-                      {avail.recurrenceEndDate ? ` until ${new Date(avail.recurrenceEndDate).toLocaleDateString()}` : ' indefinitely'}
-                    </p>
+                <div key={avail.availabilityId}>
+                  {editingAvailability && editingAvailability.availabilityId === avail.availabilityId ? (
+                    <EditAvailabilityForm
+                      availability={editingAvailability}
+                      onClose={() => setEditingAvailability(null)}
+                      onSuccess={() => {
+                        setEditingAvailability(null);
+                        fetchAvailabilities();
+                      }}
+                    />
+                  ) : (
+                    <div className="p-4 bg-card-secondary border border-border rounded-lg">
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <p className="text-foreground"><strong>From:</strong> {new Date(avail.startTime).toLocaleString()}</p>
+                          <p className="text-foreground"><strong>To:</strong> {new Date(avail.endTime).toLocaleString()}</p>
+                          {avail.isRecurring && (
+                            <p className="text-muted-foreground">
+                              Recurs on {avail.recurringDay}
+                              {avail.recurrenceEndDate ? ` until ${new Date(avail.recurrenceEndDate).toLocaleDateString()}` : ' indefinitely'}
+                            </p>
+                          )}
+                          <p className={avail.isBooked ? 'text-destructive' : 'text-primary'}>
+                            {avail.isBooked ? 'Booked' : 'Available'}
+                          </p>
+                        </div>
+                        {!avail.isBooked && (
+                          <Button variant="outline" size="sm" onClick={() => setEditingAvailability(avail)}>
+                            Edit
+                          </Button>
+                        )}
+                      </div>
+                    </div>
                   )}
-                  <p className={avail.isBooked ? 'text-destructive' : 'text-primary'}>
-                    {avail.isBooked ? 'Booked' : 'Available'}
-                  </p>
                 </div>
               ))}
             </div>

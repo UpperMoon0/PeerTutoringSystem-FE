@@ -19,17 +19,9 @@ export interface GenerateQrCodeResponse {
 }
 
 export interface AdminFinanceDetails {
-  totalRevenue: number;
-  averageTransactionValue: number;
-  totalTransactions: number;
-  monthlyRevenue: { month: string; revenue: number }[];
-  recentTransactions: {
-    transactionId: string;
-    transactionDate: string;
-    amount: number;
-    status: string;
-    bookingId: string;
-  }[];
+  totalPayments: number;
+  totalIncome: number;
+  totalProfit: number;
 }
 export interface TransactionHistory {
   transactionId: string;

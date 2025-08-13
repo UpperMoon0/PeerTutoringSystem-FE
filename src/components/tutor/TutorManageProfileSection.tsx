@@ -8,6 +8,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import type { TutorProfileDto, CreateTutorProfileDto, UpdateTutorProfileDto } from '@/types/TutorProfile';
 import { TutorProfileService } from '@/services/TutorProfileService';
 import { UserSkillService } from '@/services/UserSkillService';
+import { generateBrightColor } from '@/lib/utils';
 import {
   Briefcase,
   Edit,
@@ -131,15 +132,6 @@ const TutorManageProfileSection: React.FC<ProfileSectionProps> = ({ onBioStatusC
     <div className="space-y-6">
       <Card className="bg-card border-border">
         <CardHeader className="flex flex-row items-center justify-between">
-          <div>
-            <CardTitle className="text-foreground flex items-center">
-              <Briefcase className="w-5 h-5 mr-2 text-primary" />
-              Your Tutor Profile
-            </CardTitle>
-            <CardDescription className="text-muted-foreground">
-              {isEditingProfile ? "Update your details below." : "View and manage your public tutor information."}
-            </CardDescription>
-          </div>
           <div className="flex items-center space-x-2">
             {!isEditingProfile && (currentUser?.role === 'Student') && tutorDisplayProfile && (
               <Button
@@ -149,11 +141,6 @@ const TutorManageProfileSection: React.FC<ProfileSectionProps> = ({ onBioStatusC
                 className="bg-primary/90 hover:bg-primary text-primary-foreground"
               >
                 <MessageCircle className="w-4 h-4 mr-2" /> Chat
-              </Button>
-            )}
-            {!isEditingProfile && tutorDisplayProfile && (
-              <Button onClick={handleEditProfile} variant="outline" size="sm" className="bg-muted border-border hover:bg-muted text-foreground">
-                <Edit className="w-4 h-4 mr-2" /> Edit Profile
               </Button>
             )}
           </div>
@@ -188,17 +175,31 @@ const TutorManageProfileSection: React.FC<ProfileSectionProps> = ({ onBioStatusC
                 <CardContent>
                   {tutorDisplayProfile.skills && tutorDisplayProfile.skills.length > 0 ? (
                     <div className="flex flex-wrap gap-2">
-                      {tutorDisplayProfile.skills.map(userSkill => (
-                        <div key={userSkill.userSkillID} className="bg-muted text-muted-foreground px-3 py-1 rounded-full text-sm">
-                          {userSkill.skill.skillName}
-                        </div>
-                      ))}
+                      {tutorDisplayProfile.skills.map(userSkill => {
+                        const skillColor = generateBrightColor(userSkill.skill.skillName);
+                        return (
+                          <div
+                            key={userSkill.userSkillID}
+                            className="text-white px-3 py-1 rounded-full text-sm"
+                            style={{ backgroundColor: skillColor }}
+                          >
+                            {userSkill.skill.skillName}
+                          </div>
+                        );
+                      })}
                     </div>
                   ) : (
                     <p className="text-muted-foreground">You have not added any skills yet.</p>
                   )}
                 </CardContent>
               </Card>
+              {!isEditingProfile && tutorDisplayProfile && (
+                <div className="mt-6 flex justify-end">
+                  <Button onClick={handleEditProfile} className="bg-primary hover:bg-primary/90 text-primary-foreground">
+                    <Edit className="w-4 h-4 mr-2" /> Edit Profile
+                  </Button>
+                </div>
+              )}
             </>
           ) : (
             // Not loading, not editing, and no profile data

@@ -14,13 +14,12 @@ import { BookingDetailModal } from '@/components/booking/BookingDetailModal';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { CalendarIcon, MessageCircle } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
-import { cn, generateGradient, getInitials } from '@/lib/utils';
+import { cn, generateBrightColor, generateGradient, getInitials } from '@/lib/utils';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
@@ -466,9 +465,18 @@ const TutorDetailPage: React.FC = () => {
           <h3 className="text-xl font-semibold text-foreground pt-3 border-t border-border">Skills</h3>
           {skills.length > 0 ? (
             <div className="flex flex-wrap gap-2">
-              {skills.map(skill => (
-                <Badge key={skill.skillID} variant="secondary" className="bg-secondary text-primary hover:bg-accent text-sm px-3 py-1">{skill.skillName}</Badge>
-              ))}
+              {skills.map(skill => {
+                const skillColor = generateBrightColor(skill.skillName);
+                return (
+                  <div
+                    key={skill.skillID}
+                    className="text-white px-3 py-1 rounded-full text-sm"
+                    style={{ backgroundColor: skillColor }}
+                  >
+                    {skill.skillName}
+                  </div>
+                );
+              })}
             </div>
           ) : (
             <p className="text-muted-foreground">No skills listed for this tutor.</p>

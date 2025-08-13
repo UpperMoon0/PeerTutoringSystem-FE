@@ -97,7 +97,7 @@ const TutorFinancePage = () => {
 
   return (
     <div className="container mx-auto p-4">
-      <h1 className="text-3xl font-bold mb-6">Financial Overview</h1>
+      <h1 className="text-3xl font-bold mb-6">Overview</h1>
 
       <div className="grid gap-4 md:grid-cols-3 mb-8">
         <Card>
