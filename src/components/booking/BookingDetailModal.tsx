@@ -20,7 +20,7 @@ interface BookingDetailModalProps {
   onClose: () => void;
   onBookingCancelled: () => void;
   userRole?: 'student' | 'tutor' | 'admin';
-  onUpdateStatus?: (booking: Booking) => void;
+  onUpdateStatus?: (status: string) => void;
 }
 
 export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
@@ -76,7 +76,7 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
           status: 'Confirmed' as Booking['status']
         };
         setCurrentBooking(updatedBooking);
-        onUpdateStatus?.(updatedBooking);
+        onUpdateStatus?.('Confirmed');
         setIsCreatingSession(false);
         onClose(); // Close the modal on success
       } else {
@@ -96,30 +96,23 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
   const handleUpdateSession = async (sessionData: UpdateSessionDto) => {
     if (!currentBooking) return;
     setIsSubmittingSessionUpdate(true);
-    try {
-      const result = await SessionService.updateSession(sessionData.sessionId, sessionData);
-
-      if (result.success && result.data) {
-        toast.success('Session updated successfully');
-        const updatedBooking = {
-          ...currentBooking,
-          session: result.data
-        };
-        setCurrentBooking(updatedBooking);
-        onUpdateStatus?.(updatedBooking);
-        setIsEditingSession(false);
-      } else {
-        const errorMessage = typeof result.error === 'string'
-          ? result.error
-          : result.error?.message || 'Failed to update session';
-        toast.error(errorMessage);
-      }
-    } catch (error) {
-      console.error('Error updating session:', error);
-      toast.error('Failed to update session');
-    } finally {
-      setIsSubmittingSessionUpdate(false);
+    const result = await SessionService.updateSession(sessionData.sessionId, sessionData);
+    if (result.success && result.data) {
+      toast.success('Session updated successfully');
+      const updatedBooking = {
+        ...currentBooking,
+        session: result.data
+      };
+      setCurrentBooking(updatedBooking);
+      // onUpdateStatus is not needed here
+      setIsEditingSession(false);
+    } else {
+      const errorMessage = typeof result.error === 'string'
+        ? result.error
+        : result.error?.message || 'Failed to update session';
+      toast.error(errorMessage);
     }
+    setIsSubmittingSessionUpdate(false);
   };
 
 
@@ -200,7 +193,7 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
       if (result.success) {
         const updatedBooking = { ...currentBooking, status: status as Booking['status'] };
         setCurrentBooking(updatedBooking);
-        onUpdateStatus?.(updatedBooking);
+        onUpdateStatus?.(status);
 
         if (status === 'Cancelled') {
           onBookingCancelled(); // This will close modal & refresh list via parent
@@ -394,7 +387,17 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
                       <div>
                         <h4 className="text-sm font-medium text-muted-foreground mb-1">Duration</h4>
                         <p className="text-foreground">
-                          {Math.round((new Date(currentBooking.endTime).getTime() - new Date(currentBooking.startTime).getTime()) / (1000 * 60))} minutes
+                          {currentBooking.session
+                            ? `${Math.round(
+                                (new Date(currentBooking.session.endTime).getTime() -
+                                  new Date(currentBooking.session.startTime).getTime()) /
+                                  (1000 * 60)
+                              )} minutes`
+                            : `${Math.round(
+                                (new Date(currentBooking.endTime).getTime() -
+                                  new Date(currentBooking.startTime).getTime()) /
+                                  (1000 * 60)
+                              )} minutes`}
                         </p>
                       </div>
                       <div>

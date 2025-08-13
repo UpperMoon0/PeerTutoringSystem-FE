@@ -537,7 +537,6 @@ const ManageBookingsSection: React.FC = () => {
           }}
           onUpdateStatus={(status) => {
             handleUpdateStatus(selectedBooking.bookingId, status as Booking['status']);
-            setIsDetailModalOpen(false);
           }}
           userRole="tutor"
         />
