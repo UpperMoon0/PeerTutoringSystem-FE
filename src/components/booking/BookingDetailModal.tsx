@@ -30,6 +30,7 @@ import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import SessionForm from '@/components/session/SessionForm';
+import { getStatusBadgeVariant, getStatusString } from '@/lib/utils';
 
 interface BookingDetailModalProps {
   booking: Booking | null;
@@ -60,14 +61,6 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
 
   // Update internal state when the `booking` prop changes
   React.useEffect(() => {
-    if (booking) {
-      console.log('BookingDetailModal: Received booking update', {
-        bookingId: booking.bookingId,
-        status: booking.status,
-        paymentStatus: booking.paymentStatus,
-        session: booking.session ? `Session ID: ${booking.session.sessionId}` : 'No session'
-      });
-    }
     setCurrentBooking(booking);
   }, [booking]);
 
@@ -133,29 +126,6 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
     setIsSubmittingSessionUpdate(false);
   };
 
-
-  const getStatusBadgeVariant = (status: Booking['status']) => {
-    const statusString = getStatusString(status);
-    switch (statusString) {
-      case 'Pending': return 'secondary';
-      case 'Confirmed': return 'default';
-      case 'Cancelled':
-      case 'Rejected': return 'destructive';
-      case 'Completed': return 'outline';
-      default: return 'secondary';
-    }
-  };
-
-  const getStatusString = (status: Booking['status']): Booking['status'] => {
-    const statusMap: { [key: number]: Booking['status'] } = {
-      0: 'Pending',
-      1: 'Confirmed',
-      2: 'Cancelled',
-      3: 'Completed',
-      4: 'Rejected'
-    };
-    return typeof status === 'number' ? statusMap[status] : status;
-  };
 
   const getPaymentStatusString = (status: Booking['paymentStatus']): 'Paid' | 'Unpaid' => {
     const statusMap: { [key: number]: 'Paid' | 'Unpaid' } = {

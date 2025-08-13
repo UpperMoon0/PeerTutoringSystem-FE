@@ -1,11 +1,11 @@
-import { clsx, type ClassValue } from "clsx"
+import { type ClassValue, clsx } from "clsx"
 import { twMerge } from "tailwind-merge"
+import type { Booking } from '@/types/booking.types';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
-// Generate a consistent gradient color based on the tutor's name
 export const generateGradient = (name: string) => {
   if (!name) {
     return 'from-gray-400 to-gray-500';
@@ -60,4 +60,27 @@ export const generateBrightColor = (text: string): string => {
   const lightness = 60;  // A lightness that avoids being too dark or too washed out
 
   return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+};
+
+export const getStatusString = (status: Booking['status']): Booking['status'] => {
+  const statusMap: { [key: number]: Booking['status'] } = {
+    0: 'Pending',
+    1: 'Confirmed',
+    2: 'Cancelled',
+    3: 'Completed',
+    4: 'Rejected'
+  };
+  return typeof status === 'number' ? statusMap[status] : status;
+};
+
+export const getStatusBadgeVariant = (status: Booking['status']) => {
+  const statusString = getStatusString(status);
+  switch (statusString) {
+    case 'Pending': return 'pending';
+    case 'Confirmed': return 'confirmed';
+    case 'Cancelled':
+    case 'Rejected': return 'destructive';
+    case 'Completed': return 'completed';
+    default: return 'secondary';
+  }
 };
