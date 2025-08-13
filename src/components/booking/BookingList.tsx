@@ -34,6 +34,7 @@ interface BookingListProps {
   subtitle?: string;
   additionalActions?: (booking: Booking) => React.ReactNode;
   onBookingUpdate: () => void;
+  showStats?: boolean;
 }
 
 export const BookingList: React.FC<BookingListProps> = ({
@@ -43,6 +44,7 @@ export const BookingList: React.FC<BookingListProps> = ({
   subtitle,
   additionalActions,
   onBookingUpdate,
+  showStats = true,
 }) => {
   useAuth();
   const [bookings, setBookings] = useState<Booking[]>([]);
@@ -125,94 +127,95 @@ export const BookingList: React.FC<BookingListProps> = ({
         </div>
       )}
 
-      {/* Booking Stats */}
-      <div className="space-y-4">
-        <div className="grid grid-cols-1">
-            <Card className="bg-card border-border">
-                <CardContent className="p-4">
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <p className="text-muted-foreground text-sm font-medium">Total Bookings</p>
-                            <p className="text-2xl font-bold text-foreground mt-1">{stats.total}</p>
-                        </div>
-                        <div className="p-2 bg-primary/10 rounded-lg">
-                            <BookOpen className="w-5 h-5 text-primary" />
-                        </div>
-                    </div>
-                </CardContent>
-            </Card>
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-            <Card className="bg-card border-border">
-                <CardContent className="p-4">
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <p className="text-muted-foreground text-sm font-medium">Pending</p>
-                            <p className="text-2xl font-bold text-foreground mt-1">{stats.pending}</p>
-                        </div>
-                        <div className="p-2 bg-yellow-400/10 rounded-lg">
-                            <Clock className="w-5 h-5 text-yellow-400" />
-                        </div>
-                    </div>
-                </CardContent>
-            </Card>
+      {showStats && (
+        <div className="space-y-4">
+          <div className="grid grid-cols-1">
+              <Card className="bg-card border-border">
+                  <CardContent className="p-4">
+                      <div className="flex items-center justify-between">
+                          <div>
+                              <p className="text-muted-foreground text-sm font-medium">Total Bookings</p>
+                              <p className="text-2xl font-bold text-foreground mt-1">{stats.total}</p>
+                          </div>
+                          <div className="p-2 bg-primary/10 rounded-lg">
+                              <BookOpen className="w-5 h-5 text-primary" />
+                          </div>
+                      </div>
+                  </CardContent>
+              </Card>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+              <Card className="bg-card border-border">
+                  <CardContent className="p-4">
+                      <div className="flex items-center justify-between">
+                          <div>
+                              <p className="text-muted-foreground text-sm font-medium">Pending</p>
+                              <p className="text-2xl font-bold text-foreground mt-1">{stats.pending}</p>
+                          </div>
+                          <div className="p-2 bg-yellow-400/10 rounded-lg">
+                              <Clock className="w-5 h-5 text-yellow-400" />
+                          </div>
+                      </div>
+                  </CardContent>
+              </Card>
 
-            <Card className="bg-card border-border">
-                <CardContent className="p-4">
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <p className="text-muted-foreground text-sm font-medium">Confirmed</p>
-                            <p className="text-2xl font-bold text-foreground mt-1">{stats.confirmed}</p>
-                        </div>
-                        <div className="p-2 bg-primary/10 rounded-lg">
-                            <CheckCircle className="w-5 h-5 text-primary" />
-                        </div>
-                    </div>
-                </CardContent>
-            </Card>
+              <Card className="bg-card border-border">
+                  <CardContent className="p-4">
+                      <div className="flex items-center justify-between">
+                          <div>
+                              <p className="text-muted-foreground text-sm font-medium">Confirmed</p>
+                              <p className="text-2xl font-bold text-foreground mt-1">{stats.confirmed}</p>
+                          </div>
+                          <div className="p-2 bg-primary/10 rounded-lg">
+                              <CheckCircle className="w-5 h-5 text-primary" />
+                          </div>
+                      </div>
+                  </CardContent>
+              </Card>
 
-            <Card className="bg-card border-border">
-                <CardContent className="p-4">
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <p className="text-muted-foreground text-sm font-medium">Completed</p>
-                            <p className="text-2xl font-bold text-foreground mt-1">{stats.completed}</p>
-                        </div>
-                        <div className="p-2 bg-muted/10 rounded-lg">
-                            <TrendingUp className="w-5 h-5 text-muted-foreground" />
-                        </div>
-                    </div>
-                </CardContent>
-            </Card>
+              <Card className="bg-card border-border">
+                  <CardContent className="p-4">
+                      <div className="flex items-center justify-between">
+                          <div>
+                              <p className="text-muted-foreground text-sm font-medium">Completed</p>
+                              <p className="text-2xl font-bold text-foreground mt-1">{stats.completed}</p>
+                          </div>
+                          <div className="p-2 bg-muted/10 rounded-lg">
+                              <TrendingUp className="w-5 h-5 text-muted-foreground" />
+                          </div>
+                      </div>
+                  </CardContent>
+              </Card>
 
-            <Card className="bg-card border-border">
-                <CardContent className="p-4">
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <p className="text-muted-foreground text-sm font-medium">Rejected</p>
-                            <p className="text-2xl font-bold text-foreground mt-1">{stats.rejected}</p>
-                        </div>
-                        <div className="p-2 bg-destructive/10 rounded-lg">
-                            <AlertCircle className="w-5 h-5 text-destructive" />
-                        </div>
-                    </div>
-                </CardContent>
-            </Card>
-            <Card className="bg-card border-border">
-                <CardContent className="p-4">
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <p className="text-muted-foreground text-sm font-medium">Cancelled</p>
-                            <p className="text-2xl font-bold text-foreground mt-1">{stats.cancelled}</p>
-                        </div>
-                        <div className="p-2 bg-destructive/10 rounded-lg">
-                            <XCircle className="w-5 h-5 text-destructive" />
-                        </div>
-                    </div>
-                </CardContent>
-            </Card>
-        </div>
-    </div>
+              <Card className="bg-card border-border">
+                  <CardContent className="p-4">
+                      <div className="flex items-center justify-between">
+                          <div>
+                              <p className="text-muted-foreground text-sm font-medium">Rejected</p>
+                              <p className="text-2xl font-bold text-foreground mt-1">{stats.rejected}</p>
+                          </div>
+                          <div className="p-2 bg-destructive/10 rounded-lg">
+                              <AlertCircle className="w-5 h-5 text-destructive" />
+                          </div>
+                      </div>
+                  </CardContent>
+              </Card>
+              <Card className="bg-card border-border">
+                  <CardContent className="p-4">
+                      <div className="flex items-center justify-between">
+                          <div>
+                              <p className="text-muted-foreground text-sm font-medium">Cancelled</p>
+                              <p className="text-2xl font-bold text-foreground mt-1">{stats.cancelled}</p>
+                          </div>
+                          <div className="p-2 bg-destructive/10 rounded-lg">
+                              <XCircle className="w-5 h-5 text-destructive" />
+                          </div>
+                      </div>
+                  </CardContent>
+              </Card>
+          </div>
+      </div>
+      )}
 
       {/* Bookings Table */}
       <Card className="bg-card border-border">
