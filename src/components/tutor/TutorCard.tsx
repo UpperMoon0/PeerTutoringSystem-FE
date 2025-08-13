@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import type { EnrichedTutor } from '@/types/enrichedTutor.types';
 import StarRating from '@/components/ui/StarRating';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { generateGradient, getInitials } from '@/lib/utils';
+import { generateBrightColor, generateGradient, getInitials } from '@/lib/utils';
 
 interface TutorCardProps {
   tutor: EnrichedTutor;
@@ -60,11 +60,18 @@ const TutorCard: React.FC<TutorCardProps> = ({ tutor }) => {
             <p className="text-xs text-muted-foreground">No skills listed.</p>
           ) : (
             <div className="flex flex-wrap gap-1">
-              {tutor.skills.map((userSkill) => (
-                <span key={userSkill.userSkillID} className="bg-primary text-primary-foreground px-2 py-0.5 rounded-full text-xs">
-                  {userSkill.skill.skillName}
-                </span>
-              ))}
+              {tutor.skills.map((userSkill) => {
+                const skillColor = generateBrightColor(userSkill.skill.skillName);
+                return (
+                  <div
+                    key={userSkill.userSkillID}
+                    className="text-white px-2 py-0.5 rounded-full text-xs"
+                    style={{ backgroundColor: skillColor }}
+                  >
+                    {userSkill.skill.skillName}
+                  </div>
+                );
+              })}
             </div>
           )}
         </div>

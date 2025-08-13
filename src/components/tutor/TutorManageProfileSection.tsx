@@ -8,6 +8,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import type { TutorProfileDto, CreateTutorProfileDto, UpdateTutorProfileDto } from '@/types/TutorProfile';
 import { TutorProfileService } from '@/services/TutorProfileService';
 import { UserSkillService } from '@/services/UserSkillService';
+import { generateBrightColor } from '@/lib/utils';
 import {
   Briefcase,
   Edit,
@@ -174,11 +175,18 @@ const TutorManageProfileSection: React.FC<ProfileSectionProps> = ({ onBioStatusC
                 <CardContent>
                   {tutorDisplayProfile.skills && tutorDisplayProfile.skills.length > 0 ? (
                     <div className="flex flex-wrap gap-2">
-                      {tutorDisplayProfile.skills.map(userSkill => (
-                        <div key={userSkill.userSkillID} className="bg-muted text-muted-foreground px-3 py-1 rounded-full text-sm">
-                          {userSkill.skill.skillName}
-                        </div>
-                      ))}
+                      {tutorDisplayProfile.skills.map(userSkill => {
+                        const skillColor = generateBrightColor(userSkill.skill.skillName);
+                        return (
+                          <div
+                            key={userSkill.userSkillID}
+                            className="text-white px-3 py-1 rounded-full text-sm"
+                            style={{ backgroundColor: skillColor }}
+                          >
+                            {userSkill.skill.skillName}
+                          </div>
+                        );
+                      })}
                     </div>
                   ) : (
                     <p className="text-muted-foreground">You have not added any skills yet.</p>

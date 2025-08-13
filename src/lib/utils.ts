@@ -41,3 +41,23 @@ export const getInitials = (name: string) => {
   }
   return name.charAt(0).toUpperCase();
 };
+
+
+export const generateBrightColor = (text: string): string => {
+  if (!text) {
+    return '#CCCCCC'; // Default gray color
+  }
+
+  let hash = 0;
+  for (let i = 0; i < text.length; i++) {
+    hash = text.charCodeAt(i) + ((hash << 5) - hash);
+    hash = hash & hash; // Convert to 32bit integer
+  }
+
+  // Generate a color with high saturation and brightness
+  const hue = Math.abs(hash) % 360;
+  const saturation = 75; // High saturation for a bright color
+  const lightness = 60;  // A lightness that avoids being too dark or too washed out
+
+  return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+};

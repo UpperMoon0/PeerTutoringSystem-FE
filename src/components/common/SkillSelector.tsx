@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import type { Skill } from '../../types/skill.types';
+import { generateBrightColor } from '@/lib/utils';
 import { Input } from '../ui/input';
-import SkillCard from './SkillCard';
 
 interface SkillSelectorProps {
   allSkills: Skill[];
@@ -71,17 +71,30 @@ const SkillSelector: React.FC<SkillSelectorProps> = ({
           )}
         </div>
         
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 max-h-[400px] overflow-y-auto">
+        <div className="flex flex-wrap gap-2 max-h-[400px] overflow-y-auto">
           {filteredSkills.length > 0 ? (
-            filteredSkills.map(skill => (
-              <SkillCard
-                key={skill.skillID}
-                skill={skill}
-                isSelected={selectedSkillIds.includes(skill.skillID)}
-                onSelect={onSkillChange}
-                disabled={isLoading}
-              />
-            ))
+            filteredSkills.map(skill => {
+              const isSelected = selectedSkillIds.includes(skill.skillID);
+              const bgColor = generateBrightColor(skill.skillName);
+              return (
+                <div
+                  key={skill.skillID}
+                  onClick={() => !isLoading && onSkillChange(skill.skillID)}
+                  className={`
+                    px-3 py-1 rounded-full text-sm font-medium cursor-pointer transition-all duration-200
+                    ${isLoading ? 'cursor-not-allowed opacity-60' : 'hover:opacity-80'}
+                    ${isSelected ? 'ring-2 ring-offset-2 ring-offset-background' : ''}
+                  `}
+                  style={{
+                    backgroundColor: bgColor,
+                    color: 'white',
+                    ringColor: bgColor
+                  }}
+                >
+                  {skill.skillName}
+                </div>
+              );
+            })
           ) : (
             <div className="col-span-full flex flex-col items-center justify-center py-8 text-center">
               <div className="w-12 h-12 bg-secondary rounded-full flex items-center justify-center mb-3">
@@ -108,34 +121,6 @@ const SkillSelector: React.FC<SkillSelectorProps> = ({
         </div>
       </div>
 
-      {selectedSkillIds.length > 0 && (
-        <div className="bg-primary/20 border border-primary/30 rounded-lg p-3">
-          <p className="text-sm font-medium text-foreground mb-2">Selected Skills:</p>
-          <div className="flex flex-wrap gap-2">
-            {selectedSkillIds.map(skillId => {
-              const skill = allSkills.find(s => s.skillID === skillId);
-              return skill ? (
-                <span
-                  key={skillId}
-                  className="inline-flex items-center gap-1 px-2 py-1 bg-primary/20 text-primary border border-primary/30 rounded-md text-xs font-medium"
-                >
-                  {skill.skillName}
-                  <button
-                    type="button"
-                    onClick={() => onSkillChange(skillId)}
-                    className="hover:bg-primary/30 rounded-full p-0.5 transition-colors"
-                    disabled={isLoading}
-                  >
-                    <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                  </button>
-                </span>
-              ) : null;
-            })}
-          </div>
-        </div>
-      )}
     </div>
   );
 };
