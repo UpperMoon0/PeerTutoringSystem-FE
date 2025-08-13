@@ -130,11 +130,6 @@ const ManageAvailabilitySection: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-xl font-bold text-foreground mb-2">Manage Your Availability</h2>
-        <p className="text-muted-foreground">Set your available time slots for tutoring sessions.</p>
-      </div>
-
       <Card className="bg-card border-border">
         <CardHeader>
           <CardTitle className="text-foreground">Add New Availability</CardTitle>

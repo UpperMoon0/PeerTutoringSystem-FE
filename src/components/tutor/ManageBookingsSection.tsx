@@ -294,11 +294,6 @@ const ManageBookingsSection: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-xl font-bold text-foreground mb-2">Manage Your Bookings</h2>
-        <p className="text-muted-foreground">Review and manage your tutoring sessions.</p>
-      </div>
-
       {/* Booking Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
         <Card className="bg-card border-border">

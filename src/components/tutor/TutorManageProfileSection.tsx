@@ -131,15 +131,6 @@ const TutorManageProfileSection: React.FC<ProfileSectionProps> = ({ onBioStatusC
     <div className="space-y-6">
       <Card className="bg-card border-border">
         <CardHeader className="flex flex-row items-center justify-between">
-          <div>
-            <CardTitle className="text-foreground flex items-center">
-              <Briefcase className="w-5 h-5 mr-2 text-primary" />
-              Your Tutor Profile
-            </CardTitle>
-            <CardDescription className="text-muted-foreground">
-              {isEditingProfile ? "Update your details below." : "View and manage your public tutor information."}
-            </CardDescription>
-          </div>
           <div className="flex items-center space-x-2">
             {!isEditingProfile && (currentUser?.role === 'Student') && tutorDisplayProfile && (
               <Button
@@ -149,11 +140,6 @@ const TutorManageProfileSection: React.FC<ProfileSectionProps> = ({ onBioStatusC
                 className="bg-primary/90 hover:bg-primary text-primary-foreground"
               >
                 <MessageCircle className="w-4 h-4 mr-2" /> Chat
-              </Button>
-            )}
-            {!isEditingProfile && tutorDisplayProfile && (
-              <Button onClick={handleEditProfile} variant="outline" size="sm" className="bg-muted border-border hover:bg-muted text-foreground">
-                <Edit className="w-4 h-4 mr-2" /> Edit Profile
               </Button>
             )}
           </div>
@@ -199,6 +185,13 @@ const TutorManageProfileSection: React.FC<ProfileSectionProps> = ({ onBioStatusC
                   )}
                 </CardContent>
               </Card>
+              {!isEditingProfile && tutorDisplayProfile && (
+                <div className="mt-6 flex justify-end">
+                  <Button onClick={handleEditProfile} className="bg-primary hover:bg-primary/90 text-primary-foreground">
+                    <Edit className="w-4 h-4 mr-2" /> Edit Profile
+                  </Button>
+                </div>
+              )}
             </>
           ) : (
             // Not loading, not editing, and no profile data
