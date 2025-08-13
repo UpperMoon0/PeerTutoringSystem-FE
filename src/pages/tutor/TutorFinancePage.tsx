@@ -87,7 +87,8 @@ const TutorFinancePage = () => {
   }
 
   const {
-    totalEarnings = 0,
+    totalProfit = 0,
+    bookings = [],
     monthlyEarnings = [],
     recentTransactions = [],
   } = financeDetails;
@@ -121,10 +122,10 @@ const TutorFinancePage = () => {
             </Card>
             <Card>
               <CardHeader>
-                <CardTitle>Current Balance</CardTitle>
+                <CardTitle>Total Profit</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-2xl font-bold">{formatCurrency(totalEarnings)}</p>
+                <p className="text-2xl font-bold">{formatCurrency(totalProfit)}</p>
               </CardContent>
             </Card>
           </div>
@@ -149,23 +150,25 @@ const TutorFinancePage = () => {
 
           <Card>
             <CardHeader>
-              <CardTitle>Recent Transactions</CardTitle>
+              <CardTitle>Bookings</CardTitle>
             </CardHeader>
             <CardContent>
               <Table>
                 <TableHeader>
                   <TableRow>
                     <TableHead>Date</TableHead>
-                    <TableHead>Description</TableHead>
-                    <TableHead className="text-right">Amount</TableHead>
+                    <TableHead>Student</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead className="text-right">Price</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {recentTransactions.map((transaction: Transaction) => (
-                    <TableRow key={transaction.id}>
-                      <TableCell>{new Date(transaction.date).toLocaleDateString()}</TableCell>
-                      <TableCell>{transaction.description}</TableCell>
-                      <TableCell className="text-right">{formatCurrency(transaction.amount)}</TableCell>
+                  {bookings.map((booking) => (
+                    <TableRow key={booking.bookingId}>
+                      <TableCell>{new Date(booking.sessionDate).toLocaleDateString()}</TableCell>
+                      <TableCell>{booking.student?.fullName}</TableCell>
+                      <TableCell>{booking.status}</TableCell>
+                      <TableCell className="text-right">{formatCurrency(booking.basePrice ?? 0)}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
