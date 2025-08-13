@@ -3,7 +3,24 @@ import type { Booking } from '@/types/booking.types';
 import type { CreateSessionDto, UpdateSessionDto } from '@/types/session.types';
 import { BookingService } from '@/services/BookingService';
 import { SessionService } from '@/services/SessionService';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from '@/components/ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -39,6 +56,7 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
   const [isCreatingSession, setIsCreatingSession] = useState(false);
   const [currentBooking, setCurrentBooking] = useState<Booking | null>(booking);
   const [isSubmittingSessionUpdate, setIsSubmittingSessionUpdate] = useState(false);
+  const [isCompleteConfirmationVisible, setIsCompleteConfirmationVisible] = useState(false);
 
   // Update internal state when the `booking` prop changes
   React.useEffect(() => {
@@ -132,8 +150,8 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
     const statusMap: { [key: number]: Booking['status'] } = {
       0: 'Pending',
       1: 'Confirmed',
-      2: 'Completed',
-      3: 'Cancelled',
+      2: 'Cancelled',
+      3: 'Completed',
       4: 'Rejected'
     };
     return typeof status === 'number' ? statusMap[status] : status;
@@ -183,8 +201,13 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
     toast.info(`Contact feature for ${contactName} would open here.`);
   };
 
-  const handleUpdateStatus = async (status: string) => {
+  const handleUpdateStatus = async (status: string, force = false) => {
     if (!currentBooking) return;
+
+    if (status === 'Completed' && new Date(currentBooking.endTime) > new Date() && !force) {
+      setIsCompleteConfirmationVisible(true);
+      return;
+    }
 
     setIsCancelling(true);
     setError(null);
@@ -196,7 +219,7 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
         onUpdateStatus?.(updatedBooking);
 
         if (status === 'Cancelled') {
-          onBookingCancelled(); // This will close modal & refresh list via parent
+          onBookingCancelled();
         } else if (status === 'Confirmed') {
           setIsCreatingSession(true);
         } else {
@@ -213,6 +236,7 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
       toast.error(`Update error: ${errorMessage}`);
     } finally {
       setIsCancelling(false);
+      setIsCompleteConfirmationVisible(false);
     }
   };
 
@@ -231,7 +255,7 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
   const canAcceptReject = isCurrentUserTutor && bookingStatus === 'Pending';
   const showCreateSessionForm = isCurrentUserTutor && bookingStatus === 'Confirmed' && !currentBooking.session;
   const canCancel = isCurrentUserStudent && (bookingStatus === 'Pending' || bookingStatus === 'Confirmed');
-  const canComplete = isCurrentUserTutor && bookingStatus === 'Confirmed' && new Date(currentBooking.endTime) < new Date();
+  const canComplete = isCurrentUserTutor && bookingStatus === 'Confirmed';
   const showCompleteButton = isCurrentUserTutor && bookingStatus === 'Confirmed';
   const paymentStatus = getPaymentStatusString(currentBooking.paymentStatus);
   const showPaymentButton = isCurrentUserStudent && bookingStatus === 'Confirmed' && !!currentBooking.session && paymentStatus === 'Unpaid';
@@ -519,14 +543,12 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
 
                  {showCompleteButton && (
                    <Button
-                     onClick={() => handleUpdateStatus('Completed')}
-                     disabled={isCancelling || !canComplete}
-                     className={`${canComplete
-                       ? 'bg-primary text-primary-foreground hover:bg-primary/90'
-                       : 'bg-gray-600 text-white cursor-not-allowed'} `}
+                       onClick={() => handleUpdateStatus('Completed')}
+                       disabled={isCancelling || !canComplete}
+                       className="bg-primary text-primary-foreground hover:bg-primary/90"
                    >
-                     <CheckCircle2 className="w-4 h-4 mr-2" />
-                     {isCancelling ? 'Completing...' : canComplete ? 'Mark as Completed' : 'Session Not Ended'}
+                       <CheckCircle2 className="w-4 h-4 mr-2" />
+                       {isCancelling ? 'Completing...' : 'Mark as Completed'}
                    </Button>
                  )}
                  
@@ -555,6 +577,22 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
            </DialogFooter>
          )}
       </DialogContent>
+      <AlertDialog open={isCompleteConfirmationVisible} onOpenChange={setIsCompleteConfirmationVisible}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              The session has not ended yet. Are you sure you want to mark this booking as completed?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={() => handleUpdateStatus('Completed', true)}>
+              Proceed
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Dialog>
   );
 };
