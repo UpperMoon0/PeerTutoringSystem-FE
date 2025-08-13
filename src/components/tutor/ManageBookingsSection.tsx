@@ -151,40 +151,6 @@ const ManageBookingsSection: React.FC = () => {
     }
   };
 
-  const handleUpdateStatus = async (bookingId: string, newStatus: Booking['status']) => {
-    if (!bookingId || isUpdating) return;
-  
-    const bookingToUpdate = bookings.find(b => b.bookingId === bookingId);
-  
-    if (newStatus === 'Confirmed' && bookingToUpdate) {
-      setSelectedBooking(bookingToUpdate);
-      setIsSessionFormOpen(true);
-      return;
-    }
-  
-    setIsUpdating(true);
-    setError(null);
-    try {
-      const result: ApiResult<Booking> = await BookingService.updateBookingStatus(bookingId, newStatus);
-      if (result.success && result.data) {
-        // Optimistically update the booking in the list
-        setBookings(prevBookings =>
-          prevBookings.map(b => (b.bookingId === bookingId ? { ...b, status: newStatus } : b))
-        );
-        if (isDetailModalOpen) {
-          setSelectedBooking(result.data);
-        }
-        fetchBookings();
-      } else {
-        setError(typeof result.error === 'string' ? result.error : result.error?.message || 'Failed to update booking status.');
-      }
-    } catch (err: unknown) {
-      setError((err as Error)?.message || 'An unexpected error occurred while updating status.');
-      console.error(err);
-    } finally {
-      setIsUpdating(false);
-    }
-  };
 
   const handleSessionCreation = async (sessionData: CreateSessionDto | UpdateSessionDto) => {
     if (!selectedBooking) return;
@@ -535,8 +501,15 @@ const ManageBookingsSection: React.FC = () => {
             fetchBookings(); // Refresh the list
             setIsDetailModalOpen(false);
           }}
-          onUpdateStatus={(status) => {
-            handleUpdateStatus(selectedBooking.bookingId, status as Booking['status']);
+          onUpdateStatus={(updatedBooking) => {
+            // The entire booking object is passed up now, so we can use it directly
+            setBookings(prevBookings =>
+              prevBookings.map(b => (b.bookingId === updatedBooking.bookingId ? updatedBooking : b))
+            );
+            // Also update the selected booking if it's the one being changed
+            if (selectedBooking?.bookingId === updatedBooking.bookingId) {
+              setSelectedBooking(updatedBooking);
+            }
           }}
           userRole="tutor"
         />

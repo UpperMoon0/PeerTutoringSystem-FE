@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import type { Booking } from '@/types/booking.types';
-import type { Session, CreateSessionDto, UpdateSessionDto } from '@/types/session.types';
+import type { CreateSessionDto, UpdateSessionDto } from '@/types/session.types';
 import { BookingService } from '@/services/BookingService';
 import { SessionService } from '@/services/SessionService';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
@@ -20,7 +20,7 @@ interface BookingDetailModalProps {
   onClose: () => void;
   onBookingCancelled: () => void;
   userRole?: 'student' | 'tutor' | 'admin';
-  onUpdateStatus?: (status: string) => void;
+  onUpdateStatus?: (updatedBooking: Booking) => void;
 }
 
 export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
@@ -76,7 +76,7 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
           status: 'Confirmed' as Booking['status']
         };
         setCurrentBooking(updatedBooking);
-        onUpdateStatus?.('Confirmed');
+        onUpdateStatus?.(updatedBooking);
         setIsCreatingSession(false);
         onClose(); // Close the modal on success
       } else {
@@ -193,7 +193,7 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
       if (result.success) {
         const updatedBooking = { ...currentBooking, status: status as Booking['status'] };
         setCurrentBooking(updatedBooking);
-        onUpdateStatus?.(status);
+        onUpdateStatus?.(updatedBooking);
 
         if (status === 'Cancelled') {
           onBookingCancelled(); // This will close modal & refresh list via parent
