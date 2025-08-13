@@ -18,13 +18,13 @@ interface TutorProfileFormProps {
 const TutorProfileForm: React.FC<TutorProfileFormProps> = ({ initialData, onSubmit, onCancel, isLoading }) => {
   const [formData, setFormData] = useState<CreateTutorProfileDto>({
     bio: initialData?.bio || '',
-    experience: initialData?.experience || '', 
+    experience: initialData?.experience || '',
     availability: initialData?.availability || '',
     hourlyRate: initialData?.hourlyRate || 0,
-    skillIds: initialData?.skills?.map(s => s.skillID) || [], 
+    skillIds: initialData?.skills?.map(s => s.skill.skillID) || [],
   });
   const [allSkills, setAllSkills] = useState<Skill[]>([]);
-  const [selectedSkills, setSelectedSkills] = useState<string[]>(initialData?.skills?.map(s => s.skillID) || []);
+  const [selectedSkills, setSelectedSkills] = useState<string[]>(initialData?.skills?.map(s => s.skill.skillID) || []);
 
   useEffect(() => {
     // Fetch all skills when component mounts
@@ -44,9 +44,9 @@ const TutorProfileForm: React.FC<TutorProfileFormProps> = ({ initialData, onSubm
         experience: initialData.experience || '', 
         availability: initialData.availability || '',
         hourlyRate: initialData.hourlyRate || 0,
-        skillIds: initialData.skills?.map(s => s.skillID) || [],
+        skillIds: initialData.skills?.map(s => s.skill.skillID) || [],
       });
-      setSelectedSkills(initialData.skills?.map(s => s.skillID) || []);
+      setSelectedSkills(initialData.skills?.map(s => s.skill.skillID) || []);
     } else {
       setFormData({
         bio: '',

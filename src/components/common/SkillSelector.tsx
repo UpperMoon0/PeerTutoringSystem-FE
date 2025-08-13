@@ -81,14 +81,13 @@ const SkillSelector: React.FC<SkillSelectorProps> = ({
                   key={skill.skillID}
                   onClick={() => !isLoading && onSkillChange(skill.skillID)}
                   className={`
-                    px-3 py-1 rounded-full text-sm font-medium cursor-pointer transition-all duration-200
+                    px-3 py-1 m-2 rounded-full text-sm font-medium cursor-pointer transition-all duration-200
                     ${isLoading ? 'cursor-not-allowed opacity-60' : 'hover:opacity-80'}
-                    ${isSelected ? 'ring-2 ring-offset-2 ring-offset-background' : ''}
+                    ${isSelected ? 'ring-2 ring-primary ring-offset-2 ring-offset-background transform scale-105' : ''}
                   `}
                   style={{
                     backgroundColor: bgColor,
                     color: 'white',
-                    ringColor: bgColor
                   }}
                 >
                   {skill.skillName}
