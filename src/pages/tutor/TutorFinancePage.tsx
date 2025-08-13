@@ -20,7 +20,8 @@ import {
 } from '@/components/ui/table';
 import { Skeleton } from '@/components/ui/skeleton';
 import { TutorService } from '@/services/TutorService';
-import type { TutorFinanceDetails } from '@/types/tutor.types';
+import type { TutorFinanceDetails, Transaction } from '@/types/tutor.types';
+import WithdrawalForm from '@/components/tutor/WithdrawalForm';
 
 const formatCurrency = (amount: number) => {
   return `${amount.toLocaleString()} VND`;
@@ -97,78 +98,82 @@ const TutorFinancePage = () => {
 
   return (
     <div className="container mx-auto p-4">
-      <h1 className="text-3xl font-bold mb-6">Overview</h1>
+      <div>
+        <div>
+          <h1 className="text-3xl font-bold mb-6">Overview</h1>
 
-      <div className="grid gap-4 md:grid-cols-3 mb-8">
-        <Card>
-          <CardHeader>
-            <CardTitle>Current Month ({currentMonthData.month})</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-2xl font-bold">{formatCurrency(currentMonthData.earnings)}</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle>Last Month ({lastMonthData.month})</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-2xl font-bold">{formatCurrency(lastMonthData.earnings)}</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle>Current Balance</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-2xl font-bold">{formatCurrency(totalEarnings)}</p>
-          </CardContent>
-        </Card>
+          <div className="grid gap-4 md:grid-cols-3 mb-8">
+            <Card>
+              <CardHeader>
+                <CardTitle>Current Month ({currentMonthData.month})</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-2xl font-bold">{formatCurrency(currentMonthData.earnings)}</p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader>
+                <CardTitle>Last Month ({lastMonthData.month})</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-2xl font-bold">{formatCurrency(lastMonthData.earnings)}</p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader>
+                <CardTitle>Current Balance</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-2xl font-bold">{formatCurrency(totalEarnings)}</p>
+              </CardContent>
+            </Card>
+          </div>
+
+          <Card className="mb-8">
+            <CardHeader>
+              <CardTitle>Earnings Over Time</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={monthlyEarnings}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="month" />
+                  <YAxis />
+                  <Tooltip />
+                  <Legend />
+                  <Bar dataKey="earnings" fill="#8884d8" />
+                </BarChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Recent Transactions</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Date</TableHead>
+                    <TableHead>Description</TableHead>
+                    <TableHead className="text-right">Amount</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {recentTransactions.map((transaction: Transaction) => (
+                    <TableRow key={transaction.id}>
+                      <TableCell>{new Date(transaction.date).toLocaleDateString()}</TableCell>
+                      <TableCell>{transaction.description}</TableCell>
+                      <TableCell className="text-right">{formatCurrency(transaction.amount)}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        </div>
       </div>
-
-      <Card className="mb-8">
-        <CardHeader>
-          <CardTitle>Earnings Over Time</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={monthlyEarnings}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="month" />
-              <YAxis />
-              <Tooltip />
-              <Legend />
-              <Bar dataKey="earnings" fill="#8884d8" />
-            </BarChart>
-          </ResponsiveContainer>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Recent Transactions</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Date</TableHead>
-                <TableHead>Description</TableHead>
-                <TableHead className="text-right">Amount</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {recentTransactions.map((transaction) => (
-                <TableRow key={transaction.id}>
-                  <TableCell>{new Date(transaction.date).toLocaleDateString()}</TableCell>
-                  <TableCell>{transaction.description}</TableCell>
-                  <TableCell className="text-right">{formatCurrency(transaction.amount)}</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
     </div>
   );
 };
