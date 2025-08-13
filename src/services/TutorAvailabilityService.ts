@@ -65,4 +65,27 @@ export const TutorAvailabilityService = {
       return { success: false, error: error instanceof Error ? error : new Error(String(error)) };
     }
   },
+
+  updateAvailability: async (availabilityId: string, availabilityData: Partial<CreateTutorAvailabilityDto>): Promise<ServiceResult<TutorAvailability>> => {
+    try {
+      const response = await AuthService.fetchWithAuth(`${TUTOR_AVAILABILITY_API_URL}/${availabilityId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(availabilityData),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        return { success: false, error: errorData.error || 'Failed to update availability.' };
+      }
+
+      const data = await response.json();
+      return { success: true, data: data.data };
+    } catch (error) {
+      console.error('Error updating availability:', error);
+      return { success: false, error: error instanceof Error ? error : new Error(String(error)) };
+    }
+  },
 };

@@ -39,3 +39,34 @@ export type CreateAvailabilityFormValues = z.infer<typeof createAvailabilitySche
 export const getDayOfWeekString = (date: Date): typeof daysOfWeek[number] => {
   return daysOfWeek[date.getDay()];
 };
+
+export const updateAvailabilitySchema = z.object({
+  availabilityId: z.string().min(1, "Availability ID is required."),
+  selectedDate: z.date({
+    required_error: "Date is required.",
+    invalid_type_error: "Invalid date format.",
+  }),
+  startTimeStr: timeStringSchema,
+  endTimeStr: timeStringSchema,
+  isRecurring: z.boolean().optional(),
+  recurrenceEndDate: z.date().optional(),
+}).refine(data => {
+  if (data.selectedDate && data.startTimeStr && data.endTimeStr) {
+    const [startHours, startMinutes] = data.startTimeStr.split(':').map(Number);
+    const [endHours, endMinutes] = data.endTimeStr.split(':').map(Number);
+    
+    const startDate = new Date(data.selectedDate);
+    startDate.setHours(startHours, startMinutes, 0, 0);
+
+    const endDate = new Date(data.selectedDate);
+    endDate.setHours(endHours, endMinutes, 0, 0);
+
+    return endDate > startDate;
+  }
+  return true;
+}, {
+  message: "End time must be after start time on the same day.",
+  path: ["endTimeStr"],
+});
+
+export type UpdateAvailabilityFormValues = z.infer<typeof updateAvailabilitySchema>;
