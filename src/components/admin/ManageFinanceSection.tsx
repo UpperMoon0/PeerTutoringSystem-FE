@@ -66,11 +66,9 @@ const ManageFinanceSection = () => {
   }
 
   const {
-    totalRevenue = 0,
-    monthlyRevenue = [],
-    recentTransactions = [],
-    averageTransactionValue = 0,
-    totalTransactions = 0,
+    totalPayments = 0,
+    totalIncome = 0,
+    totalProfit = 0,
   } = financeDetails;
 
   return (
@@ -80,75 +78,29 @@ const ManageFinanceSection = () => {
       <div className="grid gap-4 md:grid-cols-3 mb-8">
         <Card>
           <CardHeader>
-            <CardTitle>Total Revenue</CardTitle>
+            <CardTitle>Total Payments</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-2xl font-bold">{formatCurrency(totalRevenue)}</p>
+            <p className="text-2xl font-bold">{totalPayments}</p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader>
-            <CardTitle>Total Transactions</CardTitle>
+            <CardTitle>Total Income</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-2xl font-bold">{totalTransactions}</p>
+            <p className="text-2xl font-bold">{formatCurrency(totalIncome)}</p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader>
-            <CardTitle>Average Transaction</CardTitle>
+            <CardTitle>Total Profit</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-2xl font-bold">{formatCurrency(averageTransactionValue)}</p>
+            <p className="text-2xl font-bold">{formatCurrency(totalProfit)}</p>
           </CardContent>
         </Card>
       </div>
-
-      <Card className="mb-8">
-        <CardHeader>
-          <CardTitle>Revenue Over Time</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={monthlyRevenue}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="month" />
-              <YAxis />
-              <Tooltip />
-              <Legend />
-              <Bar dataKey="revenue" fill="#8884d8" />
-            </BarChart>
-          </ResponsiveContainer>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Recent Transactions</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Date</TableHead>
-                <TableHead>Booking ID</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-right">Amount</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {recentTransactions.map((transaction) => (
-                <TableRow key={transaction.transactionId}>
-                  <TableCell>{new Date(transaction.transactionDate).toLocaleDateString()}</TableCell>
-                  <TableCell>{transaction.bookingId}</TableCell>
-                  <TableCell>{transaction.status}</TableCell>
-                  <TableCell className="text-right">{formatCurrency(transaction.amount)}</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
     </div>
   );
 };
