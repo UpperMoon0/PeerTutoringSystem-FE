@@ -467,7 +467,7 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
                        onClick={handleJoinSession}
                        className={`${currentBooking.session?.videoCallLink
                          ? 'bg-primary text-primary-foreground hover:bg-primary/90'
-                         : 'bg-muted text-muted-foreground cursor-not-allowed'} `}
+                         : 'bg-gray-600 text-white cursor-not-allowed'} `}
                        disabled={!currentBooking.session?.videoCallLink}
                      >
                        <Video className="w-4 h-4 mr-2" />
@@ -520,7 +520,7 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
                      disabled={isCancelling || !canComplete}
                      className={`${canComplete
                        ? 'bg-primary text-primary-foreground hover:bg-primary/90'
-                       : 'bg-muted text-muted-foreground cursor-not-allowed'} `}
+                       : 'bg-gray-600 text-white cursor-not-allowed'} `}
                    >
                      <CheckCircle2 className="w-4 h-4 mr-2" />
                      {isCancelling ? 'Completing...' : canComplete ? 'Mark as Completed' : 'Session Not Ended'}
