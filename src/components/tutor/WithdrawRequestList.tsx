@@ -2,9 +2,11 @@ import type { WithdrawRequest } from '@/types/withdraw';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 
-interface WithdrawHistoryProps {
+interface WithdrawRequestListProps {
   requests: WithdrawRequest[];
+  onViewDetails: (request: WithdrawRequest) => void;
 }
 
 const formatCurrency = (amount: number) => {
@@ -35,11 +37,11 @@ const getStatusBadgeVariant = (status: WithdrawRequest['status']) => {
   }
 };
 
-const WithdrawHistory = ({ requests }: WithdrawHistoryProps) => {
+const WithdrawRequestList = ({ requests, onViewDetails }: WithdrawRequestListProps) => {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Withdraw History</CardTitle>
+        <CardTitle>Withdraw Requests</CardTitle>
       </CardHeader>
       <CardContent>
         <Table>
@@ -50,6 +52,7 @@ const WithdrawHistory = ({ requests }: WithdrawHistoryProps) => {
               <TableHead>Bank</TableHead>
               <TableHead>Account Number</TableHead>
               <TableHead>Status</TableHead>
+              <TableHead>Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -62,6 +65,11 @@ const WithdrawHistory = ({ requests }: WithdrawHistoryProps) => {
                   <TableCell>{request.accountNumber}</TableCell>
                   <TableCell>
                     <Badge variant={getStatusBadgeVariant(request.status)}>{request.status}</Badge>
+                  </TableCell>
+                  <TableCell>
+                    <Button variant="outline" size="sm" onClick={() => onViewDetails(request)}>
+                      View Details
+                    </Button>
                   </TableCell>
                 </TableRow>
               ))
@@ -79,4 +87,4 @@ const WithdrawHistory = ({ requests }: WithdrawHistoryProps) => {
   );
 };
 
-export default WithdrawHistory;
+export default WithdrawRequestList;

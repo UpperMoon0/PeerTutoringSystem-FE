@@ -6,6 +6,7 @@ import ManageSkillsSection from '@/components/admin/ManageSkillsSection';
 import TutorVerificationSection from '@/components/admin/TutorVerificationSection';
 import ManageBookingsSection from '@/components/admin/ManageBookingsSection';
 import ManageFinanceSection from '@/components/admin/ManageFinanceSection';
+import ManageWithdrawRequests from '@/pages/admin/ManageWithdrawRequests';
 
 export const adminConfig: DashboardConfigFactory = {
   role: 'admin',
@@ -65,6 +66,14 @@ export const adminConfig: DashboardConfigFactory = {
       icon: DollarSign,
       path: '/admin?section=manage-finance',
       component: ManageFinanceSection,
+    },
+    {
+      id: 'manage-withdraw-requests',
+      title: 'Manage Withdraw Requests',
+      subtitle: 'Approve or reject withdraw requests',
+      icon: DollarSign,
+      path: '/admin?section=manage-withdraw-requests',
+      component: ManageWithdrawRequests,
     },
   ],
 };

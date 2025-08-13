@@ -5,7 +5,7 @@ import { TutorService } from '@/services/TutorService';
 import { Skeleton } from '@/components/ui/skeleton';
 import { WithdrawService } from '@/services/WithdrawService';
 import type { WithdrawRequest } from '@/types/withdraw';
-import WithdrawHistory from '@/components/tutor/WithdrawHistory';
+import WithdrawRequestList from '@/components/tutor/WithdrawRequestList';
 
 const formatCurrency = (amount: number) => {
   return `${amount.toLocaleString()} VND`;
@@ -82,7 +82,7 @@ const TutorWithdrawPage = () => {
         </div>
 
         <div className="lg:col-span-2">
-          <WithdrawHistory requests={withdrawRequests} />
+          <WithdrawRequestList requests={withdrawRequests} onViewDetails={() => {}} />
         </div>
       </div>
     </div>
