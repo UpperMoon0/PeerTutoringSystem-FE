@@ -1,3 +1,5 @@
+import type { Booking } from './booking.types';
+
 export interface TutorDashboardStats {
   totalBookings: number;
   availableSlots: number;
@@ -19,6 +21,8 @@ export interface ChartDataPoint {
 }
 
 export interface TutorFinanceDetails {
+  bookings?: Booking[];
+  totalProfit?: number;
   totalEarnings?: number;
   monthlyEarnings?: ChartDataPoint[];
   recentTransactions?: Transaction[];

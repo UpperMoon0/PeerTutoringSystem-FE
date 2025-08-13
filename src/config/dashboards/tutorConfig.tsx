@@ -5,6 +5,7 @@ import ManageBookingsSection from '@/components/tutor/ManageBookingsSection';
 import ManageAvailabilitySection from '@/components/tutor/ManageAvailabilitySection';
 import TutorManageProfileSection from '@/components/tutor/TutorManageProfileSection';
 import TutorFinancePage from '@/pages/tutor/TutorFinancePage';
+import TutorWithdrawPage from '@/pages/tutor/TutorWithdrawPage';
 import React from 'react';
 
 export const tutorConfig: DashboardConfigFactory = {
@@ -57,6 +58,14 @@ export const tutorConfig: DashboardConfigFactory = {
       icon: DollarSign,
       path: '/tutor?section=finance',
       component: TutorFinancePage,
+    },
+    {
+      id: 'withdraw',
+      title: 'Withdraw',
+      subtitle: 'Request a withdrawal',
+      icon: DollarSign,
+      path: '/tutor?section=withdraw',
+      component: TutorWithdrawPage,
     },
   ],
 };
