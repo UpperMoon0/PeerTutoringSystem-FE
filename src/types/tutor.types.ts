@@ -1,4 +1,4 @@
-import { Booking } from './booking.types';
+import type { Booking } from './booking.types';
 
 export interface TutorDashboardStats {
   totalBookings: number;
