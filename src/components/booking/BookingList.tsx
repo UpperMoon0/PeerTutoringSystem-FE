@@ -18,8 +18,6 @@ import {
   AlertCircle,
   TrendingUp,
   Filter,
-  Star,
-  MessageSquare,
   XCircle,
   Loader2,
   Calendar
@@ -46,7 +44,7 @@ export const BookingList: React.FC<BookingListProps> = ({
   additionalActions,
   onBookingUpdate,
 }) => {
-  const { currentUser } = useAuth();
+  useAuth();
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
