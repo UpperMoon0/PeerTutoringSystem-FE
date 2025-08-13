@@ -14,17 +14,13 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import SessionForm from '@/components/session/SessionForm';
 
-interface BookingWithSession extends Booking {
-  session?: Session;
-}
-
 interface BookingDetailModalProps {
-  booking: BookingWithSession | null;
+  booking: Booking | null;
   isOpen: boolean;
   onClose: () => void;
   onBookingCancelled: () => void;
   userRole?: 'student' | 'tutor' | 'admin';
-  onUpdateStatus?: (status: string) => void;
+  onUpdateStatus?: (booking: Booking) => void;
 }
 
 export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
@@ -41,14 +37,20 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
   const [isEditingSession, setIsEditingSession] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isCreatingSession, setIsCreatingSession] = useState(false);
-  const [currentBooking, setCurrentBooking] = useState<BookingWithSession | null>(booking);
-  const [currentSession, setCurrentSession] = useState<Session | undefined>(booking?.session);
+  const [currentBooking, setCurrentBooking] = useState<Booking | null>(booking);
   const [isSubmittingSessionUpdate, setIsSubmittingSessionUpdate] = useState(false);
 
   // Update internal state when the `booking` prop changes
   React.useEffect(() => {
+    if (booking) {
+      console.log('BookingDetailModal: Received booking update', {
+        bookingId: booking.bookingId,
+        status: booking.status,
+        paymentStatus: booking.paymentStatus,
+        session: booking.session ? `Session ID: ${booking.session.sessionId}` : 'No session'
+      });
+    }
     setCurrentBooking(booking);
-    setCurrentSession(booking?.session);
   }, [booking]);
 
   // Reset isEditingSession when the modal is opened or the booking prop changes, ensuring a clean state
@@ -59,7 +61,7 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
     }
   }, [isOpen, booking]);
 
-  if (!booking) return null;
+  if (!currentBooking) return null;
 
   const handleCreateSession = async (sessionData: CreateSessionDto) => {
     setIsSubmittingSessionUpdate(true);
@@ -68,14 +70,13 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
 
       if (result.success && result.data) {
         toast.success('Session created successfully!');
-        setCurrentSession(result.data);
-        if (currentBooking) {
-          setCurrentBooking({
-            ...currentBooking,
-            session: result.data,
-            status: 'Confirmed'
-          });
-        }
+        const updatedBooking = {
+          ...currentBooking,
+          session: result.data,
+          status: 'Confirmed' as Booking['status']
+        };
+        setCurrentBooking(updatedBooking);
+        onUpdateStatus?.(updatedBooking);
         setIsCreatingSession(false);
         onClose(); // Close the modal on success
       } else {
@@ -93,19 +94,19 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
   };
 
   const handleUpdateSession = async (sessionData: UpdateSessionDto) => {
+    if (!currentBooking) return;
     setIsSubmittingSessionUpdate(true);
     try {
       const result = await SessionService.updateSession(sessionData.sessionId, sessionData);
 
       if (result.success && result.data) {
         toast.success('Session updated successfully');
-        setCurrentSession(result.data);
-        if (currentBooking) {
-          setCurrentBooking({
-            ...currentBooking,
-            session: result.data
-          });
-        }
+        const updatedBooking = {
+          ...currentBooking,
+          session: result.data
+        };
+        setCurrentBooking(updatedBooking);
+        onUpdateStatus?.(updatedBooking);
         setIsEditingSession(false);
       } else {
         const errorMessage = typeof result.error === 'string'
@@ -145,6 +146,17 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
     return typeof status === 'number' ? statusMap[status] : status;
   };
 
+  const getPaymentStatusString = (status: Booking['paymentStatus']): 'Paid' | 'Unpaid' => {
+    const statusMap: { [key: number]: 'Paid' | 'Unpaid' } = {
+      0: 'Unpaid',
+      1: 'Paid'
+    };
+    if (typeof status === 'number') {
+      return statusMap[status] || 'Unpaid';
+    }
+    return status;
+  };
+
   const getTimeUntilSession = (sessionStartTime: string): string => {
     const now = new Date();
     const sessionDate = new Date(sessionStartTime);
@@ -165,34 +177,36 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
   };
 
   const handleJoinSession = () => {
-    if (currentSession?.videoCallLink) {
-      window.open(currentSession.videoCallLink, '_blank');
-      toast.success(`Opening session for ${booking.topic}`);
+    if (currentBooking.session?.videoCallLink) {
+      window.open(currentBooking.session.videoCallLink, '_blank');
+      toast.success(`Opening session for ${currentBooking.topic}`);
     } else {
-      toast.info(`Session link for ${booking.topic} is not yet available. Please contact your ${userRole === 'student' ? 'tutor' : 'student'}.`);
+      toast.info(`Session link for ${currentBooking.topic} is not yet available. Please contact your ${userRole === 'student' ? 'tutor' : 'student'}.`);
     }
   };
 
   const handleContactUser = () => {
-    const contactName = userRole === 'student' ? booking.tutorName : booking.studentName;
+    const contactName = userRole === 'student' ? currentBooking.tutorName : currentBooking.studentName;
     toast.info(`Contact feature for ${contactName} would open here.`);
   };
 
   const handleUpdateStatus = async (status: string) => {
-    if (!booking) return;
+    if (!currentBooking) return;
 
     setIsCancelling(true);
     setError(null);
     try {
-      const result = await BookingService.updateBookingStatus(booking.bookingId, status);
+      const result = await BookingService.updateBookingStatus(currentBooking.bookingId, status);
       if (result.success) {
+        const updatedBooking = { ...currentBooking, status: status as Booking['status'] };
+        setCurrentBooking(updatedBooking);
+        onUpdateStatus?.(updatedBooking);
+
         if (status === 'Cancelled') {
           onBookingCancelled(); // This will close modal & refresh list via parent
         } else if (status === 'Confirmed') {
-          onUpdateStatus?.(status);
           setIsCreatingSession(true);
         } else {
-          onUpdateStatus?.(status);
           onClose();
         }
       } else {
@@ -210,23 +224,24 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
   };
 
   const handlePayment = () => {
-    if (!booking) return;
-    navigate('/checkout', { state: { bookingId: booking.bookingId } });
+    if (!currentBooking) return;
+    navigate('/checkout', { state: { bookingId: currentBooking.bookingId } });
   };
 
-  const isCurrentUserTutor = currentUser?.userId === booking.tutorId;
-  const isCurrentUserStudent = currentUser?.userId === booking.studentId;
-  const bookingStatus = getStatusString(currentBooking?.status || booking.status);
-  const isSessionUpcoming = bookingStatus === 'Confirmed' && isAfter(new Date(booking.startTime), new Date());
+  const isCurrentUserTutor = currentUser?.userId === currentBooking.tutorId;
+  const isCurrentUserStudent = currentUser?.userId === currentBooking.studentId;
+  const bookingStatus = getStatusString(currentBooking.status);
+  const isSessionUpcoming = bookingStatus === 'Confirmed' && isAfter(new Date(currentBooking.startTime), new Date());
   const isSessionCompleted = bookingStatus === 'Completed';
-  const hasSessionInfo = (bookingStatus === 'Confirmed' || bookingStatus === 'Completed') && currentSession;
-  const canEditSession = isCurrentUserTutor && hasSessionInfo && currentSession;
+  const hasSessionInfo = !!currentBooking.session;
+  const canEditSession = isCurrentUserTutor && hasSessionInfo;
   const canAcceptReject = isCurrentUserTutor && bookingStatus === 'Pending';
-  const showCreateSessionForm = isCurrentUserTutor && bookingStatus === 'Confirmed' && !currentSession;
-  const canCancel = isCurrentUserStudent && bookingStatus === 'Pending';
-  const canComplete = isCurrentUserTutor && bookingStatus === 'Confirmed' && new Date(booking.endTime) < new Date();
+  const showCreateSessionForm = isCurrentUserTutor && bookingStatus === 'Confirmed' && !currentBooking.session;
+  const canCancel = isCurrentUserStudent && (bookingStatus === 'Pending' || bookingStatus === 'Confirmed');
+  const canComplete = isCurrentUserTutor && bookingStatus === 'Confirmed' && new Date(currentBooking.endTime) < new Date();
   const showCompleteButton = isCurrentUserTutor && bookingStatus === 'Confirmed';
-  const showPaymentButton = isCurrentUserStudent && bookingStatus === 'Confirmed' && !!currentSession && booking.paymentStatus !== 'Paid';
+  const paymentStatus = getPaymentStatusString(currentBooking.paymentStatus);
+  const showPaymentButton = isCurrentUserStudent && bookingStatus === 'Confirmed' && !!currentBooking.session && paymentStatus === 'Unpaid';
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="bg-card border-border text-foreground max-w-2xl md:max-w-3xl">
@@ -257,14 +272,14 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
                   {userRole === 'student' ? 'Tutor:' : 'Student:'}
                 </h3>
                 <p className="text-foreground">
-                  {userRole === 'student' ? booking.tutorName || 'N/A' : booking.studentName || 'N/A'}
+                  {userRole === 'student' ? currentBooking.tutorName || 'N/A' : currentBooking.studentName || 'N/A'}
                 </p>
               </div>
               <div>
                 <h3 className="font-semibold text-muted-foreground mb-1 flex items-center">
                   <Tag className="w-4 h-4 mr-1.5 text-muted-foreground" /> Topic/Skill:
                 </h3>
-                <p className="text-foreground">{booking.topic}</p>
+                <p className="text-foreground">{currentBooking.topic}</p>
               </div>
             </div>
             
@@ -272,7 +287,7 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
               <h3 className="font-semibold text-muted-foreground mb-1 flex items-center">
                 <CalendarDays className="w-4 h-4 mr-1.5 text-muted-foreground" /> Date:
               </h3>
-              <p className="text-foreground">{format(new Date(booking.sessionDate || booking.startTime), 'EEEE, MMMM dd, yyyy')}</p>
+              <p className="text-foreground">{format(new Date(currentBooking.sessionDate || currentBooking.startTime), 'EEEE, MMMM dd, yyyy')}</p>
             </div>
 
             <div>
@@ -280,7 +295,7 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
                 <Clock className="w-4 h-4 mr-1.5 text-muted-foreground" /> Time:
               </h3>
               <p className="text-foreground">
-                {format(new Date(booking.startTime), 'HH:mm')} - {format(new Date(booking.endTime), 'HH:mm')}
+                {format(new Date(currentBooking.startTime), 'HH:mm')} - {format(new Date(currentBooking.endTime), 'HH:mm')}
               </p>
             </div>
             
@@ -289,46 +304,57 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
                 <CheckCircle2 className="w-4 h-4 mr-1.5 text-muted-foreground" /> Status:
               </h3>
               <div className="space-y-2">
-                <Badge variant={getStatusBadgeVariant(booking.status)} className="text-sm capitalize">
-                  {getStatusString(booking.status)}
-                </Badge>
+                <div className="flex items-center gap-x-2">
+                  <Badge variant={getStatusBadgeVariant(currentBooking.status)} className="text-sm capitalize">
+                    {getStatusString(currentBooking.status)}
+                  </Badge>
+                  <Badge
+                    className={`text-sm capitalize ${
+                      paymentStatus === 'Paid'
+                        ? 'bg-green-500 text-white'
+                        : 'bg-red-500 text-white'
+                    }`}
+                  >
+                    {paymentStatus}
+                  </Badge>
+                </div>
                 {isSessionUpcoming && (
                   <div className="text-sm text-primary">
                     <Timer className="w-4 h-4 inline mr-1" />
-                    Starts in: {getTimeUntilSession(booking.startTime)}
+                    Starts in: {getTimeUntilSession(currentBooking.startTime)}
                   </div>
                 )}
                 {isSessionCompleted && (
                   <div className="text-sm text-primary">
-                    Session completed on {format(new Date(booking.endTime), 'MMM dd, yyyy')}
+                    Session completed on {format(new Date(currentBooking.endTime), 'MMM dd, yyyy')}
                   </div>
                 )}
               </div>
             </div>
 
-            {booking.description && (
+            {currentBooking.description && (
               <div>
                 <h3 className="font-semibold text-muted-foreground mb-1 flex items-center">
                   <FileText className="w-4 h-4 mr-1.5 text-muted-foreground" /> Description/Notes:
                 </h3>
                 <p className="text-muted-foreground bg-input p-3 rounded-md whitespace-pre-wrap">
-                  {booking.description}
+                  {currentBooking.description}
                 </p>
               </div>
             )}
             
-            {booking.totalPrice && (
+            {currentBooking.totalPrice && (
               <div>
                 <h3 className="font-semibold text-muted-foreground mb-1 flex items-center">
                   Total Price:
                 </h3>
-                <p className="text-foreground font-semibold text-lg">{booking.totalPrice.toLocaleString()} VND</p>
+                <p className="text-foreground font-semibold text-lg">{currentBooking.totalPrice.toLocaleString()} VND</p>
               </div>
             )}
 
             {isCreatingSession || showCreateSessionForm ? (
               <SessionForm
-                booking={booking}
+                booking={currentBooking}
                 onSubmit={handleCreateSession as (data: CreateSessionDto | UpdateSessionDto) => Promise<void>}
                 isSubmitting={isSubmittingSessionUpdate}
                 error={error || undefined}
@@ -355,8 +381,8 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
                 </div>
                 {isEditingSession && canEditSession ? (
                   <SessionForm
-                    booking={booking}
-                    session={currentSession}
+                    booking={currentBooking}
+                    session={currentBooking.session}
                     onSubmit={handleUpdateSession as (data: CreateSessionDto | UpdateSessionDto) => Promise<void>}
                     isSubmitting={isSubmittingSessionUpdate}
                     error={error || undefined}
@@ -368,7 +394,7 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
                       <div>
                         <h4 className="text-sm font-medium text-muted-foreground mb-1">Duration</h4>
                         <p className="text-foreground">
-                          {Math.round((new Date(booking.endTime).getTime() - new Date(booking.startTime).getTime()) / (1000 * 60))} minutes
+                          {Math.round((new Date(currentBooking.endTime).getTime() - new Date(currentBooking.startTime).getTime()) / (1000 * 60))} minutes
                         </p>
                       </div>
                       <div>
@@ -380,39 +406,39 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
                           {userRole === 'student' ? 'Tutor Contact' : 'Student Contact'}
                         </h4>
                         <p className="text-foreground">
-                          {userRole === 'student' ? booking.tutorName : booking.studentName}
+                          {userRole === 'student' ? currentBooking.tutorName : currentBooking.studentName}
                         </p>
                       </div>
                       {isSessionUpcoming && (
                         <div>
                           <h4 className="text-sm font-medium text-muted-foreground mb-1">Session Access</h4>
                           <p className="text-sm text-primary">
-                            {currentSession?.videoCallLink
+                            {currentBooking.session?.videoCallLink
                               ? 'Ready to join'
                               : 'Link pending from tutor'}
                           </p>
                         </div>
                       )}
                     </div>
-                    {currentSession?.sessionNotes && (
+                    {currentBooking.session?.sessionNotes && (
                       <div className="mt-4">
                         <h4 className="text-sm font-medium text-muted-foreground mb-2">Session Preparation Notes</h4>
                         <p className="text-muted-foreground bg-input p-3 rounded-md whitespace-pre-wrap">
-                          {currentSession.sessionNotes}
+                          {currentBooking.session.sessionNotes}
                         </p>
                       </div>
                     )}
-                    {currentSession?.videoCallLink && (
+                    {currentBooking.session?.videoCallLink && (
                       <div className="mt-4">
                         <h4 className="text-sm font-medium text-muted-foreground mb-2">Meeting Link</h4>
                         <div className="flex items-center space-x-2">
                           <p className="text-primary text-sm break-all">
-                            {currentSession.videoCallLink}
+                            {currentBooking.session.videoCallLink}
                           </p>
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => window.open(currentSession?.videoCallLink, '_blank')}
+                            onClick={() => window.open(currentBooking.session?.videoCallLink, '_blank')}
                             className="text-primary hover:text-primary-foreground"
                           >
                             <ExternalLink className="w-4 h-4" />
@@ -439,18 +465,17 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
                      <Button
                        variant="default"
                        onClick={handleJoinSession}
-                       className={`${currentSession?.videoCallLink
+                       className={`${currentBooking.session?.videoCallLink
                          ? 'bg-primary text-primary-foreground hover:bg-primary/90'
                          : 'bg-muted text-muted-foreground cursor-not-allowed'} `}
-                       disabled={!currentSession?.videoCallLink}
+                       disabled={!currentBooking.session?.videoCallLink}
                      >
                        <Video className="w-4 h-4 mr-2" />
-                       {currentSession?.videoCallLink ? 'Join Session' : 'Link Pending'}
+                       {currentBooking.session?.videoCallLink ? 'Join Session' : 'Link Pending'}
                      </Button>
                      <Button
-                       variant="outline"
                        onClick={handleContactUser}
-                       className="border-border text-muted-foreground hover:bg-muted"
+                       className="bg-green-500 text-white hover:bg-green-600"
                      >
                        <MessageCircle className="w-4 h-4 mr-2" />
                        Contact {userRole === 'student' ? 'Tutor' : 'Student'}

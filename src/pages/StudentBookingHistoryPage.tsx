@@ -2,7 +2,6 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { BookingService } from '@/services/BookingService';
 import { ReviewService } from '@/services/ReviewService';
 import type { Booking, StudentBookingHistoryParams } from '@/types/booking.types';
-import type { Session } from '@/types/session.types';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -34,14 +33,9 @@ import { toast } from 'sonner';
 
 type BookingStatusFilter = 'All' | 'Pending' | 'Confirmed' | 'Cancelled' | 'Completed' | 'Rejected';
 
-interface BookingWithSession extends Booking {
-  session?: Session;
-  totalPrice?: number;
-}
-
 const StudentBookingHistoryPage: React.FC = () => {
   const { currentUser } = useAuth();
-  const [bookings, setBookings] = useState<BookingWithSession[]>([]);
+  const [bookings, setBookings] = useState<Booking[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
@@ -51,11 +45,11 @@ const StudentBookingHistoryPage: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState<BookingStatusFilter>('All');
   const [dateRangeFilter, setDateRangeFilter] = useState<DateRange | undefined>(undefined);
 
-  const [selectedBooking, setSelectedBooking] = useState<BookingWithSession | null>(null);
+  const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   
   // Review-related state
-  const [selectedBookingForReview, setSelectedBookingForReview] = useState<BookingWithSession | null>(null);
+  const [selectedBookingForReview, setSelectedBookingForReview] = useState<Booking | null>(null);
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
   const [reviewedBookings, setReviewedBookings] = useState<Set<string>>(new Set());
 
@@ -99,13 +93,10 @@ const StudentBookingHistoryPage: React.FC = () => {
       if (response.success && response.data) {
         const fetchedBookings = response.data.bookings;
         
-        const bookingsWithSessions: BookingWithSession[] = fetchedBookings.map(booking => ({
+        const bookingsWithTotalPrice = fetchedBookings.map(booking => ({
           ...booking,
-          session: booking.session,
           totalPrice: (booking.basePrice ?? 0) + (booking.serviceFee ?? 0),
         }));
-        
-        console.log('Transformed bookings with sessions:', bookingsWithSessions);
 
         if (statusFilter === 'All') {
           const statusOrder: { [key: string]: number } = {
@@ -115,15 +106,15 @@ const StudentBookingHistoryPage: React.FC = () => {
             'Rejected': 4,
             'Cancelled': 5,
           };
-          bookingsWithSessions.sort((a, b) => (statusOrder[a.status] || 99) - (statusOrder[b.status] || 99));
+          bookingsWithTotalPrice.sort((a, b) => (statusOrder[a.status] || 99) - (statusOrder[b.status] || 99));
         }
-        setBookings(bookingsWithSessions);
+        setBookings(bookingsWithTotalPrice);
         setTotalPages(Math.ceil(response.data.totalCount / response.data.pageSize));
         setTotalBookings(response.data.totalCount);
         setCurrentPage(response.data.page);
 
         // Check which completed bookings already have reviews
-        const completedBookings = bookingsWithSessions.filter(booking => booking.status === 'Completed');
+        const completedBookings = bookingsWithTotalPrice.filter(booking => booking.status === 'Completed');
         const reviewChecks = await Promise.allSettled(
           completedBookings.map(booking =>
             ReviewService.checkReviewExistsForBooking(booking.bookingId)
@@ -168,7 +159,7 @@ const StudentBookingHistoryPage: React.FC = () => {
     setCurrentPage(1); // Reset to first page on filter change
   };
 
-  const handleViewDetails = (booking: BookingWithSession) => {
+  const handleViewDetails = (booking: Booking) => {
     setSelectedBooking(booking);
     setIsDetailModalOpen(true);
   };
@@ -184,7 +175,7 @@ const StudentBookingHistoryPage: React.FC = () => {
     handleModalClose();
   };
 
-  const handleLeaveReview = (booking: BookingWithSession) => {
+  const handleLeaveReview = (booking: Booking) => {
     setSelectedBookingForReview(booking);
     setIsReviewModalOpen(true);
   };
@@ -203,11 +194,21 @@ const StudentBookingHistoryPage: React.FC = () => {
     handleReviewModalClose();
   };
 
-  const canLeaveReview = (booking: BookingWithSession): boolean => {
+  const canLeaveReview = (booking: Booking): boolean => {
     return booking.status === 'Completed' && !reviewedBookings.has(booking.bookingId);
   };
 
-  const isHighlighted = (booking: BookingWithSession) => {
+  const handleUpdateBookingInList = (updatedBooking: Booking) => {
+    setBookings(prevBookings =>
+      prevBookings.map(b => (b.bookingId === updatedBooking.bookingId ? updatedBooking : b))
+    );
+    // Also update the selected booking if it's the one being changed
+    if (selectedBooking?.bookingId === updatedBooking.bookingId) {
+      setSelectedBooking(updatedBooking);
+    }
+  };
+
+  const isHighlighted = (booking: Booking) => {
     if (booking.status === 'Confirmed' && booking.session) {
       return 'bg-green-100/50 border-l-4 border-l-green-500';
     }
@@ -492,6 +493,7 @@ const StudentBookingHistoryPage: React.FC = () => {
           isOpen={isDetailModalOpen}
           onClose={handleModalClose}
           onBookingCancelled={handleBookingCancelled}
+          onUpdateStatus={handleUpdateBookingInList}
         />
       )}
 
