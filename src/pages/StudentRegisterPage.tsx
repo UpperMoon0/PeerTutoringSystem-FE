@@ -18,7 +18,7 @@ import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { studentRegisterSchema, type StudentRegisterFormValues } from '@/schemas/auth.schemas';
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Calendar } from "@/components/ui/calendar";
+import { BirthdateCalendar } from "@/components/ui/birthdate-calendar";
 import { format } from 'date-fns';
 import {
   Select,
@@ -140,7 +140,7 @@ const StudentRegisterPage: React.FC = () => {
                         </Button>
                       </PopoverTrigger>
                       <PopoverContent className="w-auto p-0 bg-card border-border text-foreground">
-                        <Calendar
+                        <BirthdateCalendar
                           mode="single"
                           selected={field.value}
                           onSelect={field.onChange}
