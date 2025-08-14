@@ -5,6 +5,7 @@ export interface TutorDashboardStats {
   availableSlots: number;
   completedSessions: number;
   totalEarnings: number;
+  totalProfit: number;
 }
 
 export interface Transaction {

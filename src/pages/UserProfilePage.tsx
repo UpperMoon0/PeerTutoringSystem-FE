@@ -21,7 +21,6 @@ const UserProfilePage: React.FC = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState<UpdateProfileDto | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [selectedAvatarFile, setSelectedAvatarFile] = useState<File | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -31,12 +30,13 @@ const UserProfilePage: React.FC = () => {
   useEffect(() => {
     const fetchProfileData = async () => {
       if (!userId) {
-        setError("User ID is missing.");
+        setDialogTitle("Error");
+        setDialogDescription("User ID is missing.");
+        setDialogOpen(true);
         setLoading(false);
         return;
       }
       setLoading(true);
-      setError(null);
       try {
         const result = await ProfileService.getProfileByUserId(userId);
         if (result.success && result.data) {
@@ -48,14 +48,20 @@ const UserProfilePage: React.FC = () => {
             phoneNumber: result.data.phoneNumber,
             gender: result.data.gender,
             hometown: result.data.hometown,
-            avatar: null, 
+            avatar: null,
           });
           setAvatarPreview(result.data.avatarUrl || null);
         } else {
-          setError(result.error instanceof Error ? result.error.message : typeof result.error === 'string' ? result.error : (result.error && typeof result.error.message === 'string') ? result.error.message : 'Failed to fetch profile.');
+          const errorMessage = result.error instanceof Error ? result.error.message : typeof result.error === 'string' ? result.error : (result.error && typeof result.error.message === 'string') ? result.error.message : 'Failed to fetch profile.';
+          setDialogTitle("Error");
+          setDialogDescription(errorMessage);
+          setDialogOpen(true);
         }
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'An unknown error occurred.');
+        const errorMessage = err instanceof Error ? err.message : 'An unknown error occurred.';
+        setDialogTitle("Error");
+        setDialogDescription(errorMessage);
+        setDialogOpen(true);
       }
       setLoading(false);
     };
@@ -99,7 +105,6 @@ const UserProfilePage: React.FC = () => {
     };
 
     setLoading(true);
-    setError(null);
     try {
         const result = await ProfileService.updateProfile(userId, payloadToSave);
         if (result.success) {
