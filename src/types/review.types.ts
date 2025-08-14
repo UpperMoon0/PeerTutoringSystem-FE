@@ -14,4 +14,6 @@ export interface ReviewDto {
   rating: number;    // int maps to number
   comment?: string;  // string? maps to optional string
   reviewDate: string; // DateTime maps to string (ISO 8601)
+  studentName: string;
+  studentAvatarUrl: string;
 }

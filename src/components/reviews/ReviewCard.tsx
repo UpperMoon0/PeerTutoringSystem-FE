@@ -27,12 +27,13 @@ const ReviewCard: React.FC<ReviewCardProps> = ({ review }) => {
       <CardHeader className="flex flex-row items-center space-x-4 pb-2">
         <Avatar className="border-2 border-accent">
           {/* Placeholder for student avatar - replace with actual data if available */}
-          <AvatarImage src={`https://api.dicebear.com/8.x/initials/svg?seed=${review.studentID}`} alt="Student" />
-          <AvatarFallback className="bg-accent text-muted-foreground">ST</AvatarFallback>
+          <AvatarImage src={review.studentAvatarUrl} alt={review.studentName} />
+          <AvatarFallback className="bg-accent text-muted-foreground">
+            {review.studentName.substring(0, 2).toUpperCase()}
+          </AvatarFallback>
         </Avatar>
         <div className="flex-1">
-          {/* Placeholder for student name - replace with actual data if available */}
-          <CardTitle className="text-lg text-foreground">Student {review.studentID.substring(0, 6)}...</CardTitle>
+          <CardTitle className="text-lg text-foreground">{review.studentName}</CardTitle>
           <div className="flex items-center mt-1">
             {renderStars(review.rating)}
             <span className="ml-2 text-sm text-muted-foreground">({review.rating}/5)</span>
