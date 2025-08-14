@@ -4,6 +4,15 @@ import { ProfileService } from '../services/ProfileService';
 import type { ProfileDto, UpdateProfileDto } from '@/types/user.types';
 import { useAuth } from '../contexts/AuthContext';
 import ProfileCard from '../components/profile/ProfileCard';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 const UserProfilePage: React.FC = () => {
   const { userId } = useParams<{ userId: string }>();
@@ -12,19 +21,22 @@ const UserProfilePage: React.FC = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState<UpdateProfileDto | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [selectedAvatarFile, setSelectedAvatarFile] = useState<File | null>(null);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [dialogTitle, setDialogTitle] = useState("");
+  const [dialogDescription, setDialogDescription] = useState("");
 
   useEffect(() => {
     const fetchProfileData = async () => {
       if (!userId) {
-        setError("User ID is missing.");
+        setDialogTitle("Error");
+        setDialogDescription("User ID is missing.");
+        setDialogOpen(true);
         setLoading(false);
         return;
       }
       setLoading(true);
-      setError(null);
       try {
         const result = await ProfileService.getProfileByUserId(userId);
         if (result.success && result.data) {
@@ -36,14 +48,20 @@ const UserProfilePage: React.FC = () => {
             phoneNumber: result.data.phoneNumber,
             gender: result.data.gender,
             hometown: result.data.hometown,
-            avatar: null, 
+            avatar: null,
           });
           setAvatarPreview(result.data.avatarUrl || null);
         } else {
-          setError(result.error instanceof Error ? result.error.message : typeof result.error === 'string' ? result.error : (result.error && typeof result.error.message === 'string') ? result.error.message : 'Failed to fetch profile.');
+          const errorMessage = result.error instanceof Error ? result.error.message : typeof result.error === 'string' ? result.error : (result.error && typeof result.error.message === 'string') ? result.error.message : 'Failed to fetch profile.';
+          setDialogTitle("Error");
+          setDialogDescription(errorMessage);
+          setDialogOpen(true);
         }
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'An unknown error occurred.');
+        const errorMessage = err instanceof Error ? err.message : 'An unknown error occurred.';
+        setDialogTitle("Error");
+        setDialogDescription(errorMessage);
+        setDialogOpen(true);
       }
       setLoading(false);
     };
@@ -57,6 +75,7 @@ const UserProfilePage: React.FC = () => {
         const file = e.target.files[0];
         setSelectedAvatarFile(file);
         setAvatarPreview(URL.createObjectURL(file));
+        setFormData({ ...formData, avatar: file });
       } else {
         setFormData({ ...formData, [name]: value });
       }
@@ -86,30 +105,38 @@ const UserProfilePage: React.FC = () => {
     };
 
     setLoading(true);
-    setError(null);
     try {
-      const result = await ProfileService.updateProfile(userId, payloadToSave);
-      if (result.success) {
-        const updatedProfileResult = await ProfileService.getProfileByUserId(userId);
-        if (updatedProfileResult.success && updatedProfileResult.data) {
-          setProfile(updatedProfileResult.data);
-          setAvatarPreview(updatedProfileResult.data.avatarUrl || null);
-          // Update the global user state
-          updateCurrentUser({
-            fullName: updatedProfileResult.data.fullName,
-            avatarUrl: updatedProfileResult.data.avatarUrl,
-          });
+        const result = await ProfileService.updateProfile(userId, payloadToSave);
+        if (result.success) {
+          const updatedProfileResult = await ProfileService.getProfileByUserId(userId);
+          if (updatedProfileResult.success && updatedProfileResult.data) {
+            setProfile(updatedProfileResult.data);
+            setAvatarPreview(updatedProfileResult.data.avatarUrl || null);
+            // Update the global user state
+            updateCurrentUser({
+              fullName: updatedProfileResult.data.fullName,
+              avatarUrl: updatedProfileResult.data.avatarUrl,
+            });
+          }
+          setIsEditing(false);
+          setSelectedAvatarFile(null);
+          setDialogTitle("Success");
+          setDialogDescription("Profile updated successfully.");
+          setDialogOpen(true);
+        } else {
+          const errorMessage = result.error instanceof Error ? result.error.message : typeof result.error === 'string' ? result.error : (result.error && typeof result.error.message === 'string') ? result.error.message : 'Failed to update profile.';
+          setDialogTitle("Error");
+          setDialogDescription(errorMessage);
+          setDialogOpen(true);
         }
-        setIsEditing(false);
-        setSelectedAvatarFile(null);
-      } else {
-        setError(result.error instanceof Error ? result.error.message : typeof result.error === 'string' ? result.error : (result.error && typeof result.error.message === 'string') ? result.error.message : 'Failed to update profile.');
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : 'An unknown error occurred while updating profile.';
+        setDialogTitle("Error");
+        setDialogDescription(errorMessage);
+        setDialogOpen(true);
       }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'An unknown error occurred while updating profile.');
-    }
-    setLoading(false);
-  };
+      setLoading(false);
+    };
 
   const handleCancelEdit = () => {
     setIsEditing(false);
@@ -133,13 +160,6 @@ const UserProfilePage: React.FC = () => {
       <div className="flex items-center gap-3">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
         <p className="text-foreground">Loading profile...</p>
-      </div>
-    </div>
-  );
-  if (error) return (
-    <div className="container mx-auto p-6 bg-background min-h-screen">
-      <div className="text-center py-12">
-        <p className="text-destructive">Error: {error}</p>
       </div>
     </div>
   );
@@ -173,6 +193,19 @@ const UserProfilePage: React.FC = () => {
           userId={userId || ''}
         />
       </div>
+      <AlertDialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{dialogTitle}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {dialogDescription}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogAction onClick={() => setDialogOpen(false)}>OK</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

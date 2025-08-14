@@ -10,15 +10,13 @@ import {
   BookOpen,
   Clock,
   DollarSign,
-  TrendingUp,
   Users,
-  CheckCircle,
   AlertCircle,
   User,
   PlusCircle
 } from 'lucide-react';
 import type { Booking } from '@/types/booking.types';
-import type { TutorDashboardStats } from '@/types/tutor.types';
+import type { TutorDashboardStats, TutorFinanceDetails } from '@/types/tutor.types';
 
 interface TutorOverviewProps {
   onNavigateToSection?: (section: string) => void;
@@ -26,6 +24,7 @@ interface TutorOverviewProps {
 
 const TutorOverview: React.FC<TutorOverviewProps> = () => {
   const [stats, setStats] = useState<TutorDashboardStats | null>(null);
+  const [financeDetails, setFinanceDetails] = useState<TutorFinanceDetails | null>(null);
   const [recentBookings, setRecentBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -46,6 +45,14 @@ const TutorOverview: React.FC<TutorOverviewProps> = () => {
         const errorMessage = typeof statsResult.error === 'string' ? statsResult.error : 'Failed to load dashboard stats.';
         setError(errorMessage);
       }
+
+      const financeDetailsResult = await TutorService.getTutorFinanceDetails();
+      if (financeDetailsResult.success && financeDetailsResult.data) {
+        setFinanceDetails(financeDetailsResult.data);
+      } else {
+        const errorMessage = typeof financeDetailsResult.error === 'string' ? financeDetailsResult.error : 'Failed to load finance details.';
+        setError(errorMessage);
+      }
       
       // Load recent bookings
       const bookingsResult = await BookingService.getTutorBookings('All', 1, 5);
@@ -59,29 +66,25 @@ const TutorOverview: React.FC<TutorOverviewProps> = () => {
       setLoading(false);
     }
   };
-
-
-  const getStatusBadgeVariant = (status: string) => {
-    switch (status) {
-      case 'Pending': return 'secondary';
-      case 'Confirmed': return 'default';
-      case 'Cancelled':
-      case 'Rejected': return 'destructive';
-      case 'Completed': return 'outline';
-      default: return 'secondary';
-    }
-  };
-
-  const formatDateTime = (dateTime: string) => {
-    return new Date(dateTime).toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  };
-
-  const calculateProfit = (amount: number) => amount / 1.3;
+   const getStatusBadgeVariant = (status: string) => {
+     switch (status) {
+       case 'Pending': return 'secondary';
+       case 'Confirmed': return 'default';
+       case 'Cancelled':
+       case 'Rejected': return 'destructive';
+       case 'Completed': return 'outline';
+       default: return 'secondary';
+     }
+   };
+ 
+   const formatDateTime = (dateTime: string) => {
+     return new Date(dateTime).toLocaleDateString('en-US', {
+       month: 'short',
+       day: 'numeric',
+       hour: '2-digit',
+       minute: '2-digit'
+     });
+   };
 
   return (
     <div className="space-y-6">
@@ -126,6 +129,7 @@ const TutorOverview: React.FC<TutorOverviewProps> = () => {
           </>
         ) : stats ? (
           <>
+
             {/* Total Bookings */}
             <Card className="bg-card border-border">
               <CardContent className="p-4 lg:p-6">
@@ -133,10 +137,6 @@ const TutorOverview: React.FC<TutorOverviewProps> = () => {
                   <div>
                     <p className="text-muted-foreground text-sm font-medium">Total Bookings</p>
                     <p className="text-3xl font-bold text-foreground mt-2">{stats.totalBookings}</p>
-                    <p className="text-green-500 text-sm mt-1 flex items-center">
-                      <TrendingUp className="w-4 h-4 mr-1" />
-                      +12% from last month
-                    </p>
                   </div>
                   <div className="p-3 bg-blue-600 bg-opacity-20 rounded-lg">
                     <BookOpen className="w-6 h-6 text-blue-400" />
@@ -171,10 +171,6 @@ const TutorOverview: React.FC<TutorOverviewProps> = () => {
                   <div>
                     <p className="text-muted-foreground text-sm font-medium">Completed Sessions</p>
                     <p className="text-3xl font-bold text-foreground mt-2">{stats.completedSessions}</p>
-                    <p className="text-green-500 text-sm mt-1 flex items-center">
-                      <CheckCircle className="w-4 h-4 mr-1" />
-                      +8% from last month
-                    </p>
                   </div>
                   <div className="p-3 bg-green-600 bg-opacity-20 rounded-lg">
                     <Users className="w-6 h-6 text-green-400" />
@@ -189,11 +185,7 @@ const TutorOverview: React.FC<TutorOverviewProps> = () => {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-muted-foreground text-sm font-medium">Total Profit</p>
-                    <p className="text-3xl font-bold text-foreground mt-2">{calculateProfit(stats.totalEarnings).toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}</p>
-                    <p className="text-green-500 text-sm mt-1 flex items-center">
-                      <DollarSign className="w-4 h-4 mr-1" />
-                      +15% from last month
-                    </p>
+                    <p className="text-3xl font-bold text-foreground mt-2">{financeDetails?.totalProfit?.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' }) ?? '0 VND'}</p>
                   </div>
                   <div className="p-3 bg-green-600 bg-opacity-20 rounded-lg">
                     <DollarSign className="w-6 h-6 text-green-400" />

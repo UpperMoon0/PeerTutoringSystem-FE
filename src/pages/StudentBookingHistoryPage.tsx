@@ -30,6 +30,7 @@ import {
 import { format } from 'date-fns';
 import type { DateRange } from 'react-day-picker';
 import { toast } from 'sonner';
+import { getStatusBadgeVariant, getStatusString } from '@/lib/utils';
 
 type BookingStatusFilter = 'All' | 'Pending' | 'Confirmed' | 'Cancelled' | 'Completed' | 'Rejected';
 
@@ -54,17 +55,6 @@ const StudentBookingHistoryPage: React.FC = () => {
   const [reviewedBookings, setReviewedBookings] = useState<Set<string>>(new Set());
 
   const pageSize = 10;
-
-  const getStatusBadgeVariant = (status: Booking['status']) => {
-    switch (status) {
-      case 'Pending': return 'secondary';
-      case 'Confirmed': return 'default';
-      case 'Cancelled':
-      case 'Rejected': return 'destructive';
-      case 'Completed': return 'outline'; 
-      default: return 'secondary';
-    }
-  };
 
   const fetchBookingHistory = useCallback(async () => {
     if (!currentUser) {
@@ -391,8 +381,8 @@ const StudentBookingHistoryPage: React.FC = () => {
                       <TableCell>
                         <div className="space-y-1">
                           <div className="flex items-center gap-2">
-                            <Badge variant={getStatusBadgeVariant(booking.status)} className="capitalize">
-                              {booking.status}
+                            <Badge variant={getStatusBadgeVariant(getStatusString(booking.status))} className="capitalize">
+                              {getStatusString(booking.status)}
                             </Badge>
                             {canLeaveReview(booking) && (
                               <Badge variant="outline" className="text-chart-1 border-chart-1 animate-pulse">
