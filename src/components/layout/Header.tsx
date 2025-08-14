@@ -150,15 +150,13 @@ const Header: React.FC = () => {
             ) : (
               <>
                 <Button
-                  variant="secondary"
-                  className="text-sm px-4 py-2 rounded-lg transition-colors duration-200 shadow-lg"
+                  className="bg-blue-400 hover:bg-blue-500 text-white text-sm px-4 py-2 rounded-lg transition-colors duration-200 shadow-lg"
                   asChild
                 >
                   <Link to="/login">Sign In</Link>
                 </Button>
                 <Button
-                  variant="secondary"
-                  className="bg-card text-card-foreground hover:bg-card/90 text-sm px-4 py-2 rounded-lg transition-all duration-200 shadow-lg"
+                  className="bg-green-500 hover:bg-green-600 text-white text-sm px-4 py-2 rounded-lg transition-all duration-200 shadow-lg"
                   asChild
                 >
                   <Link to="/register/student">Sign Up</Link>
