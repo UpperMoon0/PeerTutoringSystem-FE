@@ -24,7 +24,7 @@ const ManageBookingsSection: React.FC = () => {
   const [reviewError, setReviewError] = useState<string | null>(null);
 
   const fetchTutorBookings = useCallback(
-    (status: BookingStatus, page: number, pageSize: number, sortOrder: SortOrder) => {
+    (status: BookingStatus, page: number, pageSize: number, sortOrder?: SortOrder) => {
       const statusFilter = status === 'All' ? 'All' : status;
       return BookingService.getTutorBookings(statusFilter, page, pageSize, sortOrder);
     },

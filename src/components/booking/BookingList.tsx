@@ -26,8 +26,9 @@ import { format } from 'date-fns';
 import { getStatusBadgeVariant, getStatusString } from '@/lib/utils';
 
 type BookingStatus = 'All' | 'Pending' | 'Confirmed' | 'Cancelled' | 'Completed' | 'Rejected';
+type SortOrder = 'asc' | 'desc';
 interface BookingListProps {
-  fetchBookings: (status: BookingStatus, page: number, pageSize: number) => Promise<ApiResult<{ bookings: Booking[], totalCount: number }>>;
+  fetchBookings: (status: BookingStatus, page: number, pageSize: number, sortOrder?: SortOrder) => Promise<ApiResult<{ bookings: Booking[], totalCount: number }>>;
   userRole: 'tutor' | 'admin';
   title: string;
   subtitle?: string;
@@ -57,6 +58,7 @@ export const BookingList: React.FC<BookingListProps> = ({
   const [selectedStatus, setSelectedStatus] = useState<BookingStatus>('All');
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+  const [sortOrder] = useState<SortOrder>('desc');
 
   const pageSize = itemPerPage;
 
@@ -64,7 +66,7 @@ export const BookingList: React.FC<BookingListProps> = ({
     try {
       setIsLoading(true);
       setError(null);
-      const response = await fetchBookingsProp(selectedStatus, currentPage, pageSize);
+      const response = await fetchBookingsProp(selectedStatus, currentPage, pageSize, sortOrder);
       if (response.success && response.data) {
         setBookings(response.data.bookings);
         setTotalPages(Math.ceil(response.data.totalCount / pageSize));

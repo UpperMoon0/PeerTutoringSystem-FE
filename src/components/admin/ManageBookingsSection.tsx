@@ -13,7 +13,7 @@ const ManageBookingsSection: React.FC = () => {
   const [key, setKey] = useState(0); // Used to force re-fetch in BookingList
 
   const fetchAdminBookings = useCallback(
-    (status: BookingStatus, page: number, pageSize: number, sortOrder: SortOrder) => {
+    (status: BookingStatus, page: number, pageSize: number, sortOrder?: SortOrder) => {
       const statusFilter = status === 'All' ? undefined : status;
       return BookingService.getAllBookingsForAdmin(page, pageSize, statusFilter, undefined, undefined, undefined, sortOrder);
     },

@@ -89,7 +89,7 @@ const TutorOverview: React.FC<TutorOverviewProps> = ({ onNavigateToSection }) =>
   };
 
   const fetchRecentBookings = useCallback(
-    (status: BookingStatus, page: number, pageSize: number, sortOrder: SortOrder): Promise<ApiResult<{ bookings: Booking[], totalCount: number }>> => {
+    (status: BookingStatus, page: number, pageSize: number, sortOrder?: SortOrder): Promise<ApiResult<{ bookings: Booking[], totalCount: number }>> => {
       return BookingService.getTutorBookings(status, page, pageSize, sortOrder);
     },
     []

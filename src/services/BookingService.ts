@@ -217,13 +217,15 @@ export const BookingService = {
   async getTutorBookings(
     status: string,
     page: number = 1,
-    pageSize: number = 10
+    pageSize: number = 10,
+    sortOrder: 'asc' | 'desc' = 'desc'
   ): Promise<ApiResult<{ bookings: Booking[], totalCount: number }>> {
     try {
       const queryParams = new URLSearchParams({
         Status: status,
         page: page.toString(),
         pageSize: pageSize.toString(),
+        sortOrder: sortOrder,
       }).toString();
       const response = await AuthService.fetchWithAuth(`${API_BASE_URL}/Bookings/tutor?${queryParams}`, {
         method: 'GET',
@@ -300,12 +302,14 @@ export const BookingService = {
     status?: string,
     startDate?: string,
     endDate?: string,
-    searchTerm?: string
+    searchTerm?: string,
+    sortOrder: 'asc' | 'desc' = 'desc'
   ): Promise<ApiResult<{ bookings: Booking[], totalCount: number }>> {
     try {
       const queryParams = new URLSearchParams({
         page: page.toString(),
         pageSize: pageSize.toString(),
+        sortOrder: sortOrder,
       });
       
       // Backend requires Status field - use "null" for all statuses, specific status otherwise
