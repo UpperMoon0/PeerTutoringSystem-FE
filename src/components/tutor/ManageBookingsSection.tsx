@@ -14,6 +14,7 @@ import { format } from 'date-fns';
 import { MessageSquare } from 'lucide-react';
 
 type BookingStatus = 'All' | 'Pending' | 'Confirmed' | 'Cancelled' | 'Completed' | 'Rejected';
+type SortOrder = 'asc' | 'desc';
 
 const ManageBookingsSection: React.FC = () => {
   const { currentUser } = useAuth();
@@ -23,9 +24,9 @@ const ManageBookingsSection: React.FC = () => {
   const [reviewError, setReviewError] = useState<string | null>(null);
 
   const fetchTutorBookings = useCallback(
-    (status: BookingStatus, page: number, pageSize: number) => {
+    (status: BookingStatus, page: number, pageSize: number, sortOrder?: SortOrder) => {
       const statusFilter = status === 'All' ? 'All' : status;
-      return BookingService.getTutorBookings(statusFilter, page, pageSize);
+      return BookingService.getTutorBookings(statusFilter, page, pageSize, sortOrder);
     },
     []
   );

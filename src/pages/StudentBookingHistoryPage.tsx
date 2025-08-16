@@ -392,7 +392,7 @@ const StudentBookingHistoryPage: React.FC = () => {
                       </TableCell>
                       <TableCell className="text-foreground font-semibold">
                         <div className="flex items-center">
-                          {booking.totalPrice ? `${booking.totalPrice.toLocaleString()} VND` : 'N/A'}
+                          {booking.totalPrice ? `${Math.round(booking.totalPrice).toLocaleString()} VND` : 'N/A'}
                         </div>
                       </TableCell>
                       <TableCell className="text-right">

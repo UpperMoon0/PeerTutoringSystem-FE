@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
 import { Skeleton } from '../ui/skeleton';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
-import type { AdminFinanceDetails } from '@/types/payment.types';
+import type { AdminFinanceDetails, Payment } from '@/types/payment.types';
 import { PaymentService } from '@/services/PaymentService';
+import PaymentList from './PaymentList';
 
 const formatCurrency = (amount: number) => {
   return `${amount.toLocaleString()} VND`;
@@ -10,18 +11,29 @@ const formatCurrency = (amount: number) => {
 
 const ManageFinanceSection = () => {
   const [financeDetails, setFinanceDetails] = useState<AdminFinanceDetails | null>(null);
+  const [payments, setPayments] = useState<Payment[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchFinanceDetails = async () => {
+    const fetchFinanceData = async () => {
       try {
         setLoading(true);
-        const result = await PaymentService.getAdminFinanceDetails();
-        if (result.success && result.data) {
-          setFinanceDetails(result.data);
+        const [financeResult, paymentsResult] = await Promise.all([
+          PaymentService.getAdminFinanceDetails(),
+          PaymentService.getAllPayments(),
+        ]);
+
+        if (financeResult.success && financeResult.data) {
+          setFinanceDetails(financeResult.data);
         } else {
-          setError(typeof result.error === 'string' ? result.error : 'Failed to fetch finance details.');
+          setError(typeof financeResult.error === 'string' ? financeResult.error : 'Failed to fetch finance details.');
+        }
+
+        if (paymentsResult.success && paymentsResult.data) {
+          setPayments(paymentsResult.data);
+        } else {
+          setError(typeof paymentsResult.error === 'string' ? paymentsResult.error : 'Failed to fetch payments.');
         }
       } catch (error) {
         if (error instanceof Error) {
@@ -34,7 +46,7 @@ const ManageFinanceSection = () => {
       }
     };
 
-    fetchFinanceDetails();
+    fetchFinanceData();
   }, []);
 
   if (loading) {
@@ -44,9 +56,6 @@ const ManageFinanceSection = () => {
           <Skeleton className="h-32" />
           <Skeleton className="h-32" />
           <Skeleton className="h-32" />
-        </div>
-        <div className="mt-8">
-          <Skeleton className="h-80" />
         </div>
         <div className="mt-8">
           <Skeleton className="h-80" />
@@ -63,11 +72,7 @@ const ManageFinanceSection = () => {
     return <div className="text-center p-4">No financial data available.</div>;
   }
 
-  const {
-    totalPayments = 0,
-    totalIncome = 0,
-    totalProfit = 0,
-  } = financeDetails;
+  const { totalPayments = 0, totalIncome = 0, totalProfit = 0 } = financeDetails;
 
   return (
     <div className="container mx-auto p-4">
@@ -99,6 +104,9 @@ const ManageFinanceSection = () => {
           </CardContent>
         </Card>
       </div>
+
+      <h2 className="text-2xl font-bold mb-4">All Payments</h2>
+      <PaymentList payments={payments} />
     </div>
   );
 };

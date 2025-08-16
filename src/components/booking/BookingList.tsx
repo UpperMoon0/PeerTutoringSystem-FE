@@ -26,9 +26,9 @@ import { format } from 'date-fns';
 import { getStatusBadgeVariant, getStatusString } from '@/lib/utils';
 
 type BookingStatus = 'All' | 'Pending' | 'Confirmed' | 'Cancelled' | 'Completed' | 'Rejected';
-
+type SortOrder = 'asc' | 'desc';
 interface BookingListProps {
-  fetchBookings: (status: BookingStatus, page: number, pageSize: number) => Promise<ApiResult<{ bookings: Booking[], totalCount: number }>>;
+  fetchBookings: (status: BookingStatus, page: number, pageSize: number, sortOrder?: SortOrder) => Promise<ApiResult<{ bookings: Booking[], totalCount: number }>>;
   userRole: 'tutor' | 'admin';
   title: string;
   subtitle?: string;
@@ -58,6 +58,7 @@ export const BookingList: React.FC<BookingListProps> = ({
   const [selectedStatus, setSelectedStatus] = useState<BookingStatus>('All');
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+  const [sortOrder] = useState<SortOrder>('desc');
 
   const pageSize = itemPerPage;
 
@@ -65,7 +66,7 @@ export const BookingList: React.FC<BookingListProps> = ({
     try {
       setIsLoading(true);
       setError(null);
-      const response = await fetchBookingsProp(selectedStatus, currentPage, pageSize);
+      const response = await fetchBookingsProp(selectedStatus, currentPage, pageSize, sortOrder);
       if (response.success && response.data) {
         setBookings(response.data.bookings);
         setTotalPages(Math.ceil(response.data.totalCount / pageSize));
@@ -284,21 +285,39 @@ export const BookingList: React.FC<BookingListProps> = ({
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {bookings.map((booking) => (
-                    <TableRow key={booking.bookingId} className="border-border hover:bg-accent">
+                  {bookings.map((booking) => {
+                    const isHighlighted =
+                      userRole === 'tutor' &&
+                      getStatusString(booking.status) === 'Confirmed' &&
+                      !booking.session;
+
+                    return (
+                    <TableRow
+                      key={booking.bookingId}
+                      className={`border-border hover:bg-accent ${
+                        isHighlighted ? 'bg-yellow-100/50 border-l-4 border-l-yellow-500 animate-pulse' : ''
+                      }`}
+                    >
                       <TableCell className="text-foreground">{booking.studentName || 'N/A'}</TableCell>
                       {userRole === 'admin' && <TableCell className="text-foreground">{booking.tutorName || 'N/A'}</TableCell>}
                       <TableCell className="text-foreground">{booking.topic}</TableCell>
                       <TableCell className="text-muted-foreground">
-                        {format(new Date(booking.startTime), 'MMM dd, yyyy')}
+                        {format(new Date(booking.createdAt), 'MMM dd, yyyy')}
                       </TableCell>
                       <TableCell className="text-muted-foreground">
                         {format(new Date(booking.startTime), 'HH:mm')} - {format(new Date(booking.endTime), 'HH:mm')}
                       </TableCell>
                       <TableCell>
-                        <Badge variant={getStatusBadgeVariant(booking.status)} className="capitalize">
-                          {getStatusString(booking.status)}
-                        </Badge>
+                        <div className="flex items-center gap-2">
+                          <Badge variant={getStatusBadgeVariant(booking.status)} className="capitalize">
+                            {getStatusString(booking.status)}
+                          </Badge>
+                          {isHighlighted && (
+                            <Badge variant="destructive" className="animate-none">
+                              Missing Session
+                            </Badge>
+                          )}
+                        </div>
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2">
@@ -315,7 +334,8 @@ export const BookingList: React.FC<BookingListProps> = ({
                         </div>
                       </TableCell>
                     </TableRow>
-                  ))}
+                  );
+                })}
                 </TableBody>
               </Table>
 

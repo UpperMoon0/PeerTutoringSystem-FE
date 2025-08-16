@@ -28,7 +28,7 @@ const convertBookingFromBackend = (backendBooking: Record<string, unknown>): Boo
     startTime: backendBooking.startTime as string,
     endTime: backendBooking.endTime as string,
     status: backendBooking.status as "Pending" | "Confirmed" | "Cancelled" | "Completed" | "Rejected",
-    paymentStatus: backendBooking.paymentStatus as "Unpaid" | "Paid",
+    paymentStatus: backendBooking.paymentStatus === 1 ? "Paid" : "Unpaid",
     createdAt: backendBooking.createdAt as string,
     updatedAt: backendBooking.updatedAt as string,
     studentName: backendBooking.studentName as string,
@@ -217,13 +217,15 @@ export const BookingService = {
   async getTutorBookings(
     status: string,
     page: number = 1,
-    pageSize: number = 10
+    pageSize: number = 10,
+    sortOrder: 'asc' | 'desc' = 'desc'
   ): Promise<ApiResult<{ bookings: Booking[], totalCount: number }>> {
     try {
       const queryParams = new URLSearchParams({
         Status: status,
         page: page.toString(),
         pageSize: pageSize.toString(),
+        sortOrder: sortOrder,
       }).toString();
       const response = await AuthService.fetchWithAuth(`${API_BASE_URL}/Bookings/tutor?${queryParams}`, {
         method: 'GET',
@@ -300,12 +302,14 @@ export const BookingService = {
     status?: string,
     startDate?: string,
     endDate?: string,
-    searchTerm?: string
+    searchTerm?: string,
+    sortOrder: 'asc' | 'desc' = 'desc'
   ): Promise<ApiResult<{ bookings: Booking[], totalCount: number }>> {
     try {
       const queryParams = new URLSearchParams({
         page: page.toString(),
         pageSize: pageSize.toString(),
+        sortOrder: sortOrder,
       });
       
       // Backend requires Status field - use "null" for all statuses, specific status otherwise

@@ -23,6 +23,17 @@ export interface AdminFinanceDetails {
   totalIncome: number;
   totalProfit: number;
 }
+export interface Payment {
+  id: string;
+  transactionId: string;
+  studentName: string;
+  tutorName: string;
+  amount: number;
+  status: string;
+  createdAt: string;
+  bookingId: string;
+}
+
 export interface TransactionHistory {
   transactionId: string;
   transactionDate: string;
