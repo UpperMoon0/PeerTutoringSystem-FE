@@ -382,12 +382,14 @@ const StudentBookingHistoryPage: React.FC = () => {
                               {getStatusString(booking.status) === 'Confirmed' ? 'Ready to start' : 'Session ended'}
                             </div>
                           )}
-                          {booking.paymentStatus !== 'Paid' && (
-                            <div className="flex items-center text-xs text-amber-600 dark:text-amber-500 mt-1">
-                              <CircleDollarSign className="w-3 h-3 mr-1" />
-                              <span>Payment Pending</span>
-                            </div>
-                          )}
+                          {booking.paymentStatus !== 'Paid' &&
+                            (getStatusString(booking.status) === 'Confirmed' ||
+                              getStatusString(booking.status) === 'Completed') && (
+                              <div className="flex items-center text-xs text-amber-600 dark:text-amber-500 mt-1">
+                                <CircleDollarSign className="w-3 h-3 mr-1" />
+                                <span>Payment Pending</span>
+                              </div>
+                            )}
                         </div>
                       </TableCell>
                       <TableCell className="text-foreground font-semibold">
