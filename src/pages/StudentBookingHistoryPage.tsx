@@ -238,23 +238,6 @@ const StudentBookingHistoryPage: React.FC = () => {
         <p className="text-muted-foreground mt-1">Review your past and upcoming tutoring sessions.</p>
       </header>
 
-      {/* Pending Reviews Notification */}
-      {!isLoading && pendingReviewsCount > 0 && (
-        <Alert className="bg-accent/20 border-accent/50 mb-6">
-          <Bell className="h-5 w-5 text-accent-foreground" />
-          <AlertTitle className="text-accent-foreground font-semibold flex items-center">
-            <MessageSquareHeart className="w-4 h-4 mr-1" />
-            Review Pending Sessions
-          </AlertTitle>
-          <AlertDescription className="text-muted-foreground">
-            You have <span className="font-bold text-primary">{pendingReviewsCount}</span> completed session{pendingReviewsCount !== 1 ? 's' : ''} waiting for your review.
-            <span className="block mt-1 text-sm">
-              Help other students by sharing your experience with your tutors! ⭐
-            </span>
-          </AlertDescription>
-        </Alert>
-      )}
-
       <Card className="bg-card border-border">
         <CardHeader>
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
