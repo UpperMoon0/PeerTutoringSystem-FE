@@ -5,6 +5,7 @@ import type {
   ProcessPaymentResponse,
   AdminFinanceDetails,
   TransactionHistory,
+  Payment,
 } from '@/types/payment.types';
 import type { PayOSCreatePaymentLinkRequest, PayOSCreatePaymentLinkResponse } from '@/types/payos.types';
 import { apiClient } from './AuthService';
@@ -43,6 +44,21 @@ export const PaymentService = {
     } catch (error: unknown) {
       console.error('Error fetching admin finance details:', error);
       return { success: false, error: error instanceof Error ? error.message : 'Failed to fetch admin finance details.' };
+    }
+  },
+
+  getAllPayments: async (): Promise<ApiResult<Payment[]>> => {
+    try {
+      const response = await AuthService.fetchWithAuth(`${API_BASE_URL}/payment/admin/all-payments`);
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: 'Failed to parse error response.' }));
+        throw new Error(errorData.error || `Failed to fetch payments: ${response.statusText}`);
+      }
+      const responseData = await response.json();
+      return { success: true, data: responseData };
+    } catch (error: unknown) {
+      console.error('Error fetching payments:', error);
+      return { success: false, error: error instanceof Error ? error.message : 'Failed to fetch payments.' };
     }
   },
 
