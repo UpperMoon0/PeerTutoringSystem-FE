@@ -84,3 +84,28 @@ export const getStatusBadgeVariant = (status: Booking['status']) => {
     default: return 'secondary';
   }
 };
+
+export const getWithdrawStatusString = (status: any): string => {
+  const statusMap: { [key: number]: string } = {
+    0: 'Pending',
+    1: 'Approved',
+    2: 'Rejected',
+    3: 'Canceled',
+  };
+  return typeof status === 'number' ? statusMap[status] : status;
+};
+
+export const getWithdrawStatusBadgeVariant = (status: any) => {
+  const statusString = getWithdrawStatusString(status);
+  switch (statusString) {
+    case 'Pending':
+      return 'pending';
+    case 'Approved':
+      return 'confirmed';
+    case 'Rejected':
+    case 'Canceled':
+      return 'destructive';
+    default:
+      return 'secondary';
+  }
+};

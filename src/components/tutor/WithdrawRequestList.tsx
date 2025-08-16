@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { getWithdrawStatusBadgeVariant, getWithdrawStatusString } from '@/lib/utils';
 
 interface WithdrawRequestListProps {
   requests: WithdrawRequest[];
@@ -20,21 +21,6 @@ const formatDate = (dateString: string) => {
     month: 'long',
     day: 'numeric',
   });
-};
-
-const getStatusBadgeVariant = (status: WithdrawRequest['status']) => {
-  switch (status) {
-    case 'Pending':
-      return 'secondary';
-    case 'Approved':
-      return 'default';
-    case 'Rejected':
-      return 'destructive';
-    case 'Canceled':
-      return 'outline';
-    default:
-      return 'secondary';
-  }
 };
 
 const WithdrawRequestList = ({ requests, onViewDetails }: WithdrawRequestListProps) => {
@@ -64,7 +50,9 @@ const WithdrawRequestList = ({ requests, onViewDetails }: WithdrawRequestListPro
                   <TableCell>{request.bankName}</TableCell>
                   <TableCell>{request.accountNumber}</TableCell>
                   <TableCell>
-                    <Badge variant={getStatusBadgeVariant(request.status)}>{request.status}</Badge>
+                    <Badge variant={getWithdrawStatusBadgeVariant(request.status)}>
+                      {getWithdrawStatusString(request.status)}
+                    </Badge>
                   </TableCell>
                   <TableCell>
                     <Button variant="outline" size="sm" onClick={() => onViewDetails(request)}>

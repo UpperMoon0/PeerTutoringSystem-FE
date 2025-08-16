@@ -1,6 +1,8 @@
 import type { WithdrawRequest } from '@/types/withdraw';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { getWithdrawStatusBadgeVariant, getWithdrawStatusString } from '@/lib/utils';
 
 interface WithdrawRequestDetailsProps {
   request: WithdrawRequest;
@@ -28,16 +30,30 @@ const WithdrawRequestDetails = ({ request, onApprove, onReject }: WithdrawReques
           <p>
             <strong>Account Number:</strong> {request.accountNumber}
           </p>
-          <p>
-            <strong>Status:</strong> {request.status}
+          <p className="flex items-center">
+            <strong className="mr-2">Status:</strong>
+            <Badge variant={getWithdrawStatusBadgeVariant(request.status)}>
+              {getWithdrawStatusString(request.status)}
+            </Badge>
           </p>
         </div>
-        <div className="mt-4 flex space-x-2">
-          <Button onClick={() => onApprove(request.id)}>Approve</Button>
-          <Button variant="destructive" onClick={() => onReject(request.id)}>
-            Reject
-          </Button>
-        </div>
+        {request.status === 'Pending' && (
+          <div className="mt-4 flex space-x-2">
+            <Button
+              onClick={() => onApprove(request.id)}
+              className="bg-green-500 text-white hover:bg-green-600"
+            >
+              Approve
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={() => onReject(request.id)}
+              className="text-white"
+            >
+              Reject
+            </Button>
+          </div>
+        )}
       </CardContent>
     </Card>
   );
