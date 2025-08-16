@@ -15,7 +15,7 @@ const TransactionHistoryPage: React.FC = () => {
     const fetchTransactions = async () => {
       try {
         setLoading(true);
-        const result = await PaymentService.getTransactionHistory();
+        const result = await PaymentService.getStudentTransactionHistory();
         if (result.success && result.data) {
           const paymentsData = result.data.map((item: any) => ({
             ...item,
