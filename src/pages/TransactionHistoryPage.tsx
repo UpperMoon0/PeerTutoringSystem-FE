@@ -1,20 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { PaymentService } from '@/services/PaymentService';
-import type { TransactionHistory } from '@/types/payment.types';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
+import type { Payment } from '@/types/payment.types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Skeleton } from '@/components/ui/skeleton';
+import PaymentList from '@/components/admin/PaymentList';
 
 const TransactionHistoryPage: React.FC = () => {
-  const [transactions, setTransactions] = useState<TransactionHistory[]>([]);
+  const [payments, setPayments] = useState<Payment[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -23,8 +16,12 @@ const TransactionHistoryPage: React.FC = () => {
       try {
         setLoading(true);
         const result = await PaymentService.getTransactionHistory();
-        if (result.success) {
-          setTransactions(result.data || []);
+        if (result.success && result.data) {
+          const paymentsData = result.data.map((item: any) => ({
+            ...item,
+            createdAt: item.transactionDate,
+          }));
+          setPayments(paymentsData as Payment[]);
         } else {
           setError(typeof result.error === 'string' ? result.error : 'Failed to fetch transaction history.');
         }
@@ -75,32 +72,7 @@ const TransactionHistoryPage: React.FC = () => {
           <CardTitle>Transaction History</CardTitle>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Date</TableHead>
-                <TableHead>Amount</TableHead>
-                <TableHead>Status</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {transactions.length > 0 ? (
-                transactions.map((tx) => (
-                  <TableRow key={tx.transactionId}>
-                    <TableCell>{new Date(tx.transactionDate).toLocaleDateString()}</TableCell>
-                    <TableCell>{tx.amount.toLocaleString()} VND</TableCell>
-                    <TableCell>{tx.status}</TableCell>
-                  </TableRow>
-                ))
-              ) : (
-                <TableRow>
-                  <TableCell colSpan={3} className="text-center">
-                    No transactions found.
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
+          <PaymentList payments={payments} />
         </CardContent>
       </Card>
     </div>

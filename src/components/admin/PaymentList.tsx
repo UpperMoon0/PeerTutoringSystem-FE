@@ -39,7 +39,7 @@ const PaymentList = ({ payments }: PaymentListProps) => {
                     <TableCell>{payment.tutorName}</TableCell>
                     <TableCell>{formatCurrency(payment.amount)}</TableCell>
                     <TableCell>{payment.status}</TableCell>
-                    <TableCell>{new Date(payment.createdAt).toLocaleDateString()}</TableCell>
+                    <TableCell>{new Date(payment.transactionDate).toLocaleDateString()}</TableCell>
                   </TableRow>
                 </DialogTrigger>
                 <DialogContent>

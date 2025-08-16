@@ -30,14 +30,6 @@ export interface Payment {
   tutorName: string;
   amount: number;
   status: string;
-  createdAt: string;
-  bookingId: string;
-}
-
-export interface TransactionHistory {
-  transactionId: string;
   transactionDate: string;
-  amount: number;
-  status: string;
   bookingId: string;
 }
