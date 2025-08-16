@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import type { WithdrawRequest } from '@/types/withdraw';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -24,10 +25,36 @@ const formatDate = (dateString: string) => {
 };
 
 const WithdrawRequestList = ({ requests, onViewDetails }: WithdrawRequestListProps) => {
+  const [statusFilter, setStatusFilter] = useState<string>('All');
+
+  const filteredRequests =
+    requests.filter((request) => {
+      if (statusFilter === 'All') {
+        return true;
+      }
+      return getWithdrawStatusString(request.status) === statusFilter;
+    }) || [];
   return (
     <Card>
-      <CardHeader>
+      <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle>Withdraw Requests</CardTitle>
+        <div className="flex items-center gap-2">
+          <label htmlFor="status-filter" className="text-sm font-medium">
+            Status:
+          </label>
+          <select
+            id="status-filter"
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            className="rounded-md border border-gray-300 p-2"
+          >
+            <option value="All">All</option>
+            <option value="Pending">Pending</option>
+            <option value="Approved">Approved</option>
+            <option value="Rejected">Rejected</option>
+            <option value="Canceled">Canceled</option>
+          </select>
+        </div>
       </CardHeader>
       <CardContent>
         <Table>
@@ -42,8 +69,8 @@ const WithdrawRequestList = ({ requests, onViewDetails }: WithdrawRequestListPro
             </TableRow>
           </TableHeader>
           <TableBody>
-            {requests.length > 0 ? (
-              requests.map((request) => (
+            {filteredRequests.length > 0 ? (
+              filteredRequests.map((request) => (
                 <TableRow key={request.id}>
                   <TableCell>{formatDate(request.requestDate)}</TableCell>
                   <TableCell>{formatCurrency(request.amount)}</TableCell>

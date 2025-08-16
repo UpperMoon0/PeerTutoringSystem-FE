@@ -53,6 +53,7 @@ const ManageWithdrawRequests = () => {
           request={selectedRequest}
           onApprove={handleApprove}
           onReject={handleReject}
+          onBack={() => setSelectedRequest(null)}
         />
       ) : (
         <WithdrawRequestList requests={requests?.data || []} onViewDetails={handleViewDetails} />

@@ -6,13 +6,6 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { WithdrawService } from '@/services/WithdrawService';
 import type { WithdrawRequest } from '@/types/withdraw';
 import WithdrawRequestList from '@/components/tutor/WithdrawRequestList';
-import WithdrawRequestDetailsModal from '@/components/tutor/WithdrawRequestDetailsModal';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
 import WithdrawRequestDetails from '@/components/admin/WithdrawRequestDetails';
 
 const formatCurrency = (amount: number) => {
@@ -71,8 +64,13 @@ const TutorWithdrawPage = () => {
     setSelectedRequest(request);
   };
 
-  const handleCloseDetails = () => {
-    setSelectedRequest(null);
+  const handleCancel = async (id: string) => {
+    const result = await WithdrawService.cancelWithdrawRequest(id);
+    if (result.success) {
+      fetchWithdrawRequests();
+      fetchBalance();
+      setSelectedRequest(null);
+    }
   };
 
   return (
@@ -104,23 +102,18 @@ const TutorWithdrawPage = () => {
         </div>
 
         <div className="lg:col-span-2">
-          <WithdrawRequestList requests={withdrawRequests} onViewDetails={handleViewDetails} />
-        </div>
-      </div>
-
-      {selectedRequest && (
-        <Dialog open={!!selectedRequest} onOpenChange={handleCloseDetails}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Withdraw Request Details</DialogTitle>
-            </DialogHeader>
+          {selectedRequest ? (
             <WithdrawRequestDetails
               request={selectedRequest}
               role="tutor"
+              onBack={() => setSelectedRequest(null)}
+              onCancel={handleCancel}
             />
-          </DialogContent>
-        </Dialog>
-      )}
+          ) : (
+            <WithdrawRequestList requests={withdrawRequests} onViewDetails={handleViewDetails} />
+          )}
+        </div>
+      </div>
     </div>
   );
 };

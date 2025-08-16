@@ -8,6 +8,8 @@ interface WithdrawRequestDetailsProps {
   request: WithdrawRequest;
   onApprove?: (id: string) => void;
   onReject?: (id: string) => void;
+  onCancel?: (id: string) => void;
+  onBack?: () => void;
   role?: 'admin' | 'tutor';
 }
 
@@ -15,12 +17,22 @@ const WithdrawRequestDetails = ({
   request,
   onApprove,
   onReject,
+  onCancel,
+  onBack,
   role = 'admin',
 }: WithdrawRequestDetailsProps) => {
   return (
     <Card>
-      <CardHeader>
+      <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle>Withdraw Request Details</CardTitle>
+        {onBack && (
+          <Button
+            onClick={onBack}
+            className="bg-blue-500 text-white hover:bg-blue-600"
+          >
+            Back to List
+          </Button>
+        )}
       </CardHeader>
       <CardContent>
         <div>
@@ -43,7 +55,7 @@ const WithdrawRequestDetails = ({
             </Badge>
           </p>
         </div>
-        {role === 'admin' && request.status === 'Pending' && onApprove && onReject && (
+        {role === 'admin' && getWithdrawStatusString(request.status) === 'Pending' && onApprove && onReject && (
           <div className="mt-4 flex space-x-2">
             <Button
               onClick={() => onApprove(request.id)}
@@ -57,6 +69,17 @@ const WithdrawRequestDetails = ({
               className="text-white"
             >
               Reject
+            </Button>
+          </div>
+        )}
+        {role === 'tutor' && getWithdrawStatusString(request.status) === 'Pending' && onCancel && (
+          <div className="mt-4 flex space-x-2">
+            <Button
+              variant="destructive"
+              onClick={() => onCancel(request.id)}
+              className="text-white"
+            >
+              Cancel
             </Button>
           </div>
         )}
