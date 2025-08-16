@@ -24,8 +24,6 @@ import {
   AlertCircle,
   ListChecks,
   Star,
-  Bell,
-  MessageSquareHeart,
   CircleDollarSign,
 } from 'lucide-react';
 import { format } from 'date-fns';
@@ -224,7 +222,6 @@ const StudentBookingHistoryPage: React.FC = () => {
   };
 
   // Get count of completed bookings without reviews
-  const pendingReviewsCount = bookings.filter(canLeaveReview).length;
 
   if (!currentUser) {
     return (
@@ -385,7 +382,7 @@ const StudentBookingHistoryPage: React.FC = () => {
                               {getStatusString(booking.status) === 'Confirmed' ? 'Ready to start' : 'Session ended'}
                             </div>
                           )}
-                          {booking.paymentStatus !== 1 && (
+                          {booking.paymentStatus !== 'Paid' && (
                             <div className="flex items-center text-xs text-amber-600 dark:text-amber-500 mt-1">
                               <CircleDollarSign className="w-3 h-3 mr-1" />
                               <span>Payment Pending</span>

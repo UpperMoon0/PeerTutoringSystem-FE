@@ -48,9 +48,9 @@ const SubmitReviewForm: React.FC<SubmitReviewFormProps> = ({ bookingId, tutorId,
     }
 
     const payload: CreateReviewDto = {
-      bookingID: bookingId,
-      studentID: studentId || currentUser.userId, // Use provided studentId or current user's ID
-      tutorID: tutorId,
+      bookingId: bookingId,
+      studentId: studentId || currentUser.userId, // Use provided studentId or current user's ID
+      tutorId: tutorId,
       rating: currentRating, // Use currentRating from state
       comment: values.comment,
     };

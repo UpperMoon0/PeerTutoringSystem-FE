@@ -2,7 +2,6 @@ import type { ApiResult, ServiceResult } from '@/types/api.types';
 import type { User } from '@/types/user.types';
 import { AuthService } from './AuthService';
 import type { Skill, CreateSkillDto, UpdateSkillDto } from '../types/skill.types';
-import type { AdminDashboardStatistics } from '@/types/admin.types';
 
 export interface DashboardStatistics {
   totalUsers: number;

@@ -10,7 +10,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { Star, StarHalf } from 'lucide-react';
+import { Star } from 'lucide-react';
 import type { CreateReviewDto } from '@/types';
 
 interface ReviewModalProps {

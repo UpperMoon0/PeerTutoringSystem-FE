@@ -8,7 +8,6 @@ import {
   Users,
   ListChecks,
   Wrench,
-  TrendingUp,
   AlertCircle,
   CheckCircle,
   Clock,

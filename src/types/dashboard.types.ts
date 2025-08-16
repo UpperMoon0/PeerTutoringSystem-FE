@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
-import { TutorSessionStats } from './session.types';
+import type { TutorSessionStats } from './session.types';
+export type { TutorSessionStats };
 
 // User role types
 export type UserRole = 'admin' | 'tutor';
