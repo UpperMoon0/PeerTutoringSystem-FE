@@ -10,8 +10,7 @@ import type { CreateReviewDto, ReviewDto } from '@/types/review.types';
 const createReview = async (payload: CreateReviewDto): Promise<ServiceResult<ReviewDto>> => {
   try {
     // Wrap payload in "dto" object as expected by backend
-    const requestBody = { dto: payload };
-    const response = await apiClient.post(`/Reviews`, requestBody);
+    const response = await apiClient.post(`/Reviews`, payload);
     return { success: true, data: response.data as ReviewDto };
   } catch (error: unknown) {
     console.error('Error creating review:', error);

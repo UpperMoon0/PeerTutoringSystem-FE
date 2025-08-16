@@ -185,7 +185,7 @@ const StudentBookingHistoryPage: React.FC = () => {
   };
 
   const canLeaveReview = (booking: Booking): boolean => {
-    return booking.status === 'Completed' && !reviewedBookings.has(booking.bookingId);
+    return getStatusString(booking.status) === 'Completed' && !reviewedBookings.has(booking.bookingId);
   };
 
   const handleUpdateBookingInList = (updatedBooking: Booking) => {
@@ -199,14 +199,14 @@ const StudentBookingHistoryPage: React.FC = () => {
   };
 
   const isHighlighted = (booking: Booking) => {
-    if (booking.status === 'Confirmed' && booking.session) {
+    if (getStatusString(booking.status) === 'Confirmed' && booking.session) {
       return 'bg-green-100/50 border-l-4 border-l-green-500';
     }
-    if (booking.status === 'Completed' && booking.paymentStatus !== 'Paid') {
+    if (getStatusString(booking.status) === 'Completed' && booking.paymentStatus !== 'Paid') {
       return 'bg-amber-100/50 border-l-4 border-l-amber-500';
     }
     if (canLeaveReview(booking)) {
-      return 'bg-gradient-to-r from-chart-1/20 to-transparent border-l-4 border-l-chart-1';
+      return 'bg-gradient-to-r from-chart-1/20 to-transparent border-l-4 border-l-chart-1 animate-pulse';
     }
     return '';
   };
@@ -384,21 +384,10 @@ const StudentBookingHistoryPage: React.FC = () => {
                             <Badge variant={getStatusBadgeVariant(getStatusString(booking.status))} className="capitalize">
                               {getStatusString(booking.status)}
                             </Badge>
-                            {canLeaveReview(booking) && (
-                              <Badge variant="outline" className="text-chart-1 border-chart-1 animate-pulse">
-                                <Star className="w-3 h-3 mr-1" />
-                                Review Needed
-                              </Badge>
-                            )}
                           </div>
                           {(booking.status === 'Confirmed' || booking.status === 'Completed') && (
                             <div className="text-xs text-muted-foreground">
                               {booking.status === 'Confirmed' ? 'Ready to start' : 'Session ended'}
-                            </div>
-                          )}
-                          {canLeaveReview(booking) && (
-                            <div className="text-xs text-chart-1 font-medium">
-                              📝 Click to leave a review
                             </div>
                           )}
                         </div>
