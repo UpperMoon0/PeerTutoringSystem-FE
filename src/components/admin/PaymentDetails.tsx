@@ -17,7 +17,7 @@ const PaymentDetails = ({ payment }: PaymentDetailsProps) => {
       <p><strong>Tutor:</strong> {payment.tutorName}</p>
       <p><strong>Amount:</strong> {formatCurrency(payment.amount)}</p>
       <p><strong>Status:</strong> {payment.status}</p>
-      <p><strong>Date:</strong> {new Date(payment.createdAt).toLocaleString()}</p>
+      <p><strong>Date:</strong> {new Date(payment.transactionDate).toLocaleString()}</p>
     </div>
   );
 };
