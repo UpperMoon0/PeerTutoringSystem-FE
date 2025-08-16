@@ -16,10 +16,10 @@ const HeroSection: React.FC = () => {
       {/* Content */}
       <div className="relative z-20 container mx-auto px-4 flex items-center">
         <div className="max-w-4xl">
-          <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-6" style={{ color: 'white', textShadow: '2px 2px 8px rgba(0, 0, 0, 0.8)' }}>
-            Find the right tutor for you.
+          <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold mb-6" style={{ color: 'white', textShadow: '2px 2px 8px rgba(0, 0, 0, 0.8)' }}>
+            Find the right tutor for you
           </h1>
-          <p className="text-xl md:text-2xl lg:text-3xl mb-12 font-medium max-w-4xl" style={{
+          <p className="text-lg md:text-xl lg:text-2xl mb-12 font-normal max-w-4xl" style={{
                       color: 'white',
                       backgroundColor: 'rgba(0, 0, 0, 0.5)',
                       padding: '20px 24px',

@@ -492,7 +492,7 @@ const TutorDetailPage: React.FC = () => {
           </CardHeader>
           <CardContent className="p-6 pt-4 space-y-6">
             <div className="flex flex-col sm:flex-row gap-4 items-end">
-              <div className="flex-1 space-y-1">
+              <div className="space-y-1">
                 <Label htmlFor="startDate" className="block text-sm font-medium text-muted-foreground">
                   Start Date
                 </Label>
@@ -501,7 +501,7 @@ const TutorDetailPage: React.FC = () => {
                     <Button
                       variant={"outline"}
                       className={cn(
-                        "w-full justify-start text-left font-normal bg-input border-border hover:bg-accent text-foreground",
+                        "w-full md:w-auto justify-start text-left font-normal bg-input border-border hover:bg-accent text-foreground py-5 px-4",
                         !dateRangeStart && "text-muted-foreground"
                       )}
                     >
@@ -535,7 +535,7 @@ const TutorDetailPage: React.FC = () => {
                   </PopoverContent>
                 </Popover>
               </div>
-              <div className="flex-1 space-y-1">
+              <div className="space-y-1">
                 <Label htmlFor="endDate" className="block text-sm font-medium text-muted-foreground">
                   End Date
                 </Label>
@@ -544,7 +544,7 @@ const TutorDetailPage: React.FC = () => {
                     <Button
                       variant={"outline"}
                       className={cn(
-                        "w-full justify-start text-left font-normal bg-input border-border hover:bg-accent text-foreground",
+                        "w-full md:w-auto justify-start text-left font-normal bg-input border-border hover:bg-accent text-foreground py-5 px-4",
                         !dateRangeEnd && "text-muted-foreground"
                       )}
                     >
@@ -579,7 +579,7 @@ const TutorDetailPage: React.FC = () => {
                     setDateRangeStart(undefined);
                     setDateRangeEnd(undefined);
                   }}
-                  className="bg-primary text-primary-foreground hover:bg-primary/90"
+                  className="bg-primary text-primary-foreground hover:bg-primary/90 px-6 py-5"
                 >
                   Clear
                 </Button>
@@ -661,30 +661,37 @@ const TutorDetailPage: React.FC = () => {
               <div className="mt-6 pt-6 border-t border-border space-y-4">
                 <h4 className="text-lg font-semibold text-foreground">Confirm Booking Details:</h4>
                 <div>
-                  <Label htmlFor="skill" className="text-muted-foreground">
+                  <Label htmlFor="skill" className="text-muted-foreground mb-2 block">
                     Skill
                   </Label>
-                  <Select
-                    value={selectedSkillId}
-                    onValueChange={(value) => {
-                      const skill = skills.find((s) => s.skillID === value);
-                      if (skill) {
-                        setSelectedSkillId(skill.skillID);
-                        setTopic(skill.skillName);
-                      }
-                    }}
-                  >
-                    <SelectTrigger className="bg-input border-border text-foreground placeholder-muted-foreground focus:ring-ring focus:border-ring">
-                      <SelectValue placeholder="Select a skill" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {skills.map((skill) => (
-                        <SelectItem key={skill.skillID} value={skill.skillID}>
+                  <div className="flex flex-wrap gap-2">
+                    {skills.map(skill => {
+                      const isSelected = selectedSkillId === skill.skillID;
+                      return (
+                        <button
+                          key={skill.skillID}
+                          onClick={() => {
+                            if (isSelected) {
+                              setSelectedSkillId(undefined);
+                              setTopic('');
+                            } else {
+                              setSelectedSkillId(skill.skillID);
+                              setTopic(skill.skillName);
+                            }
+                          }}
+                          className={cn(
+                            "text-white px-3 py-1 rounded-full text-sm transition-all duration-200 ease-in-out transform hover:scale-105",
+                            isSelected
+                              ? 'ring-2 ring-offset-2 ring-ring ring-offset-background'
+                              : 'opacity-80 hover:opacity-100'
+                          )}
+                          style={{ backgroundColor: generateBrightColor(skill.skillName) }}
+                        >
                           {skill.skillName}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
                 <div>
                   <Label htmlFor="description" className="text-muted-foreground">Description</Label>
@@ -699,7 +706,7 @@ const TutorDetailPage: React.FC = () => {
                 <Button
                   onClick={handleBookSession}
                   disabled={isLoading || !selectedAvailability}
-                  className="w-full bg-gradient-to-r from-primary to-ring hover:from-ring hover:to-ring text-primary-foreground font-semibold py-3 text-base"
+                  className="w-auto px-8 bg-gradient-to-r from-primary to-ring hover:from-ring hover:to-ring text-primary-foreground font-semibold py-4 text-base rounded-lg"
                 >
                   {isLoading ? 'Booking...' : 'Confirm & Book Session'}
                 </Button>
