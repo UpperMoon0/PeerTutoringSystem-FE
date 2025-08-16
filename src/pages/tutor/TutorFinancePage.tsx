@@ -3,6 +3,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { TutorService } from '@/services/TutorService';
 import type { TutorFinanceDetails } from '@/types/tutor.types';
+import { PaymentService } from '@/services/PaymentService';
+import type { Payment } from '@/types/payment.types';
+import PaymentList from '@/components/admin/PaymentList';
 
 const formatCurrency = (amount: number) => {
   return `${amount.toLocaleString()} VND`;
@@ -10,6 +13,7 @@ const formatCurrency = (amount: number) => {
 
 const TutorFinancePage = () => {
   const [financeDetails, setFinanceDetails] = useState<TutorFinanceDetails | null>(null);
+  const [payments, setPayments] = useState<Payment[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -17,15 +21,21 @@ const TutorFinancePage = () => {
     const fetchFinanceDetails = async () => {
       try {
         setLoading(true);
-        const result = await TutorService.getTutorFinanceDetails();
-        if (result.success && result.data) {
-          setFinanceDetails(result.data);
+        const [financeResult, paymentsResult] = await Promise.all([
+          TutorService.getTutorFinanceDetails(),
+          PaymentService.getTransactionHistory(),
+        ]);
+
+        if (financeResult.success && financeResult.data) {
+          setFinanceDetails(financeResult.data);
         } else {
-          if (typeof result.error === 'string') {
-            setError(result.error);
-          } else {
-            setError('Failed to fetch finance details.');
-          }
+          setError(typeof financeResult.error === 'string' ? financeResult.error : 'Failed to fetch finance details.');
+        }
+
+        if (paymentsResult.success && paymentsResult.data) {
+          setPayments(paymentsResult.data);
+        } else {
+          setError(typeof paymentsResult.error === 'string' ? paymentsResult.error : 'Failed to fetch payments.');
         }
       } catch (error) {
         if (error instanceof Error) {
@@ -85,6 +95,10 @@ const TutorFinancePage = () => {
               </CardContent>
             </Card>
           </div>
+        </div>
+        <div className="mt-8">
+          <h2 className="text-2xl font-bold mb-4">Payment History</h2>
+          <PaymentList payments={payments} />
         </div>
       </div>
     </div>

@@ -6,6 +6,13 @@ import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '../ui/card';
 import { Badge } from '../ui/badge';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '../ui/select';
 import { 
   User, 
   Calendar, 
@@ -24,7 +31,7 @@ interface ProfileCardProps {
   isEditing: boolean;
   setIsEditing: (editing: boolean) => void;
   formData: UpdateProfileDto | null;
-  handleInputChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
+  handleInputChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement> | { target: { name: string; value: string } }) => void;
   handleDateChange: (date: Date | undefined) => void;
   handleSave: () => Promise<void>;
   avatarPreview: string | null;
@@ -247,13 +254,20 @@ const ProfileCard: React.FC<ProfileCardProps> = ({
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <Label htmlFor="gender" className="text-sm font-medium text-muted-foreground">Gender</Label>
-                    <Input
-                      id="gender"
-                      name="gender"
-                      value={formData?.gender || ''}
-                      onChange={handleInputChange}
-                      className="mt-1 bg-input border-border text-foreground placeholder:text-muted-foreground"
-                    />
+                    <Select
+                        name="gender"
+                        value={formData?.gender || ''}
+                        onValueChange={(value) => handleInputChange({ target: { name: 'gender', value } })}
+                    >
+                        <SelectTrigger className="mt-1 bg-input border-border text-foreground placeholder:text-muted-foreground">
+                        <SelectValue placeholder="Select gender" />
+                        </SelectTrigger>
+                        <SelectContent>
+                        <SelectItem value="Male">Male</SelectItem>
+                        <SelectItem value="Female">Female</SelectItem>
+                        <SelectItem value="Other">Other</SelectItem>
+                        </SelectContent>
+                    </Select>
                   </div>
                   <div>
                     <Label htmlFor="hometown" className="text-sm font-medium text-muted-foreground">Hometown</Label>
