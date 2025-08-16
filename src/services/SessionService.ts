@@ -172,5 +172,38 @@ export const SessionService = {
       console.error('Error updating session:', error instanceof Error ? error.message : error);
       return { success: false, error: error instanceof Error ? error.message : "Failed to update session." };
     }
-  }
+  },
+
+  async getTutorSessionsForCalendar(startDate: string, endDate: string): Promise<ApiResult<{ sessions: Session[] }>> {
+    try {
+      const queryParams = new URLSearchParams({
+        startDate,
+        endDate,
+        pageSize: '100', // Fetch all sessions within the date range
+        status: 'null',
+      });
+
+      const response = await AuthService.fetchWithAuth(`${API_BASE_URL}/Sessions/user?${queryParams.toString()}`, {
+        method: 'GET',
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: "Failed to parse error response." }));
+        throw new Error(errorData.error || `Failed to fetch tutor sessions for calendar: ${response.statusText}`);
+      }
+
+      const responseData = await response.json();
+      const convertedSessions = responseData.data?.map((session: BackendSessionDto) => convertSessionFromBackend(session)) || [];
+
+      return {
+        success: true,
+        data: {
+          sessions: convertedSessions,
+        },
+      };
+    } catch (error: unknown) {
+      console.error('Error fetching tutor sessions for calendar:', error instanceof Error ? error.message : error);
+      return { success: false, error: error instanceof Error ? error.message : "Failed to fetch tutor sessions for calendar." };
+    }
+  },
 };

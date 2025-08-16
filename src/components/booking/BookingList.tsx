@@ -35,6 +35,7 @@ interface BookingListProps {
   additionalActions?: (booking: Booking) => React.ReactNode;
   onBookingUpdate: () => void;
   showStats?: boolean;
+  itemPerPage?: number;
 }
 
 export const BookingList: React.FC<BookingListProps> = ({
@@ -45,6 +46,7 @@ export const BookingList: React.FC<BookingListProps> = ({
   additionalActions,
   onBookingUpdate,
   showStats = true,
+  itemPerPage = 10,
 }) => {
   useAuth();
   const [bookings, setBookings] = useState<Booking[]>([]);
@@ -57,7 +59,7 @@ export const BookingList: React.FC<BookingListProps> = ({
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
 
-  const pageSize = 10;
+  const pageSize = itemPerPage;
 
   const fetchBookings = useCallback(async () => {
     try {
