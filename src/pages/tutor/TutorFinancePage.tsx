@@ -23,7 +23,7 @@ const TutorFinancePage = () => {
         setLoading(true);
         const [financeResult, paymentsResult] = await Promise.all([
           TutorService.getTutorFinanceDetails(),
-          PaymentService.getTransactionHistory(),
+          PaymentService.getTutorTransactionHistory(),
         ]);
 
         if (financeResult.success && financeResult.data) {
