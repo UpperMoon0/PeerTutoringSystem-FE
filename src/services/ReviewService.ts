@@ -58,7 +58,9 @@ const getReviewsByTutorId = async (tutorId: string): Promise<ServiceResult<Revie
  */
 const checkReviewExistsForBooking = async (bookingId: string): Promise<ServiceResult<boolean>> => {
   try {
+    console.log(`Checking if review exists for booking ID: ${bookingId}`);
     const response = await apiClient.get(`/Reviews/booking/${bookingId}/exists`);
+    console.log(`Response for booking ID ${bookingId}:`, response.data);
     return { success: true, data: response.data as boolean };
   } catch (error: unknown) {
     console.error(`Error checking review for booking ID ${bookingId}:`, error);

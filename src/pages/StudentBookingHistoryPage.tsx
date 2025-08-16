@@ -26,6 +26,7 @@ import {
   Star,
   Bell,
   MessageSquareHeart,
+  CircleDollarSign,
 } from 'lucide-react';
 import { format } from 'date-fns';
 import type { DateRange } from 'react-day-picker';
@@ -104,20 +105,34 @@ const StudentBookingHistoryPage: React.FC = () => {
         setCurrentPage(response.data.page);
 
         // Check which completed bookings already have reviews
-        const completedBookings = bookingsWithTotalPrice.filter(booking => booking.status === 'Completed');
-        const reviewChecks = await Promise.allSettled(
-          completedBookings.map(booking =>
-            ReviewService.checkReviewExistsForBooking(booking.bookingId)
-          )
+        const completedBookings = bookingsWithTotalPrice.filter(
+          booking => getStatusString(booking.status) === 'Completed'
         );
+        if (completedBookings.length > 0) {
+          console.log(`Found ${completedBookings.length} completed bookings to check for reviews.`);
+          const reviewChecks = await Promise.allSettled(
+            completedBookings.map(booking =>
+              ReviewService.checkReviewExistsForBooking(booking.bookingId)
+            )
+          );
 
-        const newReviewedBookings = new Set<string>();
-        reviewChecks.forEach((result, index) => {
-          if (result.status === 'fulfilled' && result.value.success && result.value.data) {
-            newReviewedBookings.add(completedBookings[index].bookingId);
-          }
-        });
-        setReviewedBookings(newReviewedBookings);
+          const newReviewedBookings = new Set<string>();
+          reviewChecks.forEach((result, index) => {
+            const booking = completedBookings[index];
+            if (result.status === 'fulfilled') {
+              console.log(`Review check for booking ${booking.bookingId} was successful.`);
+              if (result.value.success && result.value.data) {
+                console.log(`Review exists for booking ${booking.bookingId}. Adding to reviewed set.`);
+                newReviewedBookings.add(booking.bookingId);
+              } else {
+                console.log(`No review found for booking ${booking.bookingId}.`);
+              }
+            } else {
+              console.error(`Review check failed for booking ${booking.bookingId}:`, result.reason);
+            }
+          });
+          setReviewedBookings(newReviewedBookings);
+        }
       } else {
         const errorMessage = typeof response.error === 'string' ? response.error : (response.error as { message?: string })?.message || 'Failed to fetch booking history.';
         setError(errorMessage);
@@ -201,9 +216,6 @@ const StudentBookingHistoryPage: React.FC = () => {
   const isHighlighted = (booking: Booking) => {
     if (getStatusString(booking.status) === 'Confirmed' && booking.session) {
       return 'bg-green-100/50 border-l-4 border-l-green-500';
-    }
-    if (getStatusString(booking.status) === 'Completed' && booking.paymentStatus !== 'Paid') {
-      return 'bg-amber-100/50 border-l-4 border-l-amber-500';
     }
     if (canLeaveReview(booking)) {
       return 'bg-gradient-to-r from-chart-1/20 to-transparent border-l-4 border-l-chart-1 animate-pulse';
@@ -321,7 +333,7 @@ const StudentBookingHistoryPage: React.FC = () => {
                           <User className="w-4 h-4 mr-2 text-muted-foreground" />
                           <div>
                             <div>{booking.tutorName || 'N/A'}</div>
-                            {(booking.status === 'Confirmed' || booking.status === 'Completed') && (
+                            {(getStatusString(booking.status) === 'Confirmed' || getStatusString(booking.status) === 'Completed') && (
                               <div className="text-xs text-muted-foreground mt-1">
                                 Session with {booking.tutorName}
                               </div>
@@ -332,7 +344,7 @@ const StudentBookingHistoryPage: React.FC = () => {
                       <TableCell className="text-foreground">
                         <div>
                           <div>{booking.topic}</div>
-                          {(booking.status === 'Confirmed' || booking.status === 'Completed') && booking.description && (
+                          {(getStatusString(booking.status) === 'Confirmed' || getStatusString(booking.status) === 'Completed') && booking.description && (
                             <div className="text-xs text-muted-foreground mt-1 line-clamp-1">
                               {booking.description}
                             </div>
@@ -344,7 +356,7 @@ const StudentBookingHistoryPage: React.FC = () => {
                           <CalendarDays className="w-4 h-4 mr-1.5 text-muted-foreground" />
                           {format(new Date(booking.sessionDate || booking.startTime), 'MMM dd, yyyy')}
                         </div>
-                        {(booking.status === 'Confirmed' || booking.status === 'Completed') && (
+                        {(getStatusString(booking.status) === 'Confirmed' || getStatusString(booking.status) === 'Completed') && (
                           <div className="text-xs text-muted-foreground mt-1">
                             Session Date
                           </div>
@@ -355,7 +367,7 @@ const StudentBookingHistoryPage: React.FC = () => {
                           <Clock className="w-4 h-4 mr-1.5 text-muted-foreground" />
                           {format(new Date(booking.startTime), 'HH:mm')} - {format(new Date(booking.endTime), 'HH:mm')}
                         </div>
-                        {(booking.status === 'Confirmed' || booking.status === 'Completed') && (
+                        {(getStatusString(booking.status) === 'Confirmed' || getStatusString(booking.status) === 'Completed') && (
                           <div className="text-xs text-muted-foreground mt-1">
                             Duration: {Math.round((new Date(booking.endTime).getTime() - new Date(booking.startTime).getTime()) / (1000 * 60))} min
                           </div>
@@ -368,9 +380,15 @@ const StudentBookingHistoryPage: React.FC = () => {
                               {getStatusString(booking.status)}
                             </Badge>
                           </div>
-                          {(booking.status === 'Confirmed' || booking.status === 'Completed') && (
+                          {(getStatusString(booking.status) === 'Confirmed' || getStatusString(booking.status) === 'Completed') && (
                             <div className="text-xs text-muted-foreground">
-                              {booking.status === 'Confirmed' ? 'Ready to start' : 'Session ended'}
+                              {getStatusString(booking.status) === 'Confirmed' ? 'Ready to start' : 'Session ended'}
+                            </div>
+                          )}
+                          {booking.paymentStatus !== 1 && (
+                            <div className="flex items-center text-xs text-amber-600 dark:text-amber-500 mt-1">
+                              <CircleDollarSign className="w-3 h-3 mr-1" />
+                              <span>Payment Pending</span>
                             </div>
                           )}
                         </div>
