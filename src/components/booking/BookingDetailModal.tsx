@@ -167,8 +167,12 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
   };
 
   const handleContactUser = () => {
-    const contactName = userRole === 'student' ? currentBooking.tutorName : currentBooking.studentName;
-    toast.info(`Contact feature for ${contactName} would open here.`);
+    const otherUserId = userRole === 'student' ? currentBooking.tutorId : currentBooking.studentId;
+    if (otherUserId) {
+      navigate(`/student/chat?userId=${otherUserId}`);
+    } else {
+      toast.error('Could not find user to contact.');
+    }
   };
 
   const handleUpdateStatus = async (status: string, force = false) => {

@@ -19,7 +19,15 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ conversation, onNewMessage }) =
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [messageInput, setMessageInput] = useState<string>('');
   const [connectionState, setConnectionState] = useState<HubConnectionState | null>(null);
+  const [latestMessage, setLatestMessage] = useState<ChatMessage | null>(null);
   const chatContentRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (latestMessage) {
+      onNewMessage(latestMessage);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [latestMessage]);
 
   useEffect(() => {
     if (conversation) {
@@ -49,9 +57,8 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ conversation, onNewMessage }) =
           if (prevMessages.some((m) => m.id === message.id)) {
             return prevMessages; // Message already exists, do not add duplicate
           }
-          const newMessages = [...prevMessages, message];
-          onNewMessage(message);
-          return newMessages;
+          setLatestMessage(message);
+          return [...prevMessages, message];
         });
       }
     };
@@ -75,6 +82,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ conversation, onNewMessage }) =
         }
       });
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [conversation, currentUser]);
 
   useEffect(() => {
@@ -113,7 +121,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ conversation, onNewMessage }) =
             msg.id === optimisticMessage.id ? receivedMessage : msg
           )
         );
-        onNewMessage(receivedMessage);
+        setLatestMessage(receivedMessage);
       } else {
         console.error('Error sending message:', result.error);
         // Revert optimistic update
@@ -149,8 +157,12 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ conversation, onNewMessage }) =
                 } p-3 rounded-lg max-w-xs shadow-md`}
               >
                 <ReactMarkdown rehypePlugins={[rehypeRaw]}>{msg.message}</ReactMarkdown>
-                <span className="text-xs text-muted-foreground mt-1 block">
-                  {new Date(msg.timestamp).toLocaleTimeString()} - {msg.senderId === currentUser?.userId ? 'You' : 'Other User'}
+                <span
+                  className={`text-xs mt-1 block ${
+                    msg.senderId === currentUser?.userId ? 'text-muted-foreground' : 'text-primary-foreground'
+                  }`}
+                >
+                  {new Date(msg.timestamp).toLocaleString()}
                 </span>
               </div>
             </div>
