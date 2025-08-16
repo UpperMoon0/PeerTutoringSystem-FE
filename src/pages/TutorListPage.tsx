@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import type { Skill, SkillLevel } from '../types/skill.types';
 import type { EnrichedTutor } from '../types/enrichedTutor.types';
 import { TutorService } from '../services/TutorService';
-import { AdminSkillService } from '../services/AdminSkillService';
+import { AdminService } from '../services/AdminService';
 import TutorCard from '@/components/tutor/TutorCard';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -39,7 +39,7 @@ const TutorListPage: React.FC = () => {
     const fetchSkills = async () => {
       setSkillsLoading(true);
       try {
-        const result = await AdminSkillService.getAllSkills();
+        const result = await AdminService.getAllSkills();
         if (result.success && result.data) {
           setAvailableSkills(result.data);
         }

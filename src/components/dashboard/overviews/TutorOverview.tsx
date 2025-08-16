@@ -14,8 +14,8 @@ import {
   PlusCircle
 } from 'lucide-react';
 import type { Booking } from '@/types/booking.types';
-import type { Session } from '@/types/session.types';
-import type { TutorDashboardStats, TutorFinanceDetails } from '@/types/tutor.types';
+import type { Session, TutorSessionStats } from '@/types/session.types';
+import type { TutorFinanceDetails } from '@/types/tutor.types';
 import { BookingList } from '@/components/booking/BookingList';
 import type { ApiResult } from '@/types/api.types';
 
@@ -26,7 +26,7 @@ interface TutorOverviewProps {
 }
 
 const TutorOverview: React.FC<TutorOverviewProps> = ({ onNavigateToSection }) => {
-  const [stats, setStats] = useState<TutorDashboardStats | null>(null);
+  const [stats, setStats] = useState<TutorSessionStats | null>(null);
   const [financeDetails, setFinanceDetails] = useState<TutorFinanceDetails | null>(null);
   const [sessions, setSessions] = useState<Session[]>([]);
   const [loading, setLoading] = useState(true);
@@ -64,7 +64,7 @@ const TutorOverview: React.FC<TutorOverviewProps> = ({ onNavigateToSection }) =>
       setLoading(true);
       setError(null);
       
-      const statsResult = await TutorService.getTutorDashboardStats();
+      const statsResult = await SessionService.getTutorSessionStats();
       if (statsResult.success && statsResult.data) {
         setStats(statsResult.data);
       } else {
@@ -148,8 +148,8 @@ const TutorOverview: React.FC<TutorOverviewProps> = ({ onNavigateToSection }) =>
               <CardContent className="p-4 lg:p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-muted-foreground text-sm font-medium">Total Bookings</p>
-                    <p className="text-3xl font-bold text-foreground mt-2">{stats.totalBookings}</p>
+                    <p className="text-muted-foreground text-sm font-medium">Total Sessions</p>
+                    <p className="text-3xl font-bold text-foreground mt-2">{stats.totalSessions}</p>
                   </div>
                   <div className="p-3 bg-blue-600 bg-opacity-20 rounded-lg">
                     <BookOpen className="w-6 h-6 text-blue-400" />
@@ -163,8 +163,8 @@ const TutorOverview: React.FC<TutorOverviewProps> = ({ onNavigateToSection }) =>
               <CardContent className="p-4 lg:p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-muted-foreground text-sm font-medium">Available Slots</p>
-                    <p className="text-3xl font-bold text-foreground mt-2">{stats.availableSlots}</p>
+                    <p className="text-muted-foreground text-sm font-medium">Total Hours</p>
+                    <p className="text-3xl font-bold text-foreground mt-2">{stats.totalHours}</p>
                     <p className="text-blue-500 text-sm mt-1 flex items-center">
                       <Calendar className="w-4 h-4 mr-1" />
                       This week

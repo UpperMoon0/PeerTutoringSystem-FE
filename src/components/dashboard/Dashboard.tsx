@@ -3,7 +3,8 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import DashboardSidebar from './DashboardSidebar';
 import DashboardContent from './DashboardContent';
-import type { DashboardProps } from '@/types/dashboard.types';
+import type { DashboardProps, TutorSessionStats } from '@/types/dashboard.types';
+import { SessionService } from '@/services/SessionService';
 
 const Dashboard: React.FC<DashboardProps> = ({
   config,
@@ -15,6 +16,7 @@ const Dashboard: React.FC<DashboardProps> = ({
   const location = useLocation();
   const navigate = useNavigate();
   const [activeSection, setActiveSection] = useState<string>(propActiveSection || 'overview');
+  const [sessionStats, setSessionStats] = useState<TutorSessionStats | null>(null);
 
   // Handle URL-based navigation
   useEffect(() => {
@@ -30,6 +32,16 @@ const Dashboard: React.FC<DashboardProps> = ({
       setActiveSection('overview');
     }
   }, [location.search, config.sections]);
+
+  useEffect(() => {
+    if (config.role === 'tutor') {
+      SessionService.getTutorSessionStats().then(result => {
+        if (result.success) {
+          setSessionStats(result.data);
+        }
+      });
+    }
+  }, [config.role]);
 
   // Sync with parent component if needed
   useEffect(() => {
@@ -77,6 +89,7 @@ const Dashboard: React.FC<DashboardProps> = ({
         config={enhancedConfig}
         activeSection={activeSection}
         onSectionChange={handleSectionChange}
+        sessionStats={sessionStats}
         className="flex-shrink-0"
       />
       

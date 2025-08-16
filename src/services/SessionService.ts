@@ -206,4 +206,24 @@ export const SessionService = {
       return { success: false, error: error instanceof Error ? error.message : "Failed to fetch tutor sessions for calendar." };
     }
   },
+
+  async getTutorSessionStats(): Promise<ApiResult<any>> {
+    try {
+      const response = await AuthService.fetchWithAuth(`${API_BASE_URL}/Sessions/tutor/stats`, {
+        method: 'GET',
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: "Failed to parse error response." }));
+        throw new Error(errorData.error || `Failed to fetch tutor session stats: ${response.statusText}`);
+      }
+
+      const responseData = await response.json();
+      
+      return { success: true, data: responseData.data };
+    } catch (error: unknown) {
+      console.error('Error fetching tutor session stats:', error instanceof Error ? error.message : error);
+      return { success: false, error: error instanceof Error ? error.message : "Failed to fetch tutor session stats." };
+    }
+  }
 };

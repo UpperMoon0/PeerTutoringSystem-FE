@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useMemo, useCallback } from 'react';
-import { AdminUserService } from '@/services/AdminUserService';
+import { AdminService } from '@/services/AdminService';
 import type { User } from '@/types/user.types';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
@@ -28,7 +28,7 @@ const ManageUsersSection: React.FC = () => {
     }
     setLoading(true);
     setError(null);
-    const result = await AdminUserService.getAllUsers();
+    const result = await AdminService.getAllUsers();
     if (result.success && result.data) {
       setAllUsers(result.data);
     } else {
@@ -60,9 +60,9 @@ const ManageUsersSection: React.FC = () => {
 
     let result;
     if (currentUserStatus === 'Banned') {
-      result = await AdminUserService.unbanUser(userId);
+      result = await AdminService.unbanUser(userId);
     } else {
-      result = await AdminUserService.banUser(userId);
+      result = await AdminService.banUser(userId);
     }
 
     if (result.success) {

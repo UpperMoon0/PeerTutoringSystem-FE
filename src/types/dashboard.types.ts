@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { TutorSessionStats } from './session.types';
 
 // User role types
 export type UserRole = 'admin' | 'tutor';
@@ -63,6 +64,7 @@ export interface SidebarProps {
   onSectionChange?: (section: string) => void;
   className?: string;
   additionalProps?: Record<string, unknown>;
+  sessionStats?: TutorSessionStats | null;
 }
 
 // Content props interface

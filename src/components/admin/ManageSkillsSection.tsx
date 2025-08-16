@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { AdminSkillService } from '../../services/AdminSkillService';
+import { AdminService } from '../../services/AdminService';
 import type { Skill, CreateSkillDto, UpdateSkillDto, SkillLevel } from '../../types/skill.types';
 import { useAuth } from '../../contexts/AuthContext';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -37,7 +37,7 @@ const ManageSkillsSection: React.FC = () => {
     }
     setLoading(true);
     setError(null);
-    const result = await AdminSkillService.getAllSkills();
+    const result = await AdminService.getAllSkills();
     if (result.success && result.data) {
       setSkills(result.data);
     } else {
@@ -72,7 +72,7 @@ const ManageSkillsSection: React.FC = () => {
       skillLevel: newSkillLevel as SkillLevel
     };
 
-    const result = await AdminSkillService.addSkill(payload);
+    const result = await AdminService.addSkill(payload);
     if (result.success) {
       setActionSuccess('Skill added successfully!');
       fetchSkills();
@@ -104,7 +104,7 @@ const ManageSkillsSection: React.FC = () => {
       skillLevel: editingSkill.skillLevel as SkillLevel
     };
 
-    const result = await AdminSkillService.updateSkill(editingSkill.skillID, payload);
+    const result = await AdminService.updateSkill(editingSkill.skillID, payload);
     if (result.success) {
       setActionSuccess('Skill updated successfully!');
       fetchSkills();
@@ -123,7 +123,7 @@ const ManageSkillsSection: React.FC = () => {
     setActionError(null);
     setActionSuccess(null);
 
-    const result = await AdminSkillService.deleteSkill(deletingSkillId);
+    const result = await AdminService.deleteSkill(deletingSkillId);
     if (result.success) {
       setActionSuccess('Skill deleted successfully!');
       fetchSkills();
