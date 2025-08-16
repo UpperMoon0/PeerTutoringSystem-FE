@@ -20,6 +20,7 @@ import { BookingList } from '@/components/booking/BookingList';
 import type { ApiResult } from '@/types/api.types';
 
 type BookingStatus = 'All' | 'Pending' | 'Confirmed' | 'Cancelled' | 'Completed' | 'Rejected';
+type SortOrder = 'asc' | 'desc';
 
 interface TutorOverviewProps {
   onNavigateToSection?: (section: string) => void;
@@ -88,8 +89,8 @@ const TutorOverview: React.FC<TutorOverviewProps> = ({ onNavigateToSection }) =>
   };
 
   const fetchRecentBookings = useCallback(
-    (status: BookingStatus, page: number, pageSize: number): Promise<ApiResult<{ bookings: Booking[], totalCount: number }>> => {
-      return BookingService.getTutorBookings(status, page, pageSize);
+    (status: BookingStatus, page: number, pageSize: number, sortOrder: SortOrder): Promise<ApiResult<{ bookings: Booking[], totalCount: number }>> => {
+      return BookingService.getTutorBookings(status, page, pageSize, sortOrder);
     },
     []
   );

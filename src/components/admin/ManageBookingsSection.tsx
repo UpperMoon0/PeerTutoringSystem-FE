@@ -6,15 +6,16 @@ import { AlertCircle } from 'lucide-react';
 import { BookingList } from '@/components/booking/BookingList';
 
 type BookingStatus = 'All' | 'Pending' | 'Confirmed' | 'Cancelled' | 'Completed' | 'Rejected';
+type SortOrder = 'asc' | 'desc';
 
 const ManageBookingsSection: React.FC = () => {
   const { currentUser } = useAuth();
   const [key, setKey] = useState(0); // Used to force re-fetch in BookingList
 
   const fetchAdminBookings = useCallback(
-    (status: BookingStatus, page: number, pageSize: number) => {
+    (status: BookingStatus, page: number, pageSize: number, sortOrder: SortOrder) => {
       const statusFilter = status === 'All' ? undefined : status;
-      return BookingService.getAllBookingsForAdmin(page, pageSize, statusFilter);
+      return BookingService.getAllBookingsForAdmin(page, pageSize, statusFilter, undefined, undefined, undefined, sortOrder);
     },
     []
   );

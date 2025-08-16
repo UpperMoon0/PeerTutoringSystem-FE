@@ -368,7 +368,7 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
                 <h3 className="font-semibold text-muted-foreground mb-1 flex items-center">
                   Total Price:
                 </h3>
-                <p className="text-foreground font-semibold text-lg">{currentBooking.totalPrice.toLocaleString()} VND</p>
+                <p className="text-foreground font-semibold text-lg">{Math.round(currentBooking.totalPrice).toLocaleString()} VND</p>
               </div>
             )}
 
