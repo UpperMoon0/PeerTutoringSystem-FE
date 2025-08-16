@@ -1,4 +1,4 @@
-import { Shield, UserCheck, Users, BookOpen, Calendar, DollarSign } from 'lucide-react';
+import { Shield, UserCheck, Users, BookOpen, Calendar, DollarSign, CreditCard } from 'lucide-react';
 import type { DashboardConfigFactory } from './types';
 import AdminOverview from '@/components/dashboard/overviews/AdminOverview';
 import ManageUsersSection from '@/components/admin/ManageUsersSection';
@@ -71,7 +71,7 @@ export const adminConfig: DashboardConfigFactory = {
       id: 'manage-withdraw-requests',
       title: 'Manage Withdraw Requests',
       subtitle: 'Approve or reject withdraw requests',
-      icon: DollarSign,
+      icon: CreditCard,
       path: '/admin?section=manage-withdraw-requests',
       component: ManageWithdrawRequests,
     },

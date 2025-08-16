@@ -1,4 +1,4 @@
-import { User, BookOpen, Calendar, Briefcase, DollarSign } from 'lucide-react';
+import { User, BookOpen, Calendar, Briefcase, DollarSign, CreditCard } from 'lucide-react';
 import type { DashboardConfigFactory } from './types';
 import TutorOverview from '@/components/dashboard/overviews/TutorOverview';
 import ManageBookingsSection from '@/components/tutor/ManageBookingsSection';
@@ -63,7 +63,7 @@ export const tutorConfig: DashboardConfigFactory = {
       id: 'withdraw',
       title: 'Withdraw',
       subtitle: 'Request a withdrawal',
-      icon: DollarSign,
+      icon: CreditCard,
       path: '/tutor?section=withdraw',
       component: TutorWithdrawPage,
     },

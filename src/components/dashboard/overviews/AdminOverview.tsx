@@ -2,13 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { AdminDashboardService, type DashboardStatistics } from '@/services/AdminDashboardService';
+import { AdminService, type DashboardStatistics } from '@/services/AdminService';
 import {
   Shield,
   Users,
   ListChecks,
   Wrench,
-  TrendingUp,
   AlertCircle,
   CheckCircle,
   Clock,
@@ -37,7 +36,7 @@ const AdminOverview: React.FC<AdminOverviewProps> = () => {
       setError(null);
       
       try {
-        const result = await AdminDashboardService.getDashboardStatistics();
+        const result = await AdminService.getDashboardStatistics();
         
         if (result.success && result.data) {
           setStats(result.data);
@@ -101,13 +100,9 @@ const AdminOverview: React.FC<AdminOverviewProps> = () => {
                 <div>
                   <p className="text-muted-foreground text-sm font-medium">Total Users</p>
                   <p className="text-3xl font-bold text-foreground mt-2">{stats.totalUsers}</p>
-                  <p className="text-green-500 text-sm mt-1 flex items-center">
-                    <TrendingUp className="w-4 h-4 mr-1" />
-                    +5% from last month
-                  </p>
                 </div>
                 <div className="p-3 bg-blue-600 bg-opacity-20 rounded-lg">
-                  <Users className="w-6 h-6 text-blue-400" />
+                  <Users className="w-6 h-6 text-white" />
                 </div>
               </div>
             </CardContent>
@@ -135,7 +130,7 @@ const AdminOverview: React.FC<AdminOverviewProps> = () => {
                   </p>
                 </div>
                 <div className={`p-3 ${stats.pendingVerifications > 0 ? 'bg-yellow-600 bg-opacity-20' : 'bg-green-600 bg-opacity-20'} rounded-lg`}>
-                  <ListChecks className={`w-6 h-6 ${stats.pendingVerifications > 0 ? 'text-yellow-400' : 'text-green-400'}`} />
+                  <ListChecks className="w-6 h-6 text-white" />
                 </div>
               </div>
             </CardContent>
@@ -154,7 +149,7 @@ const AdminOverview: React.FC<AdminOverviewProps> = () => {
                   </p>
                 </div>
                 <div className="p-3 bg-purple-600 bg-opacity-20 rounded-lg">
-                  <Wrench className="w-6 h-6 text-purple-400" />
+                  <Wrench className="w-6 h-6 text-white" />
                 </div>
               </div>
             </CardContent>
@@ -173,7 +168,7 @@ const AdminOverview: React.FC<AdminOverviewProps> = () => {
                   </p>
                 </div>
                 <div className="p-3 bg-red-600 bg-opacity-20 rounded-lg">
-                  <Shield className="w-6 h-6 text-red-400" />
+                  <Shield className="w-6 h-6 text-white" />
                 </div>
               </div>
             </CardContent>
@@ -212,7 +207,7 @@ const AdminOverview: React.FC<AdminOverviewProps> = () => {
                 <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
                   <div className="flex items-center space-x-4">
                     <div className="p-2 bg-green-600 bg-opacity-20 rounded-lg">
-                      <CheckCircle className="w-5 h-5 text-green-400" />
+                      <CheckCircle className="w-5 h-5 text-white" />
                     </div>
                     <div>
                       <p className="text-foreground font-medium">Database Connection</p>
@@ -228,9 +223,9 @@ const AdminOverview: React.FC<AdminOverviewProps> = () => {
                   <div className="flex items-center space-x-4">
                     <div className={`p-2 ${stats.pendingVerifications > 0 ? 'bg-yellow-600 bg-opacity-20' : 'bg-green-600 bg-opacity-20'} rounded-lg`}>
                       {stats.pendingVerifications > 0 ? (
-                        <AlertCircle className="w-5 h-5 text-yellow-400" />
+                        <AlertCircle className="w-5 h-5 text-white" />
                       ) : (
-                        <CheckCircle className="w-5 h-5 text-green-400" />
+                        <CheckCircle className="w-5 h-5 text-white" />
                       )}
                     </div>
                     <div>
@@ -257,7 +252,7 @@ const AdminOverview: React.FC<AdminOverviewProps> = () => {
                 <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
                   <div className="flex items-center space-x-4">
                     <div className="p-2 bg-green-600 bg-opacity-20 rounded-lg">
-                      <Shield className="w-5 h-5 text-green-400" />
+                      <Shield className="w-5 h-5 text-white" />
                     </div>
                     <div>
                       <p className="text-foreground font-medium">Security Status</p>

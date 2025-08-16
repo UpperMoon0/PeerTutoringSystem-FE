@@ -6,6 +6,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { WithdrawService } from '@/services/WithdrawService';
 import type { WithdrawRequest } from '@/types/withdraw';
 import WithdrawRequestList from '@/components/tutor/WithdrawRequestList';
+import WithdrawRequestDetails from '@/components/admin/WithdrawRequestDetails';
 
 const formatCurrency = (amount: number) => {
   return `${amount.toLocaleString()} VND`;
@@ -16,42 +17,61 @@ const TutorWithdrawPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [withdrawRequests, setWithdrawRequests] = useState<WithdrawRequest[]>([]);
+  const [selectedRequest, setSelectedRequest] = useState<WithdrawRequest | null>(null);
+
+  const fetchBalance = async () => {
+    try {
+      setLoading(true);
+      const result = await TutorService.getUserBalance();
+      if (result.success && result.data) {
+        setBalance(result.data.balance);
+      } else {
+        if (typeof result.error === 'string') {
+          setError(result.error);
+        } else {
+          setError('Failed to fetch balance.');
+        }
+      }
+    } catch (error) {
+      if (error instanceof Error) {
+        setError(error.message);
+      } else {
+        setError('An unexpected error occurred.');
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchWithdrawRequests = async () => {
+    const result = await WithdrawService.getMyWithdrawRequests();
+    if (result.success && result.data) {
+      setWithdrawRequests(result.data);
+    }
+  };
 
   useEffect(() => {
-    const fetchBalance = async () => {
-      try {
-        setLoading(true);
-        const result = await TutorService.getUserBalance();
-        if (result.success && result.data) {
-          setBalance(result.data.balance);
-        } else {
-          if (typeof result.error === 'string') {
-            setError(result.error);
-          } else {
-            setError('Failed to fetch balance.');
-          }
-        }
-      } catch (error) {
-        if (error instanceof Error) {
-          setError(error.message);
-        } else {
-          setError('An unexpected error occurred.');
-        }
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    const fetchWithdrawRequests = async () => {
-      const result = await WithdrawService.getMyWithdrawRequests();
-      if (result.success && result.data) {
-        setWithdrawRequests(result.data);
-      }
-    };
-
     fetchBalance();
     fetchWithdrawRequests();
   }, []);
+
+  const handleWithdrawalSuccess = () => {
+    fetchWithdrawRequests();
+    fetchBalance();
+  };
+
+  const handleViewDetails = (request: WithdrawRequest) => {
+    setSelectedRequest(request);
+  };
+
+  const handleCancel = async (id: string) => {
+    const result = await WithdrawService.cancelWithdrawRequest(id);
+    if (result.success) {
+      fetchWithdrawRequests();
+      fetchBalance();
+      setSelectedRequest(null);
+    }
+  };
 
   return (
     <div className="container mx-auto p-4">
@@ -76,13 +96,22 @@ const TutorWithdrawPage = () => {
 
           <Card>
             <CardContent className="pt-6">
-              <WithdrawalForm />
+              <WithdrawalForm onSuccess={handleWithdrawalSuccess} />
             </CardContent>
           </Card>
         </div>
 
         <div className="lg:col-span-2">
-          <WithdrawRequestList requests={withdrawRequests} onViewDetails={() => {}} />
+          {selectedRequest ? (
+            <WithdrawRequestDetails
+              request={selectedRequest}
+              role="tutor"
+              onBack={() => setSelectedRequest(null)}
+              onCancel={handleCancel}
+            />
+          ) : (
+            <WithdrawRequestList requests={withdrawRequests} onViewDetails={handleViewDetails} />
+          )}
         </div>
       </div>
     </div>

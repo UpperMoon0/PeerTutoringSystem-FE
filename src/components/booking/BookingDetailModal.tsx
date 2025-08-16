@@ -31,6 +31,9 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import SessionForm from '@/components/session/SessionForm';
 import { getStatusBadgeVariant, getStatusString } from '@/lib/utils';
+import { ReviewModal } from '@/components/reviews/ReviewModal';
+import { ReviewService } from '@/services/ReviewService';
+import type { CreateReviewDto } from '@/types/review.types';
 
 interface BookingDetailModalProps {
   booking: Booking | null;
@@ -58,10 +61,21 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
   const [currentBooking, setCurrentBooking] = useState<Booking | null>(booking);
   const [isSubmittingSessionUpdate, setIsSubmittingSessionUpdate] = useState(false);
   const [isCompleteConfirmationVisible, setIsCompleteConfirmationVisible] = useState(false);
+  const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
+  const [hasReview, setHasReview] = useState(false);
 
   // Update internal state when the `booking` prop changes
   React.useEffect(() => {
     setCurrentBooking(booking);
+    if (booking?.bookingId && getStatusString(booking.status) === 'Completed') {
+      const checkReview = async () => {
+        const result = await ReviewService.checkReviewExistsForBooking(booking.bookingId);
+        if (result.success) {
+          setHasReview(result.data || false);
+        }
+      };
+      checkReview();
+    }
   }, [booking]);
 
   // Reset isEditingSession when the modal is opened or the booking prop changes, ensuring a clean state
@@ -167,8 +181,12 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
   };
 
   const handleContactUser = () => {
-    const contactName = userRole === 'student' ? currentBooking.tutorName : currentBooking.studentName;
-    toast.info(`Contact feature for ${contactName} would open here.`);
+    const otherUserId = userRole === 'student' ? currentBooking.tutorId : currentBooking.studentId;
+    if (otherUserId) {
+      navigate(`/student/chat?userId=${otherUserId}`);
+    } else {
+      toast.error('Could not find user to contact.');
+    }
   };
 
   const handleUpdateStatus = async (status: string, force = false) => {
@@ -229,7 +247,22 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
   const showCompleteButton = isCurrentUserTutor && bookingStatus === 'Confirmed';
   const paymentStatus = getPaymentStatusString(currentBooking.paymentStatus);
   const showPaymentButton = isCurrentUserStudent && bookingStatus === 'Confirmed' && !!currentBooking.session && paymentStatus === 'Unpaid';
+  const canReview = isCurrentUserStudent && isSessionCompleted && !hasReview;
+
+  const handleReviewSubmit = async (reviewData: CreateReviewDto) => {
+    const result = await ReviewService.createReview(reviewData);
+    if (result.success) {
+      toast.success('Review submitted successfully!');
+      setHasReview(true);
+      setIsReviewModalOpen(false);
+    } else {
+      const errorMessage = typeof result.error === 'string' ? result.error : (result.error as Error)?.message || 'Failed to submit review.';
+      toast.error(errorMessage);
+    }
+  };
+
   return (
+    <>
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="bg-card border-border text-foreground max-w-2xl md:max-w-3xl">
         <DialogHeader>
@@ -522,6 +555,15 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
                    </Button>
                  )}
                  
+                 {canReview && (
+                   <Button
+                     onClick={() => setIsReviewModalOpen(true)}
+                     className="bg-blue-500 text-white hover:bg-blue-600"
+                   >
+                     <Pencil className="w-4 h-4 mr-2" />
+                     Write a Review
+                   </Button>
+                 )}
                </div>
              </div>
            </div>
@@ -564,5 +606,16 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
         </AlertDialogContent>
       </AlertDialog>
     </Dialog>
+     {currentBooking && (
+       <ReviewModal
+         isOpen={isReviewModalOpen}
+         onClose={() => setIsReviewModalOpen(false)}
+         onSubmit={handleReviewSubmit}
+         bookingId={currentBooking.bookingId}
+         tutorId={currentBooking.tutorId}
+         studentId={currentBooking.studentId}
+       />
+     )}
+   </>
   );
 };

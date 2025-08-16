@@ -1,4 +1,5 @@
 import { useForm } from 'react-hook-form';
+import { useState } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { Button } from '@/components/ui/button';
@@ -13,7 +14,6 @@ import {
 import { Input } from '@/components/ui/input';
 import { useMutation } from '@tanstack/react-query';
 import { WithdrawService } from '@/services/WithdrawService';
-import { toast } from 'sonner';
 
 const formSchema = z.object({
   amount: z.coerce.number().min(1, 'Amount must be greater than 0'),
@@ -21,7 +21,12 @@ const formSchema = z.object({
   accountNumber: z.string().min(1, 'Account number is required'),
 });
 
-const WithdrawalForm = () => {
+interface WithdrawalFormProps {
+  onSuccess: () => void;
+}
+
+const WithdrawalForm = ({ onSuccess }: WithdrawalFormProps) => {
+  const [error, setError] = useState<string | null>(null);
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -33,12 +38,15 @@ const WithdrawalForm = () => {
 
   const mutation = useMutation({
     mutationFn: WithdrawService.createWithdrawRequest,
-    onSuccess: () => {
-      toast.success('Withdraw request created successfully');
-      form.reset();
-    },
-    onError: (error) => {
-      toast.error(error.message || 'Failed to create withdraw request');
+    onSuccess: (result) => {
+      if (result.success) {
+        form.reset();
+        onSuccess();
+        setError(null);
+      } else {
+        const errorMessage = typeof result.error === 'string' ? result.error : 'Failed to create withdraw request';
+        setError(errorMessage);
+      }
     },
   });
 
@@ -88,6 +96,7 @@ const WithdrawalForm = () => {
             </FormItem>
           )}
         />
+        {error && <p className="text-red-500">{error}</p>}
         <Button type="submit" disabled={mutation.isPending}>
           {mutation.isPending ? 'Submitting...' : 'Submit'}
         </Button>

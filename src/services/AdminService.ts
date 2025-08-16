@@ -1,11 +1,124 @@
-import type { ApiResult, ServiceResult } from '../types/api.types';
-import type { Skill, CreateSkillDto, UpdateSkillDto } from '../types/skill.types';
+import type { ApiResult, ServiceResult } from '@/types/api.types';
+import type { User } from '@/types/user.types';
 import { AuthService } from './AuthService';
+import type { Skill, CreateSkillDto, UpdateSkillDto } from '../types/skill.types';
+
+export interface DashboardStatistics {
+  totalUsers: number;
+  pendingVerifications: number;
+  totalSkills: number;
+  activeAdmins: number;
+}
 
 const API_URL = import.meta.env.VITE_API_BASE_URL;
 const SKILLS_ENDPOINT = `${API_URL}/Skills`;
 
-export const AdminSkillService = {
+export const AdminService = {
+  getDashboardStatistics: async (): Promise<ServiceResult<DashboardStatistics>> => {
+    try {
+      const fullUrl = `${API_URL}/Users/admin-dashboard-statistics`;
+      const response = await AuthService.fetchWithAuth(fullUrl, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        const errorData: ApiResult<DashboardStatistics> = await response.json();
+        return { success: false, error: errorData.error || `HTTP error! status: ${response.status}` };
+      }
+
+      const statistics: DashboardStatistics = await response.json();
+      return { success: true, data: statistics };
+    } catch (error) {
+      console.error('Error fetching dashboard statistics:', error);
+      if (error instanceof Response && !error.ok) {
+        try {
+          const errorData: ApiResult<unknown> = await error.json();
+          return { success: false, error: errorData.error || 'An unexpected error occurred while parsing the error response.' };
+        } catch {
+          return { success: false, error: 'An unexpected error occurred and the error response could not be parsed.' };
+        }
+      }
+      return { success: false, error: error instanceof Error ? error.message : 'An unexpected error occurred' };
+    }
+  },
+
+  // User-related services
+  getAllUsers: async (): Promise<ServiceResult<User[]>> => {
+    try {
+      const response = await AuthService.fetchWithAuth(`${API_URL}/Users`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        const errorData: ApiResult<User[]> = await response.json();
+        return { success: false, error: errorData.error || `HTTP error! status: ${response.status}` };
+      }
+
+      const users: User[] = await response.json();
+      return { success: true, data: users };
+    } catch (error) {
+      console.error('Error fetching all users:', error);
+      if (error instanceof Response && !error.ok) {
+        try {
+          const errorData: ApiResult<any> = await error.json();
+          return { success: false, error: errorData.error || 'An unexpected error occurred while parsing the error response.' };
+        } catch (parseError) {
+          return { success: false, error: 'An unexpected error occurred and the error response could not be parsed.' };
+        }
+      }
+      return { success: false, error: error instanceof Error ? error.message : 'An unexpected error occurred' };
+    }
+  },
+
+  banUser: async (userId: string): Promise<ServiceResult<null>> => {
+    try {
+      const response = await AuthService.fetchWithAuth(`${API_URL}/Users/${userId}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        const data: ApiResult<null> = await response.json();
+        return { success: false, error: data.error || `HTTP error! status: ${response.status}` };
+      }
+
+      return { success: true, data: null };
+    } catch (error) {
+      console.error(`Error banning user ${userId}:`, error);
+      return { success: false, error: error instanceof Error ? error.message : 'An unexpected error occurred' };
+    }
+  },
+
+  unbanUser: async (userId: string): Promise<ServiceResult<null>> => {
+    try {
+      const response = await AuthService.fetchWithAuth(`${API_URL}/Users/${userId}/unban`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        const data: ApiResult<null> = await response.json();
+        return { success: false, error: data.error || `HTTP error! status: ${response.status}` };
+      }
+
+      return { success: true, data: null };
+    } catch (error) {
+      console.error(`Error unbanning user ${userId}:`, error);
+      return { success: false, error: error instanceof Error ? error.message : 'An unexpected error occurred' };
+    }
+  },
+
+  // Skill-related services
   getAllSkills: async (): Promise<ServiceResult<Skill[]>> => {
     try {
       const response = await AuthService.fetchWithAuth(SKILLS_ENDPOINT, {
@@ -26,7 +139,6 @@ export const AdminSkillService = {
         }
         return { success: false, error: message };
       }
-      // The GetAll endpoint in SkillsController returns Ok(skills) which is directly the array.
       const skills: Skill[] = await response.json();
       return { success: true, data: skills };
     } catch (error) {
@@ -62,7 +174,6 @@ export const AdminSkillService = {
         }
         return { success: false, error: errorMessage };
       }
-      // BE returns { skillID: "guid" } upon successful creation
       const responseData: { skillID: string } = await response.json();
       return { success: true, data: responseData };
     } catch (error) {
@@ -73,13 +184,12 @@ export const AdminSkillService = {
 
   updateSkill: async (skillId: string, skillData: UpdateSkillDto): Promise<ServiceResult<Skill>> => {
     try {
-      // Ensure skillData includes skillID for the PUT request body as per BE SkillDto
       const response = await AuthService.fetchWithAuth(`${SKILLS_ENDPOINT}/${skillId}`, {
-        method: 'PUT', 
+        method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(skillData), // skillData now includes skillID
+        body: JSON.stringify(skillData),
       });
       if (!response.ok) {
         let errorMessage = `HTTP error! status: ${response.status}`;
@@ -97,7 +207,6 @@ export const AdminSkillService = {
         }
         return { success: false, error: errorMessage };
       }
-      // Assuming the backend returns the updated skill object directly, not nested in a data property.
       const updatedSkill: Skill = await response.json();
       return { success: true, data: updatedSkill };
     } catch (error) {
@@ -117,7 +226,7 @@ export const AdminSkillService = {
       if (!response.ok) {
         let errorMessage = `HTTP error! status: ${response.status}`;
         try {
-          const errorData: ApiResult<null> = await response.json(); // Error response might have a body
+          const errorData: ApiResult<null> = await response.json();
           if (errorData.error) {
             if (typeof errorData.error === 'string') {
               errorMessage = errorData.error;
@@ -130,8 +239,6 @@ export const AdminSkillService = {
         }
         return { success: false, error: errorMessage };
       }
-      // Delete typically returns 204 No Content or similar, with no body or a success message.
-      // Returning null as per the original FE service design.
       return { success: true, data: null };
     } catch (error) {
       console.error(`Error deleting skill ${skillId}:`, error);

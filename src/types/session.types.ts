@@ -6,7 +6,7 @@ export interface Session {
   startTime: string;
   endTime: string;
   createdAt: string;
-  updatedAt?: string;
+  updatedAt: string;
 }
 
 export interface CreateSessionDto {
@@ -19,22 +19,15 @@ export interface CreateSessionDto {
 
 export interface UpdateSessionDto {
   sessionId: string;
-  videoCallLink: string;
-  sessionNotes: string;
-  startTime: string;
-  endTime: string;
+  videoCallLink?: string;
+  sessionNotes?: string;
+  startTime?: string;
+  endTime?: string;
 }
 
-export interface SessionResponse {
-  data: Session;
-  message?: string;
-  timestamp: string;
-}
-
-export interface SessionListResponse {
-  data: Session[];
-  totalCount: number;
-  page: number;
-  pageSize: number;
-  timestamp: string;
+export interface TutorSessionStats {
+  totalSessions: number;
+  completedSessions: number;
+  canceledSessions: number;
+  totalHours: number;
 }

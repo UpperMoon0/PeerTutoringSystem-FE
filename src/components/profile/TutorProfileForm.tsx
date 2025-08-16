@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import type { CreateTutorProfileDto, TutorProfileDto } from '../../types/TutorProfile';
 import type { Skill } from '../../types/skill.types'; 
-import { AdminSkillService } from '../../services/AdminSkillService'; 
+import { AdminService } from '../../services/AdminService';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Textarea } from '../ui/textarea';
@@ -29,7 +29,7 @@ const TutorProfileForm: React.FC<TutorProfileFormProps> = ({ initialData, onSubm
   useEffect(() => {
     // Fetch all skills when component mounts
     const fetchSkills = async () => {
-      const result = await AdminSkillService.getAllSkills();
+      const result = await AdminService.getAllSkills();
       if (result.success && result.data) {
         setAllSkills(result.data);
       }

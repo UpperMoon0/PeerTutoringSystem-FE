@@ -1,13 +1,60 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { Menu, X, AlertCircle } from 'lucide-react';
 import type { SidebarProps, SidebarItem } from '@/types/dashboard.types';
+import { TutorService } from '@/services/TutorService';
+import type { TutorFinanceDetails } from '@/types/tutor.types';
+import { AdminService } from '@/services/AdminService';
+import type { AdminDashboardStatistics } from '@/types/admin.types';
 
 const DashboardSidebar: React.FC<SidebarProps> = ({
   config,
-  className
+  className,
+  sessionStats
 }) => {
+  const [financeDetails, setFinanceDetails] = useState<TutorFinanceDetails | null>(null);
+  const [adminStats, setAdminStats] = useState<AdminDashboardStatistics | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    setIsLoading(true);
+    const fetchFinanceDetails = async () => {
+      try {
+        const result = await TutorService.getTutorFinanceDetails();
+        if (result.success && result.data) {
+          setFinanceDetails(result.data);
+        } else {
+          console.error('Failed to fetch finance details for sidebar');
+        }
+      } catch (error) {
+        console.error('Error fetching finance details for sidebar:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    const fetchAdminStats = async () => {
+      try {
+        const result = await AdminService.getDashboardStatistics();
+        if (result.success && result.data) {
+          setAdminStats(result.data);
+        } else {
+          console.error('Failed to fetch admin stats for sidebar');
+        }
+      } catch (error) {
+        console.error('Error fetching admin stats for sidebar:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    if (config.role === 'admin') {
+      fetchAdminStats();
+    } else {
+      fetchFinanceDetails();
+    }
+  }, [config.role]);
   const location = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -172,26 +219,30 @@ const DashboardSidebar: React.FC<SidebarProps> = ({
               </span>
             </div>
             <div className="space-y-2 text-xs">
-              {config.role === 'admin' ? (
+              {isLoading ? (
+                <div className="text-center text-muted-foreground">Loading...</div>
+              ) : config.role === 'admin' ? (
                 <>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Total Users</span>
-                    <span className="text-primary font-medium">1,250</span>
+                    <span className="text-primary font-medium">{adminStats?.totalUsers ?? 'N/A'}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Pending Verifications</span>
-                    <span className="text-yellow-400 font-medium">12</span>
+                    <span className="text-yellow-400 font-medium">{adminStats?.pendingVerifications ?? 'N/A'}</span>
                   </div>
                 </>
               ) : (
                 <>
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">This Month</span>
-                    <span className="text-green-400 font-medium">1,250 VND</span>
+                    <span className="text-muted-foreground">Total Profit</span>
+                    <span className="text-green-400 font-medium">
+                      {financeDetails?.totalProfit?.toLocaleString('vi-VN') ?? 'N/A'} VND
+                    </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Sessions</span>
-                    <span className="text-primary font-medium">24</span>
+                    <span className="text-primary font-medium">{sessionStats?.totalSessions ?? 'N/A'}</span>
                   </div>
                 </>
               )}

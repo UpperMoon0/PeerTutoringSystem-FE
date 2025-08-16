@@ -10,8 +10,7 @@ import type { CreateReviewDto, ReviewDto } from '@/types/review.types';
 const createReview = async (payload: CreateReviewDto): Promise<ServiceResult<ReviewDto>> => {
   try {
     // Wrap payload in "dto" object as expected by backend
-    const requestBody = { dto: payload };
-    const response = await apiClient.post(`/Reviews`, requestBody);
+    const response = await apiClient.post(`/Reviews`, payload);
     return { success: true, data: response.data as ReviewDto };
   } catch (error: unknown) {
     console.error('Error creating review:', error);
@@ -59,7 +58,9 @@ const getReviewsByTutorId = async (tutorId: string): Promise<ServiceResult<Revie
  */
 const checkReviewExistsForBooking = async (bookingId: string): Promise<ServiceResult<boolean>> => {
   try {
+    console.log(`Checking if review exists for booking ID: ${bookingId}`);
     const response = await apiClient.get(`/Reviews/booking/${bookingId}/exists`);
+    console.log(`Response for booking ID ${bookingId}:`, response.data);
     return { success: true, data: response.data as boolean };
   } catch (error: unknown) {
     console.error(`Error checking review for booking ID ${bookingId}:`, error);
