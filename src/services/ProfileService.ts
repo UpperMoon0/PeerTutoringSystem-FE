@@ -58,32 +58,28 @@ export const ProfileService = {
   updateProfile: async (userId: string, payload: UpdateProfileDto): Promise<ServiceResult<{ message: string }>> => {
     const url = `${BASE_API_URL}/users/${userId}`;
     try {
-      let response: Response;
+      const formData = new FormData();
+      formData.append('fullName', payload.fullName);
+      formData.append('email', payload.email);
+      formData.append('dateOfBirth', payload.dateOfBirth);
+      formData.append('phoneNumber', payload.phoneNumber);
+      formData.append('gender', payload.gender);
+      formData.append('hometown', payload.hometown);
       if (payload.avatar && payload.avatar instanceof File) {
-        const formData = new FormData();
-        formData.append('fullName', payload.fullName);
-        formData.append('email', payload.email);
-        formData.append('dateOfBirth', payload.dateOfBirth);
-        formData.append('phoneNumber', payload.phoneNumber);
-        formData.append('gender', payload.gender);
-        formData.append('hometown', payload.hometown);
         formData.append('avatar', payload.avatar);
-        response = await AuthService.fetchWithAuth(url, { method: 'PUT', body: formData });
-      } else {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const { avatar, ...restPayload } = payload;
-        response = await AuthService.fetchWithAuth(url, {
-          method: 'PUT',
-          body: JSON.stringify(restPayload),
-          headers: { 'Content-Type': 'application/json' }
-        });
       }
+
+      const response = await AuthService.fetchWithAuth(url, {
+        method: 'PUT',
+        body: formData,
+      });
+
       return await handleApiResponse<{ message: string }>(response, url);
     } catch (networkOrOtherError) {
       console.error(`Request processing failed for URL ${url}:`, networkOrOtherError);
       return {
         success: false,
-        error: networkOrOtherError instanceof Error ? networkOrOtherError : new Error(String(networkOrOtherError))
+        error: networkOrOtherError instanceof Error ? networkOrOtherError : new Error(String(networkOrOtherError)),
       };
     }
   },

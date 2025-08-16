@@ -68,10 +68,10 @@ const UserProfilePage: React.FC = () => {
     fetchProfileData();
   }, [userId, currentUser]);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement> | { target: { name: string; value: string } }) => {
     if (formData) {
       const { name, value } = e.target;
-      if (name === 'avatar' && e.target instanceof HTMLInputElement && e.target.files && e.target.files[0]) {
+      if (name === 'avatar' && 'files' in e.target && e.target.files && e.target.files[0]) {
         const file = e.target.files[0];
         setSelectedAvatarFile(file);
         setAvatarPreview(URL.createObjectURL(file));
