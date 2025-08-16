@@ -4,13 +4,21 @@ import { AuthService } from './AuthService';
 import type { Skill, CreateSkillDto, UpdateSkillDto } from '../types/skill.types';
 import type { AdminDashboardStatistics } from '@/types/admin.types';
 
+export interface DashboardStatistics {
+  totalUsers: number;
+  pendingVerifications: number;
+  totalSkills: number;
+  activeAdmins: number;
+}
+
 const API_URL = import.meta.env.VITE_API_BASE_URL;
 const SKILLS_ENDPOINT = `${API_URL}/Skills`;
 
 export const AdminService = {
-  getDashboardStatistics: async (): Promise<ApiResult<AdminDashboardStatistics>> => {
+  getDashboardStatistics: async (): Promise<ServiceResult<DashboardStatistics>> => {
     try {
-      const response = await AuthService.fetchWithAuth(`${API_URL}/users/admin-dashboard-statistics`, {
+      const fullUrl = `${API_URL}/Users/admin-dashboard-statistics`;
+      const response = await AuthService.fetchWithAuth(fullUrl, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -18,15 +26,23 @@ export const AdminService = {
       });
 
       if (!response.ok) {
-        const errorData: ApiResult<AdminDashboardStatistics> = await response.json();
-        throw new Error(errorData.error?.toString() || `HTTP error! status: ${response.status}`);
+        const errorData: ApiResult<DashboardStatistics> = await response.json();
+        return { success: false, error: errorData.error || `HTTP error! status: ${response.status}` };
       }
 
-      return await response.json();
+      const statistics: DashboardStatistics = await response.json();
+      return { success: true, data: statistics };
     } catch (error) {
       console.error('Error fetching dashboard statistics:', error);
-      const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred';
-      return { success: false, error: { message: errorMessage } };
+      if (error instanceof Response && !error.ok) {
+        try {
+          const errorData: ApiResult<unknown> = await error.json();
+          return { success: false, error: errorData.error || 'An unexpected error occurred while parsing the error response.' };
+        } catch {
+          return { success: false, error: 'An unexpected error occurred and the error response could not be parsed.' };
+        }
+      }
+      return { success: false, error: error instanceof Error ? error.message : 'An unexpected error occurred' };
     }
   },
 

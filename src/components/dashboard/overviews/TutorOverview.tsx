@@ -151,8 +151,8 @@ const TutorOverview: React.FC<TutorOverviewProps> = ({ onNavigateToSection }) =>
                     <p className="text-muted-foreground text-sm font-medium">Total Sessions</p>
                     <p className="text-3xl font-bold text-foreground mt-2">{stats.totalSessions}</p>
                   </div>
-                  <div className="p-3 bg-blue-600 bg-opacity-20 rounded-lg">
-                    <BookOpen className="w-6 h-6 text-blue-400" />
+                  <div className="p-3 bg-blue-600 rounded-lg">
+                    <BookOpen className="w-6 h-6 text-white" />
                   </div>
                 </div>
               </CardContent>
@@ -170,8 +170,8 @@ const TutorOverview: React.FC<TutorOverviewProps> = ({ onNavigateToSection }) =>
                       This week
                     </p>
                   </div>
-                  <div className="p-3 bg-purple-600 bg-opacity-20 rounded-lg">
-                    <Clock className="w-6 h-6 text-purple-400" />
+                  <div className="p-3 bg-purple-600 rounded-lg">
+                    <Clock className="w-6 h-6 text-white" />
                   </div>
                 </div>
               </CardContent>
@@ -185,8 +185,8 @@ const TutorOverview: React.FC<TutorOverviewProps> = ({ onNavigateToSection }) =>
                     <p className="text-muted-foreground text-sm font-medium">Completed Sessions</p>
                     <p className="text-3xl font-bold text-foreground mt-2">{stats.completedSessions}</p>
                   </div>
-                  <div className="p-3 bg-green-600 bg-opacity-20 rounded-lg">
-                    <Users className="w-6 h-6 text-green-400" />
+                  <div className="p-3 bg-green-600 rounded-lg">
+                    <Users className="w-6 h-6 text-white" />
                   </div>
                 </div>
               </CardContent>
@@ -200,8 +200,8 @@ const TutorOverview: React.FC<TutorOverviewProps> = ({ onNavigateToSection }) =>
                     <p className="text-muted-foreground text-sm font-medium">Total Profit</p>
                     <p className="text-3xl font-bold text-foreground mt-2">{financeDetails?.totalProfit?.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' }) ?? '0 VND'}</p>
                   </div>
-                  <div className="p-3 bg-green-600 bg-opacity-20 rounded-lg">
-                    <DollarSign className="w-6 h-6 text-green-400" />
+                  <div className="p-3 bg-green-600 rounded-lg">
+                    <DollarSign className="w-6 h-6 text-white" />
                   </div>
                 </div>
               </CardContent>

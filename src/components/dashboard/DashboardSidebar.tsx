@@ -15,8 +15,10 @@ const DashboardSidebar: React.FC<SidebarProps> = ({
 }) => {
   const [financeDetails, setFinanceDetails] = useState<TutorFinanceDetails | null>(null);
   const [adminStats, setAdminStats] = useState<AdminDashboardStatistics | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    setIsLoading(true);
     const fetchFinanceDetails = async () => {
       try {
         const result = await TutorService.getTutorFinanceDetails();
@@ -27,6 +29,8 @@ const DashboardSidebar: React.FC<SidebarProps> = ({
         }
       } catch (error) {
         console.error('Error fetching finance details for sidebar:', error);
+      } finally {
+        setIsLoading(false);
       }
     };
 
@@ -40,6 +44,8 @@ const DashboardSidebar: React.FC<SidebarProps> = ({
         }
       } catch (error) {
         console.error('Error fetching admin stats for sidebar:', error);
+      } finally {
+        setIsLoading(false);
       }
     };
 
@@ -213,15 +219,17 @@ const DashboardSidebar: React.FC<SidebarProps> = ({
               </span>
             </div>
             <div className="space-y-2 text-xs">
-              {config.role === 'admin' ? (
+              {isLoading ? (
+                <div className="text-center text-muted-foreground">Loading...</div>
+              ) : config.role === 'admin' ? (
                 <>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Total Users</span>
-                    <span className="text-primary font-medium">{adminStats?.totalUsers ?? 0}</span>
+                    <span className="text-primary font-medium">{adminStats?.totalUsers ?? 'N/A'}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Pending Verifications</span>
-                    <span className="text-yellow-400 font-medium">{adminStats?.pendingVerifications ?? 0}</span>
+                    <span className="text-yellow-400 font-medium">{adminStats?.pendingVerifications ?? 'N/A'}</span>
                   </div>
                 </>
               ) : (
@@ -229,12 +237,12 @@ const DashboardSidebar: React.FC<SidebarProps> = ({
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Total Profit</span>
                     <span className="text-green-400 font-medium">
-                      {financeDetails?.totalProfit?.toLocaleString('vi-VN') ?? '0'} VND
+                      {financeDetails?.totalProfit?.toLocaleString('vi-VN') ?? 'N/A'} VND
                     </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Sessions</span>
-                    <span className="text-primary font-medium">{sessionStats?.totalSessions ?? 0}</span>
+                    <span className="text-primary font-medium">{sessionStats?.totalSessions ?? 'N/A'}</span>
                   </div>
                 </>
               )}

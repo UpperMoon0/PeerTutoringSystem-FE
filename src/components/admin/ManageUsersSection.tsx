@@ -97,7 +97,6 @@ const ManageUsersSection: React.FC = () => {
   return (
     <div className="container mx-auto p-4 bg-background text-foreground">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold text-foreground">Manage Users</h1>
         <div className="w-48">
           <Select value={selectedRoleFilter} onValueChange={setSelectedRoleFilter}>
             <SelectTrigger className="bg-input border-border text-foreground">
@@ -169,7 +168,7 @@ const ManageUsersSection: React.FC = () => {
                         onClick={() => setSelectedUser(user)}
                         variant="outline"
                         size="sm"
-                        className="border-blue-500 text-blue-500 hover:bg-blue-500/10"
+                        className="bg-blue-500 text-white hover:bg-blue-600"
                       >
                         <Info className="mr-2 h-4 w-4" /> Info
                       </Button>
@@ -179,7 +178,11 @@ const ManageUsersSection: React.FC = () => {
                           variant={user.status === 'Banned' ? 'outline' : 'destructive'}
                           size="sm"
                           disabled={actingUserId === user.userID}
-                          className={`flex items-center justify-center ${user.status === 'Banned' ? 'border-primary text-primary hover:bg-primary/10 hover:text-primary/90' : 'bg-destructive hover:bg-destructive/90 text-destructive-foreground'}`}
+                          className={`flex items-center justify-center ${
+                            user.status === 'Banned'
+                              ? 'bg-green-500 text-white hover:bg-green-600'
+                              : 'bg-red-500 text-white hover:bg-red-600'
+                          }`}
                         >
                           {actingUserId === user.userID ? (
                             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
