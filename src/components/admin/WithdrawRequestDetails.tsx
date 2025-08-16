@@ -6,11 +6,17 @@ import { getWithdrawStatusBadgeVariant, getWithdrawStatusString } from '@/lib/ut
 
 interface WithdrawRequestDetailsProps {
   request: WithdrawRequest;
-  onApprove: (id: string) => void;
-  onReject: (id: string) => void;
+  onApprove?: (id: string) => void;
+  onReject?: (id: string) => void;
+  role?: 'admin' | 'tutor';
 }
 
-const WithdrawRequestDetails = ({ request, onApprove, onReject }: WithdrawRequestDetailsProps) => {
+const WithdrawRequestDetails = ({
+  request,
+  onApprove,
+  onReject,
+  role = 'admin',
+}: WithdrawRequestDetailsProps) => {
   return (
     <Card>
       <CardHeader>
@@ -37,7 +43,7 @@ const WithdrawRequestDetails = ({ request, onApprove, onReject }: WithdrawReques
             </Badge>
           </p>
         </div>
-        {request.status === 'Pending' && (
+        {role === 'admin' && request.status === 'Pending' && onApprove && onReject && (
           <div className="mt-4 flex space-x-2">
             <Button
               onClick={() => onApprove(request.id)}
