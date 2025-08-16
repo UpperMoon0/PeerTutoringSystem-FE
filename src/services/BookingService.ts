@@ -28,7 +28,7 @@ const convertBookingFromBackend = (backendBooking: Record<string, unknown>): Boo
     startTime: backendBooking.startTime as string,
     endTime: backendBooking.endTime as string,
     status: backendBooking.status as "Pending" | "Confirmed" | "Cancelled" | "Completed" | "Rejected",
-    paymentStatus: backendBooking.paymentStatus as "Unpaid" | "Paid",
+    paymentStatus: backendBooking.paymentStatus === 1 ? "Paid" : "Unpaid",
     createdAt: backendBooking.createdAt as string,
     updatedAt: backendBooking.updatedAt as string,
     studentName: backendBooking.studentName as string,
