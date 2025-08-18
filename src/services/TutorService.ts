@@ -188,22 +188,27 @@ const getAllEnrichedTutors = async (params?: {
   sortBy?: string;
   limit?: number;
 }): Promise<ApiResult<EnrichedTutor[]>> => {
-  const url = new URL(`${API_BASE_URL}/tutors/enriched-list`);
+  let url = `${API_BASE_URL}/tutors/enriched-list`;
   if (params) {
+    const searchParams = new URLSearchParams();
     if (params.sortBy) {
-      url.searchParams.append('sortBy', params.sortBy);
+      searchParams.append('sortBy', params.sortBy);
     }
     if (params.limit) {
-      url.searchParams.append('limit', String(params.limit));
+      searchParams.append('limit', String(params.limit));
+    }
+    const queryString = searchParams.toString();
+    if (queryString) {
+      url += `?${queryString}`;
     }
   }
 
   try {
-    const response = await fetch(url.toString(), { method: 'GET' });
+    const response = await fetch(url, { method: 'GET' });
 
     if (!response.ok) {
       const errorBody = await getErrorBody(response);
-      console.error(`API Error ${response.status} for URL ${url.toString()}:`, errorBody);
+      console.error(`API Error ${response.status} for URL ${url}:`, errorBody);
       const finalErrorMessageApi = extractErrorMessage(errorBody, response.status);
       return { success: false, error: finalErrorMessageApi };
     }
